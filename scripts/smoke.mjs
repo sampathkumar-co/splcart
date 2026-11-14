@@ -24,7 +24,7 @@ try {
   checked('HQ product register accepts non-SPLCART independent public product references',
     independentProduct.status===201 && !!independentProduct.value.id);
 
-  const evidence=await db.researchRun.create({ data:{provider:'CI_FIXTURE',sourceUrl:'https://ci-retailer.example.org',finalUrl:'https://ci-retailer.example.org',status:'COMPLETED',pageTitle:'CI ONLY retailer fixture',finishedAt:new Date()} });
+  const evidence=await db.researchRun.create({ data:{provider:'CI_FIXTURE',sourceUrl:'https://ci-retailer.example.org',finalUrl:'https://ci-retailer.example.org',status:'COMPLETED',pageTitle:'CI ONLY retailer fixture',finishedAt:new Date(),evidenceJson:{title:'CI ONLY retailer fixture',headings:['CZ jewellery wholesale retailer'],excerpt:'CI-only CZ jewellery wholesale retailer offers artificial jewellery and watches. This is fake CI fixture evidence only.'}} });
   const lead=await send('/api/actions',{action:'add_prospect',name:'CI-only jewellery retailer',city:'Visakhapatnam',category:'CZ jewellery',businessSourceUrl:'https://ci-retailer.example.org',evidenceSummary:'CI fixture for transactional API contract',researchRunId:evidence.id});
   checked('source-backed prospect persists',lead.status===201 && lead.value.id);
   const duplicate=await send('/api/actions',{action:'add_prospect',
@@ -35,6 +35,13 @@ try {
     duplicate.status===409 && duplicate.value.error==='DUPLICATE_BUSINESS_WEBSITE' &&
     duplicate.value.existingLeadId===lead.value.id);
 
+  const preVerification=await send('/api/dashboard');
+  checked('web visit alone does not verify a jewellery business',
+    preVerification.value.prospects.find(p=>p.id===lead.value.id)?.qualified===false);
+  const fakeExcerpt=await send('/api/actions',{action:'verify_business',prospectId:lead.value.id,researchRunId:evidence.id,evidenceText:'No such statement is present in the captured retailer website'});
+  checked('made-up business evidence is rejected by the server',fakeExcerpt.status===400);
+  const validExcerpt=await send('/api/actions',{action:'verify_business',prospectId:lead.value.id,researchRunId:evidence.id,evidenceText:'CZ jewellery wholesale retailer'});
+  checked('owner-reviewed actual captured category evidence verifies the source',validExcerpt.status===200 && validExcerpt.value.status==='OWNER_REVIEWED_CAPTURED_EVIDENCE');
   const rejected=await send('/api/actions',{action:'review',prospectId:lead.value.id,decision:'APPROVED',note:'should be blocked before evidence'});
   checked('premature approval denied',rejected.status===400);
   const relevant=await send('/api/actions',{action:'add_match',prospectId:lead.value.id,productId:product.value.id,
