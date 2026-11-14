@@ -21,6 +21,14 @@ try {
   const evidence=await db.researchRun.create({ data:{provider:'CI_FIXTURE',sourceUrl:'https://ci-retailer.example.org',finalUrl:'https://ci-retailer.example.org',status:'COMPLETED',pageTitle:'CI ONLY retailer fixture',finishedAt:new Date()} });
   const lead=await send('/api/actions',{action:'add_prospect',name:'CI-only jewellery retailer',city:'Visakhapatnam',category:'CZ jewellery',businessSourceUrl:'https://ci-retailer.example.org',evidenceSummary:'CI fixture for transactional API contract',researchRunId:evidence.id});
   checked('source-backed prospect persists',lead.status===201 && lead.value.id);
+  const duplicate=await send('/api/actions',{action:'add_prospect',
+    name:'Different label same CI retailer',city:'Visakhapatnam',category:'CZ jewellery',
+    businessSourceUrl:'https://ci-retailer.example.org/different-page',
+    evidenceSummary:'Duplicate same-site fixture',researchRunId:evidence.id});
+  checked('website dedupe blocks multiple records for one retailer',
+    duplicate.status===409 && duplicate.value.error==='DUPLICATE_BUSINESS_WEBSITE' &&
+    duplicate.value.existingLeadId===lead.value.id);
+
   const rejected=await send('/api/actions',{action:'review',prospectId:lead.value.id,decision:'APPROVED',note:'should be blocked before evidence'});
   checked('premature approval denied',rejected.status===400);
   const relevant=await send('/api/actions',{action:'add_match',prospectId:lead.value.id,productId:product.value.id,
