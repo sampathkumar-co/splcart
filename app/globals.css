@@ -5,3 +5,25 @@
 /* Explicit camera reset; independent of WebGL pointer events. */
 .office-reset-camera{position:absolute;top:17px;right:19px;z-index:3;border:1px solid #a18961;background:rgba(19,23,24,.88);color:#efd2a1;border-radius:6px;padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:.04em;backdrop-filter:blur(7px)}
 .office-reset-camera:hover,.office-reset-camera:focus-visible{background:#343127;outline:2px solid #c7ac7c;outline-offset:2px}
+
+/* Sixteen real-state office workstations; readable even without WebGL. */
+.office-canvas{height:min(67vh,650px);min-height:430px;background:radial-gradient(circle at 40% 25%,#263138,#0b1116 70%)}
+.station-console{padding:18px 24px 20px;border-top:1px solid #353b3c;background:linear-gradient(90deg,#171d20,#1d2425)}
+.station-console-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.station-console-head span{font:800 10px Manrope,Arial,sans-serif;letter-spacing:.16em;color:#e4d0a6}
+.station-console-head small{color:#8b9697;font-size:10px}
+.station-console-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.station-chip{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid #333d40;border-radius:6px;background:#20292b;color:#d1d5cf;text-align:left;min-width:0;transition:background .17s,border-color .17s}
+.station-chip:hover,.station-chip:focus-visible{background:#2b3434;border-color:#aa8a57;outline:none}
+.station-chip.selected{border-color:#d0b17d;background:#36342e}
+.station-chip-code{flex-shrink:0;color:#d4b680;font:800 10px Manrope,Arial,sans-serif;min-width:25px}
+.station-chip-name{font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.station-chip .status{font-size:7px;padding:3px 5px;letter-spacing:0}
+.station-details{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:12px;padding:12px 15px;background:#11191b;border:1px solid #364042;border-radius:6px}
+.station-details strong{font-size:12px;color:#ead8ba}
+.station-details>span:last-of-type{flex:1;color:#aeb9b5;font-size:11px;line-height:1.5}
+.station-details small{color:#88c4a3;font-size:10px}
+.status-manual-only{color:#e4c692;border-color:#78664b;background:#39352b}
+@media(max-width:1200px){.station-console-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:780px){.station-console-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.station-console-head{display:block}.station-console-head small{display:block;margin-top:8px}.office-canvas{min-height:390px;height:440px}}
+@media(max-width:480px){.station-console-grid{grid-template-columns:1fr}.station-console{padding:15px}.station-chip-name{font-size:11px}.station-details{align-items:start}}
