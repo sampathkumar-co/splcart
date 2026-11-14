@@ -68,7 +68,7 @@ model Prospect {
 
 model Product {
   id                  String   @id @default(uuid())
-  splcartProductId    String   @unique
+  splcartProductId    String   @unique // legacy column name; now independent HQ owner reference SKU, no store connection
   title               String
   category            String
   material            String
