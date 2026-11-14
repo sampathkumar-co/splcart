@@ -7,7 +7,8 @@ import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
  */
 export const SESSION_MAX_AGE_SECONDS = 8 * 60 * 60;
 export const isLocalTestMode = () =>
-  process.env.HQ_TEST_MODE === "1" && process.env.NODE_ENV === "production";
+  process.env.HQ_TEST_MODE === "1" && process.env.NODE_ENV === "production" &&
+  process.env.HQ_PUBLIC_ORIGIN === "http://127.0.0.1:3000";
 export const sessionCookieName = () =>
   process.env.NODE_ENV === "production" && !isLocalTestMode() ? "__Host-hq_session" : "hq_session";
 
