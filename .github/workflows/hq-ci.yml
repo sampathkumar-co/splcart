@@ -70,6 +70,21 @@ jobs:
         run: node scripts/office-e2e.mjs
       - name: Genuine public HTTPS two-tab Playwright research smoke
         run: node scripts/real-browser-smoke.mjs
+      - name: Test separate Chromium worker over authenticated internal HTTP
+        run: |
+          env -u DATABASE_URL -u OWNER_PASSWORD \
+            HQ_BROWSER_WORKER_PROCESS=1 \
+            HQ_BROWSER_EGRESS_VERIFIED=1 \
+            HQ_ALLOWED_RESEARCH_HOSTS=example.com \
+            HQ_BROWSER_WORKER_TOKEN=ci-only-browser-worker-token-for-an-ephemeral-ci-container \
+            npm run browser:worker >/tmp/hq-browser-worker.log 2>&1 &
+          WORKER_PID=$!
+          trap 'kill $WORKER_PID || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -sSf http://127.0.0.1:3900/healthz >/dev/null; then break; fi
+            sleep 2
+          done
+          node scripts/worker-smoke.mjs || (cat /tmp/hq-browser-worker.log && exit 1)
       - name: Archive visual QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
