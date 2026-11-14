@@ -50,6 +50,8 @@ The three-service `compose.hq.yml` is a **deployment scaffold, not a deployed si
 
 Schema changes are now captured in the dedicated HQ `prisma/migrations` directory. Use `npm run db:deploy` after taking a backup; do not apply destructive schema pushes to persistent data.
 
+A dedicated **HQ-only** backup script is available at `scripts/hq-backup.sh`. GitHub Actions verifies actual `pg_dump` and `pg_restore` into an isolated temporary PostgreSQL database using `scripts/ci-backup-restore.sh`. An encrypted off-host backup plan and target-host recovery test remain separate deployment requirements. The browser policy also forbids automated research against SPLCART domains, though a public SPLCART product link can still appear in the HQ catalogue.
+
 ## Real open-source office reuse and quality gates
 
 - Reused the **MIT-licensed Hermes3D camera-navigation pattern** with attribution and copyright retained in [docs/third-party/Hermes3D-LICENSE.txt](docs/third-party/Hermes3D-LICENSE.txt). Added original jewellery-branded architectural geometry and data-driven workstation placement; **the full Hermes3D application has not been imported**. [Foundation audit](docs/GITHUB_FOUNDATIONS.md).
