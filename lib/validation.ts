@@ -19,6 +19,7 @@ export const actionInput = z.discriminatedUnion("action", [
     if (m.competitorPriceRupees !== undefined && !m.competitorEvidenceUrl)
       ctx.addIssue({code:"custom",path:["competitorEvidenceUrl"],message:"Price comparisons require an independent source URL"});
   }),
+  z.object({ action: z.literal("record_wholesale_intent"), prospectId: id, evidenceUrl: publicUrl, note: text(600) }).strict(),
   z.object({ action: z.literal("record_permission"), prospectId: id, consentEvidenceUrl: publicUrl, consentNote: text(600) }),
   z.object({ action: z.literal("review"), prospectId: id, decision: z.enum(["APPROVED", "REJECTED"]), note: text(600) }),
   z.object({ action: z.literal("advance"), prospectId: id, to: z.enum(["RESEARCHED","QUALIFIED","APPROVED","CONTACTED","INTERESTED","QUOTATION","NEGOTIATION","LOST","FOLLOW_UP"]), note: text(600), evidenceUrl: publicUrl.optional() }),
