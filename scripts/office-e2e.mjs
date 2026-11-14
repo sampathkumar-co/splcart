@@ -11,7 +11,7 @@ const base = process.env.HQ_E2E_URL || "http://127.0.0.1:3000";
 await mkdir("artifacts", { recursive: true });
 const browser = await chromium.launch({
   headless: true,
-  args: ["--no-sandbox", "--enable-webgl", "--use-angle=swiftshader"],
+  args: ["--no-sandbox", "--enable-webgl", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
 });
 const ctx = await browser.newContext({
   viewport: { width: 1600, height: 1000 },
@@ -24,6 +24,7 @@ const ctx = await browser.newContext({
 const page = await ctx.newPage();
 const failures = [];
 page.on("pageerror", error => failures.push(error.message));
+page.on("console", msg => { if(msg.type()==="error")console.log("BROWSER_CONSOLE_ERROR",msg.text().slice(0,280)); });
 try {
   const response = await page.goto(base, { waitUntil: "domcontentloaded", timeout: 40_000 });
   assert.equal(response?.status(), 200, "authenticated app must load");
@@ -33,6 +34,31 @@ try {
   assert.equal(await page.locator(".station-chip .status-running").count(), 0, "empty CI database must not claim any active autonomous agents");
   await page.getByRole("button", { name: /Google & Web Discovery/ }).first().click();
   assert.ok((await page.locator(".station-details").innerText()).includes("Google & Web Discovery"), "clicking a workstation must open real status");
+  // Capture while WebGL is inside the viewport. Offscreen full-page screenshot
+  // captures can incorrectly composite the WebGL canvas as a blank rectangle.
+  await page.locator(".office-canvas").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(1800);
+  const canvasPng = await page.locator(".office-canvas").screenshot({path:"artifacts/hq-office-canvas.png"});
+  const sample = await page.evaluate(async base64 => {
+    const image = new Image();
+    image.src = "data:image/png;base64," + base64;
+    await image.decode();
+    const probe = document.createElement("canvas");
+    probe.width = image.width; probe.height = image.height;
+    const context = probe.getContext("2d");
+    if(!context) return 0;
+    context.drawImage(image,0,0);
+    const unique=new Set();
+    for(let y=120;y<image.height-100;y+=18)
+      for(let x=80;x<image.width-80;x+=18) {
+        const pixels=context.getImageData(x,y,1,1).data;
+        unique.add(pixels[0]+":"+pixels[1]+":"+pixels[2]);
+      }
+    return unique.size;
+  }, canvasPng.toString("base64"));
+  console.log("WebGL visual pixel diversity",sample);
+  assert.ok(sample>18,"3D office must draw visible geometry, not a blank canvas");
+  await page.evaluate(() => window.scrollTo(0,0));
   await page.screenshot({path:"artifacts/hq-desktop-3d.png",fullPage:true});
   console.log("PASS 16 real-state agent workstations, 3D scene and interactive inspector");
 
