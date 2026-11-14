@@ -7,6 +7,7 @@ on:
       - 'lib/**'
       - 'prisma/**'
       - 'tests/**'
+      - 'scripts/**'
       - 'package.json'
       - 'tsconfig.json'
       - 'proxy.ts'
@@ -16,6 +17,20 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: hq
+          POSTGRES_PASSWORD: hq
+          POSTGRES_DB: hq
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hq -d hq"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
     env:
       DATABASE_URL: postgresql://hq:hq@localhost:5432/hq?schema=public
       OWNER_USERNAME: ci-owner
@@ -33,5 +48,15 @@ jobs:
         run: npm run typecheck
       - name: Unit tests
         run: npm test
+      - name: Apply schema to isolated test database
+        run: npx prisma db push --accept-data-loss
       - name: Production build
         run: npm run build
+      - name: Exercise real APIs and PostgreSQL transactions
+        run: |
+          npm run start >/tmp/hq-next.log 2>&1 &
+          for attempt in $(seq 1 40); do
+            if curl -sSf http://127.0.0.1:3000/api/health >/dev/null; then break; fi
+            sleep 2
+          done
+          node scripts/smoke.mjs || (cat /tmp/hq-next.log && exit 1)
