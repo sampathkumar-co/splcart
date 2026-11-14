@@ -76,6 +76,20 @@ try {
   await page.getByRole("heading", { name: "Intelligence Discovery" }).waitFor();
   await page.getByRole("button", { name: "Wholesale Pipeline" }).click();
   await page.getByRole("heading", { name: "Wholesale Opportunities" }).waitFor();
+  await page.getByRole("heading", { name: "Wholesale quotation desk" }).waitFor();
+  await page.locator(".quote-card").first().waitFor({timeout:20_000});
+  assert.equal(await page.locator(".quote-card").count(), 1, "CI test lead must show one persisted approved quote");
+  assert.ok((await page.locator(".quote-card").innerText()).includes("APPROVED"),
+    "Quote card must show real owner approval rather than a pipeline-only stage");
+  await ctx.grantPermissions(["clipboard-read", "clipboard-write"], {origin: base});
+  await page.getByRole("button", { name: "Copy approved quotation" }).click();
+  const copied = await page.evaluate(async () => navigator.clipboard.readText());
+  assert.ok(copied.includes("OWNER-APPROVED WHOLESALE QUOTATION") &&
+    copied.includes("OWNER_ATTESTED") && copied.includes("₹810.00"),
+    "Manual share text must retain approval, source and price from persisted CI quote");
+  await page.screenshot({path:"artifacts/hq-quote-workflow.png",fullPage:true});
+  console.log("PASS actual persisted quote UI and explicit manual-only clipboard copy");
+
   console.log("PASS camera overview control and business navigation");
 
   await page.setViewportSize({width:390,height:844});
