@@ -42,11 +42,11 @@ export async function POST(req: Request) {
         const match = await db.productMatch.upsert({ where: { prospectId_productId: { prospectId: data.prospectId, productId: data.productId } },
           create: { prospectId: data.prospectId, productId: data.productId,
             competitorMaterial: data.competitorMaterial ?? null, competitorUnitDescription: data.competitorUnitDescription ?? null,
-            competitorPricePaise: data.competitorPriceRupees === undefined ? null : paise(data.competitorPriceRupees), competitorEvidenceUrl: data.competitorEvidenceUrl ?? null,
-            competitorPriceCheckedAt: new Date(), equivalentMaterials: data.equivalentMaterials, equivalentUnits: data.equivalentUnits },
+            competitorPricePaise: data.competitorPriceRupees === undefined ? null : paise(Number(data.competitorPriceRupees)), competitorEvidenceUrl: data.competitorEvidenceUrl ?? null,
+            competitorPriceCheckedAt: data.competitorPriceRupees === undefined ? null : new Date(), equivalentMaterials: data.equivalentMaterials, equivalentUnits: data.equivalentUnits },
           update: { competitorMaterial: data.competitorMaterial ?? null, competitorUnitDescription: data.competitorUnitDescription ?? null,
-            competitorPricePaise: data.competitorPriceRupees === undefined ? null : paise(data.competitorPriceRupees), competitorEvidenceUrl: data.competitorEvidenceUrl ?? null,
-            competitorPriceCheckedAt: new Date(), equivalentMaterials: data.equivalentMaterials, equivalentUnits: data.equivalentUnits } });
+            competitorPricePaise: data.competitorPriceRupees === undefined ? null : paise(Number(data.competitorPriceRupees)), competitorEvidenceUrl: data.competitorEvidenceUrl ?? null,
+            competitorPriceCheckedAt: data.competitorPriceRupees === undefined ? null : new Date(), equivalentMaterials: data.equivalentMaterials, equivalentUnits: data.equivalentUnits } });
         await db.activity.create({ data: { prospectId: data.prospectId, event: "MATCH_RECORDED", note: `Owner-linked ${product.title} to retailer demand. ${data.competitorPriceRupees ? "Competitor price source recorded." : "No competitor price evidence; no price advantage claimed."}`, evidenceUrl: data.competitorEvidenceUrl ?? null } });
         return Response.json({ id: match.id });
       }
