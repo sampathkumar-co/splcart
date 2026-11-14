@@ -51,6 +51,15 @@ jobs:
         run: npm run typecheck
       - name: Unit tests
         run: npm test
+      - name: Verify standalone Docker Compose is structurally valid
+        env:
+          HQ_DB_PASSWORD: ci-only-hq-database
+          OWNER_USERNAME: ci-owner
+          OWNER_PASSWORD: ci-not-a-real-secret
+          HQ_SESSION_SECRET: ci-only-secret-that-is-long-enough-for-hmac-and-not-for-any-deployment
+          HQ_BROWSER_WORKER_TOKEN: ci-only-browser-worker-token-for-an-ephemeral-ci-container
+          HQ_PUBLIC_ORIGIN: https://hq.example.org
+        run: docker compose -f compose.hq.yml config --quiet
       - name: Generate reviewed independent HQ migration baseline
         run: |
           mkdir -p artifacts
