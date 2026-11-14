@@ -61,8 +61,10 @@ jobs:
         with:
           name: hq-schema-baseline
           path: artifacts/hq-initial-schema.sql
-      - name: Apply schema to isolated test database
-        run: npx prisma db push --accept-data-loss
+      - name: Apply committed HQ migrations to isolated test database
+        run: npx prisma migrate deploy
+      - name: Verify migration history
+        run: npx prisma migrate status
       - name: Production build
         run: npm run build
       - name: Exercise real APIs and PostgreSQL transactions
