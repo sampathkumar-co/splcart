@@ -5,10 +5,12 @@ import { getAgentRecords } from "@/lib/agent-roster";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {
-    const [prospects, products, runs] = await Promise.all([
+    const [prospects, products, runs, control, controlAudit] = await Promise.all([
       db.prospect.findMany({ ...fullProspect, orderBy: { updatedAt: "desc" }, take: 100 }),
       db.product.findMany({ orderBy: { createdAt: "desc" }, take: 100 }),
       db.researchRun.findMany({ orderBy: { startedAt: "desc" }, take: 30 }),
+      db.systemControl.findUnique({ where: { id:"hq" } }),
+      db.systemAudit.findMany({ orderBy: { createdAt:"desc" }, take:10 }),
     ]);
     const verifiedRevenue = prospects.filter(p => p.conversion?.verifiedAt).reduce((sum, p) => sum + (p.conversion?.grossAmountPaise || 0), 0);
     return Response.json({
@@ -23,6 +25,12 @@ export async function GET() {
       runs: runs.map(r => ({ id: r.id, sourceUrl: r.sourceUrl, finalUrl: r.finalUrl, pageTitle: r.pageTitle, excerpt: r.excerpt,
         status: r.status, errorCode: r.errorCode, startedAt: r.startedAt.toISOString(), finishedAt: r.finishedAt?.toISOString() || null,
         evidence: r.evidenceJson })),
+      control: {
+        researchPaused: control?.researchPaused || false,
+        reason: control?.reason || "",
+        updatedAt: control?.updatedAt?.toISOString() || null,
+        audit: controlAudit.map(a=>({id:a.id,event:a.event,reason:a.reason,createdAt:a.createdAt.toISOString()})),
+      },
       agents: getAgentRecords(runs),
       integrations: { splcart: "EXTERNAL_SHOPPING_REFERENCE_ONLY", browser: "MANUAL_BROWSER_RESEARCH", outreach: "MANUAL_ONLY", quotations: "OWNER_APPROVED_MANUAL_SHARING", revenue: "OWNER_REPORTED_UNVERIFIED" },
     }, { headers: { "Cache-Control": "no-store" } });
