@@ -17,6 +17,23 @@ export async function POST(req: Request) {
     if (!limit.allowed) return throttled(limit.retryAfterSeconds);
     const data = actionInput.parse(await req.json());
     switch (data.action) {
+      case "set_research_pause": {
+        await db.$transaction(async tx => {
+          await tx.systemControl.upsert({
+            where: { id:"hq" },
+            create: { id:"hq", researchPaused:data.paused, reason:data.reason },
+            update: { researchPaused:data.paused, reason:data.reason },
+          });
+          await tx.systemAudit.create({ data: {
+            event: data.paused ? "RESEARCH_PAUSED" : "RESEARCH_RESUMED",
+            reason: data.reason, actor:"OWNER",
+          } });
+        });
+        return Response.json({
+          status: data.paused ? "RESEARCH_PAUSED_BY_OWNER" : "RESEARCH_RESUMED_BY_OWNER",
+          ongoingResearchUnaffected:true,
+        });
+      }
       case "add_prospect": {
         let proof: { sourceUrl: string; finalUrl: string | null } | null = null;
         if (data.researchRunId) {
