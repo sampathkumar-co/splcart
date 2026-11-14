@@ -28,7 +28,7 @@ const recent = (value: Date | null, now: Date, days: number) => !!value && now.g
 
 export function verifiedComparable(match: SourceMatch, now = new Date()) {
   const p = match.product;
-  return p.verificationSource === "LIVE_SPLCART_API" &&
+  return p.verificationSource === "INDEPENDENT_VERIFIED_SOURCE" &&
     recent(p.ownerVerifiedAt, now, 7) && recent(match.competitorPriceCheckedAt, now, 7) &&
     match.equivalentMaterials && match.equivalentUnits &&
     !!match.competitorEvidenceUrl && same(p.material, match.competitorMaterial || "") &&
@@ -55,8 +55,8 @@ export function scoreProspect(prospect: SourceProspect, matches: SourceMatch[], 
   const score = Object.values(breakdown).reduce((a, b) => a + b, 0);
   const warnings: string[] = [];
   if (!hasVerifiedBusiness) warnings.push("Independent business verification required");
-  if (!matches.length) warnings.push("No matching SPLCART product recorded");
-  if (!independentlyVerifiedProductFit) warnings.push("No API-reconciled equivalent item; owner-attested product is not independently verified");
+  if (!matches.length) warnings.push("No matching owner-entered product recorded");
+  if (!independentlyVerifiedProductFit) warnings.push("No independently price-verified equivalent item; owner-entered price is not independently verified");
   if (!positiveAdvantage) warnings.push("No independently verified delivered-price advantage");
   if (!hasConsent) warnings.push("No recorded contact permission; automated outreach forbidden");
   return { score, breakdown, warnings, qualified: hasVerifiedBusiness && matchingCategory && score >= 30 };
