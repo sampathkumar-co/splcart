@@ -16,7 +16,7 @@ export const actionInput = z.discriminatedUnion("action", [
   z.object({ action: z.literal("advance"), prospectId: id, to: z.enum(["RESEARCHED","QUALIFIED","APPROVED","CONTACTED","INTERESTED","QUOTATION","NEGOTIATION","LOST","FOLLOW_UP"]), note: text(600), evidenceUrl: publicUrl.optional() }),
   z.object({ action: z.literal("record_order"), prospectId: id, orderReference: text(120), amountRupees: z.coerce.number().positive().max(100000000), evidenceUrl: publicUrl }),
 ]);
-export const researchInput = z.object({ url: publicUrl }).strict();
+export const researchInput = z.object({ url: publicUrl, extraUrls: z.array(publicUrl).max(2).optional() }).strict();
 export function apiError(error: unknown) {
   if (error instanceof z.ZodError) return Response.json({ error: "Invalid input", details: error.issues.map(i => i.message) }, { status: 400 });
   if (error instanceof Error && /^(INVALID_|NOT_|REQUIRES_|ALREADY_|HTTPS_|PRIVATE_|PAGE_|RESEARCH_|NOT_ALLOWED|CHROMIUM_)/.test(error.message))
