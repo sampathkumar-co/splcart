@@ -2,7 +2,8 @@ import { inspectPublicTabs, type BrowserSessionEvidence } from "./browser";
 
 /** HQ app and browser worker are separate services in production. */
 export async function executeResearchSession(urls: string[]): Promise<BrowserSessionEvidence> {
-  if (process.env.NODE_ENV !== "production" || process.env.HQ_TEST_MODE === "1")
+  if (process.env.NODE_ENV !== "production" ||
+      (process.env.HQ_TEST_MODE === "1" && process.env.HQ_PUBLIC_ORIGIN === "http://127.0.0.1:3000"))
     return inspectPublicTabs(urls);
   const endpoint = process.env.HQ_BROWSER_WORKER_URL || "";
   const token = process.env.HQ_BROWSER_WORKER_TOKEN || "";
