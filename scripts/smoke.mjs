@@ -108,5 +108,19 @@ try {
   checked('independent quote price and provenance persisted',savedQuote?.status==='APPROVED' &&
     savedQuote?.totalRupees===810 && savedQuote?.productSourceSnapshot==='OWNER_ATTESTED');
 
+  const pause=await send('/api/actions',{action:'set_research_pause',paused:true,reason:'CI owner deliberately suspended new browser research'});
+  checked('owner can pause new website research',pause.status===200 && pause.value.status==='RESEARCH_PAUSED_BY_OWNER');
+  const blockedResearch=await send('/api/research',{url:'https://example.com/'});
+  checked('a paused owner operation fails before any browser is launched',
+    blockedResearch.status===423 && blockedResearch.value.error==='RESEARCH_PAUSED_BY_OWNER');
+  const pausedDash=await send('/api/dashboard');
+  checked('owner pause and its reason are persisted',pausedDash.value.control.researchPaused===true &&
+    pausedDash.value.control.audit[0].event==='RESEARCH_PAUSED');
+  const resume=await send('/api/actions',{action:'set_research_pause',paused:false,reason:'CI-only: owner restored permitted manual research'});
+  checked('owner can resume new website research',resume.status===200 && resume.value.status==='RESEARCH_RESUMED_BY_OWNER');
+  const resumedDash=await send('/api/dashboard');
+  checked('research resume is recorded in append-only system audit',
+    resumedDash.value.control.researchPaused===false && resumedDash.value.control.audit.length>=2 &&
+    resumedDash.value.control.audit[0].event==='RESEARCH_RESUMED');
   console.log('All API smoke checks passed using CI-only fake records in ephemeral database.');
 } finally { await db.$disconnect(); }
