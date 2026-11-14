@@ -85,6 +85,8 @@ jobs:
           done
           node scripts/smoke.mjs || (cat /tmp/hq-next.log && exit 1)
 
+      - name: Verify independent HQ backup and restore against disposable PostgreSQL
+        run: bash scripts/ci-backup-restore.sh
       - name: Install Chromium and Linux dependencies for visual acceptance
         run: npx playwright install --with-deps chromium
       - name: Verify real browser UI and save desktop/mobile screenshots
