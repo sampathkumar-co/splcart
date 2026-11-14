@@ -18,6 +18,8 @@ describe("private owner HMAC session",()=>{
    mutableEnv.HQ_SESSION_SECRET="short";
    expect(authConfigured()).toBe(false);
    expect(validateSession("bogus")).toBe(false);
+   mutableEnv.HQ_SESSION_SECRET="REPLACE_WITH_AT_LEAST_32_RANDOM_CHARACTERS";
+   expect(authConfigured()).toBe(false);
  });
  it("authenticates one owner without accepting partial, wrong or near passwords",()=>{
    expect(checkOwnerCredentials("ci-owner","ci-own-password-very-long")).toBe(true);
