@@ -23,10 +23,24 @@ try {
   checked('source-backed prospect persists',lead.status===201 && lead.value.id);
   const rejected=await send('/api/actions',{action:'review',prospectId:lead.value.id,decision:'APPROVED',note:'should be blocked before evidence'});
   checked('premature approval denied',rejected.status===400);
+  const relevant=await send('/api/actions',{action:'add_match',prospectId:lead.value.id,productId:product.value.id,
+    equivalentMaterials:false,equivalentUnits:false});
+  checked('retailer relevance matching works without any invented competitor price',relevant.status===200 && !!relevant.value.id);
+  const relevanceDash=await send('/api/dashboard');
+  const relevanceMatch=relevanceDash.value.prospects.find(p=>p.id===lead.value.id);
+  checked('price advantage remains zero without independent competitor evidence',
+    relevanceMatch.breakdown.pricingAdvantage===0 && relevanceMatch.matches[0].competitorPriceRupees===null);
   const match=await send('/api/actions',{action:'add_match',prospectId:lead.value.id,productId:product.value.id,competitorMaterial:'alloy',competitorUnitDescription:'one piece',competitorPriceRupees:450,competitorEvidenceUrl:'https://ci-retailer.example.org/product/1',equivalentMaterials:true,equivalentUnits:true});
   checked('evidenced product match persists',match.status===200 && match.value.id);
   let dash=await send('/api/dashboard');const p=dash.value.prospects.find(p=>p.id===lead.value.id);
   checked('conservative scoring: qualification but no invented price advantage',p.score===30 && p.qualified && p.breakdown.pricingAdvantage===0);
+  const intent=await send('/api/actions',{action:'record_wholesale_intent',prospectId:lead.value.id,
+    note:'CI only: owner recorded hypothetical wholesale intent',evidenceUrl:'https://ci-retailer.example.org/wholesale'});
+  checked('owner can record source-linked wholesale buying intent without outreach',intent.status===200 && intent.value.status==='OWNER_ATTESTED_INTENT');
+  const intentDashboard=await send('/api/dashboard');
+  const intentScore=intentDashboard.value.prospects.find(p=>p.id===lead.value.id);
+  checked('wholesale intent increases explained evidence score rather than fabricated price points',
+    intentScore.score===50 && intentScore.breakdown.wholesalePotential===30 && intentScore.breakdown.pricingAdvantage===0);
   const approve=await send('/api/actions',{action:'review',prospectId:lead.value.id,decision:'APPROVED',note:'CI-only owner approval'});
   checked('owner review is recorded',approve.status===200);
   const qualified=await send('/api/actions',{action:'advance',prospectId:lead.value.id,to:'QUALIFIED',note:'CI fixture evidence'});
