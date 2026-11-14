@@ -122,10 +122,10 @@ function Room({room,chosen,agents,selectedAgentId,onChooseAgent,onChooseRoom}:{
  onChooseAgent:(id:string,room:RoomKey)=>void;onChooseRoom:(room:RoomKey)=>void;
 }){
  const members=ROLE_SPECS.filter(role=>role.room===room.value);
- const floor="#161b1e";
+ const floor="#272a2d";
  return <group position={[room.x,0,room.z]}>
   <mesh position={[0,.007,0]} receiveShadow onClick={e=>{e.stopPropagation();onChooseRoom(room.value);}}>
-   <boxGeometry args={[6.9,.065,4.86]}/><meshStandardMaterial color={chosen?"#23282a":floor} roughness={.27} metalness={.41}/>
+   <boxGeometry args={[6.9,.065,4.86]}/><meshStandardMaterial color={chosen?"#343638":floor} roughness={.27} metalness={.41}/>
   </mesh>
   <Block at={[0,.07,-2.32]} size={[6.55,.018,.055]} color={gold} metalness={.88}/>
   <Block at={[-3.25,.55,0]} size={[.07,1.0,4.7]} color="#af936b" metalness={.8}/>
@@ -142,6 +142,11 @@ function Room({room,chosen,agents,selectedAgentId,onChooseAgent,onChooseRoom}:{
     executive={room.value==="ceo"}
   />)}
   {room.value==="ceo"&&<><Showcase x={-2.65} z={.8}/><Showcase x={2.6} z={.8}/><Block at={[2.0,.20,-.94]} size={[1.55,.4,.65]} color="#39342e"/><Block at={[2.0,.54,-1.18]} size={[1.55,.50,.13]} color="#413c35"/></>}
+  <Text position={[0,1.92,-2.30]} fontSize={.23} letterSpacing={.12} color="#f4dab0" anchorX="center">{room.name}</Text>
+  <Block at={[-3.08,1.77,-2.30]} size={[.045,2.45,.08]} color="#e3bd80" metalness={.74}/>
+  <Block at={[3.08,1.77,-2.30]} size={[.045,2.45,.08]} color="#e3bd80" metalness={.74}/>
+  <Block at={[0,.085,2.16]} size={[5.85,.014,.025]} color="#c9a775" metalness={.78}/>
+  <spotLight position={[0,3.5,.4]} angle={1.1} penumbra={.8} intensity={2.0} distance={8} color="#ffe1b0"/>
   <LightRail x={0} z={0} length={5.7}/>
   <Block at={[0,3.59,-2.35]} size={[6.7,.14,.13]} color="#c1aa82" metalness={.76}/>
   <Block at={[0,3.59,2.35]} size={[6.7,.14,.13]} color="#c1aa82" metalness={.76}/>
