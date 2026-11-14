@@ -1,7 +1,8 @@
 "use client";
 import { Canvas, ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, RoundedBox, Text, Environment } from "@react-three/drei";
+import { RoundedBox, Text } from "@react-three/drei";
 import { Suspense, useState } from "react";
+import { OfficeCamera, type OfficeView } from "./office-camera";
 import * as THREE from "three";
 
 const brass = "#ba9a60";
@@ -62,13 +63,16 @@ function Building({selected, onSelect, running}: {selected:RoomKey, onSelect:(x:
   </group>;
 }
 export function Office({selected,onSelect,running}:{selected:RoomKey,onSelect:(x:RoomKey)=>void,running:boolean}) {
-  return <div className="office-canvas" role="img" aria-label="Interactive 3D AI Headquarters with executive, sales, marketing, and strategy rooms">
+  const [view,setView] = useState<OfficeView>("overview");
+  const chooseRoom = (room:RoomKey) => { setView(room); onSelect(room); };
+  return <div className="office-canvas" role="group" aria-label="Interactive 3D AI Headquarters with executive, sales, marketing, and strategy rooms">
     <Canvas shadows camera={{ position:[13.5,13.5,16.5],fov:42,near:.1,far:100 }} dpr={[1,1.5]} gl={{alpha:true,antialias:true,powerPreference:"high-performance"}}>
       <color attach="background" args={["#11171b"]}/>
       <fog attach="fog" args={["#11171b",29,46]}/>
-      <Suspense fallback={null}><Building selected={selected} onSelect={onSelect} running={running}/></Suspense>
-      <OrbitControls target={[0,.4,0]} enablePan={false} minDistance={12} maxDistance={35} maxPolarAngle={Math.PI/2.22} minPolarAngle={.3} enableDamping dampingFactor={.08}/>
+      <Suspense fallback={null}><Building selected={selected} onSelect={chooseRoom} running={running}/></Suspense>
+      <OfficeCamera view={view}/>
     </Canvas>
-    <div className="office-overlay"><span className="light-dot"/> REAL-TIME WORKSPACE <span className="overlay-tip">Drag to orbit · Scroll to zoom · Click a workstation</span></div>
+    <button type="button" className="office-reset-camera" onClick={()=>setView("overview")} aria-label="Return camera to complete headquarters overview">Overview view</button>
+    <div className="office-overlay"><span className="light-dot"/> REAL WORKSPACE <span className="overlay-tip">Drag to orbit · Scroll to zoom · Click a workstation</span></div>
   </div>;
 }
