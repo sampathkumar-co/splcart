@@ -51,6 +51,16 @@ jobs:
         run: npm run typecheck
       - name: Unit tests
         run: npm test
+      - name: Generate reviewed independent HQ migration baseline
+        run: |
+          mkdir -p artifacts
+          npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > artifacts/hq-initial-schema.sql
+          test -s artifacts/hq-initial-schema.sql
+      - name: Archive HQ migration baseline for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: hq-schema-baseline
+          path: artifacts/hq-initial-schema.sql
       - name: Apply schema to isolated test database
         run: npx prisma db push --accept-data-loss
       - name: Production build
