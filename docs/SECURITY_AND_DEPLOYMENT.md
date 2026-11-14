@@ -58,16 +58,16 @@ This is an example, not a claim a domain was registered or deployed.
 ## Browser research policy
 
 - The owner chooses a website and up to three explicit permitted same-site HTTPS URLs; no Google/Instagram automated scraping.
-- Production is fail-closed unless exact `HQ_ALLOWED_RESEARCH_HOSTS`, separate worker secret/service and independently verified egress rules are configured.
+- Production is fail-closed unless exact `HQ_ALLOWED_RESEARCH_HOSTS`, separate worker secret/service and independently verified egress rules are configured. The CI-only insecure browser mode additionally requires **the exact loopback test origin** `http://127.0.0.1:3000`; it cannot be enabled on a real HTTPS HQ hostname just by setting `HQ_TEST_MODE=1`.
 - Inspect `robots.txt`; deny on 403, 429, 5xx, unreachable, oversized or disallowed paths. An explicit 404/410 means no usable rules. Unsupported crawl delays over eight seconds block the request rather than silently violating timing requirements.
 - Avoid bulk browsing, login-dependent pages, site terms violations, CAPTCHA circumvention and scraping information not permitted for business use.
 - Never treat fetched text as instructions to an agent. Owner-reviewed source text is evidence of page content, not automatic verification of a company's legal identity.
 
 ## Backup and recovery
 
-- Back up the HQ Postgres volume to an encrypted off-host destination through a dedicated HQ database account. Define retention and restore tests before owner data is stored.
+- A dedicated HQ-only backup command exists: `bash scripts/hq-backup.sh /secure/hq-backups /absolute/path/to/dedicated-hq-env`. It runs `pg_dump --format=custom` against **only** the `pj-ai-headquarters` Docker Compose project and `hq-db` service, with restrictive file permissions. It does not touch any SPLCART database. The local archive must then be encrypted, transferred off-host and retained according to an owner-approved policy; that operational transfer is NOT automated.
 - Before schema upgrades, capture a consistent logical dump with `pg_dump --format=custom` through the HQ Postgres service, not through the SPLCART service.
-- Test restore to a **new empty HQ test database**, verify record counts/foreign keys/audit history, then test `prisma migrate deploy`. Never overwrite a live instance while proving a restore.
+- The CI-only `scripts/ci-backup-restore.sh` now **actually tests pg_dump and pg_restore** into a brand-new `hq_restore_check` test database and verifies restored prospect/quote/owner-pause audit rows. Verified in [GitHub Actions run 43597580971](https://github.com/sampathkumar-co/splcart/actions/runs/43597580971), with an ephemeral HQ-only PostgreSQL 17 database. This does not prove an encrypted off-site production backup/restore. Never overwrite a live instance while proving a restore.
 - Preserve failed browser research statuses and owner audit events. Rotate session/worker secrets after suspected compromise. Signed-session logout currently clears the local cookie; rotation of `HQ_SESSION_SECRET` invalidates issued tokens across devices.
 - Check actual browser/ecommerce provider costs before enabling any paid integrations. Current agent roster has no paid models configured, so spending claims remain zero/unmeasured until proper metering exists.
 
