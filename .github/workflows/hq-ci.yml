@@ -16,7 +16,7 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     services:
       postgres:
         image: postgres:17
@@ -60,3 +60,15 @@ jobs:
             sleep 2
           done
           node scripts/smoke.mjs || (cat /tmp/hq-next.log && exit 1)
+
+      - name: Install Chromium and Linux dependencies for visual acceptance
+        run: npx playwright install --with-deps chromium
+      - name: Verify real browser UI and save desktop/mobile screenshots
+        run: node scripts/office-e2e.mjs
+      - name: Archive visual QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hq-office-visual-qa
+          path: artifacts/hq-*.png
+          if-no-files-found: ignore
