@@ -16,8 +16,10 @@ export function authConfigured() {
   const secret = process.env.HQ_SESSION_SECRET || "";
   const username = process.env.OWNER_USERNAME || "";
   const password = process.env.OWNER_PASSWORD || "";
-  return secret.length >= 32 && username.length >= 3 &&
-    password.length >= 16 && password !== "REPLACE_WITH_LONG_RANDOM_SECRET" &&
+  return secret.length >= 32 && !secret.includes("REPLACE_WITH") &&
+    (isLocalTestMode() || !secret.startsWith("ci-only-")) && username.length >= 3 &&
+    password.length >= 16 && !password.includes("REPLACE_WITH") &&
+    (isLocalTestMode() || !password.startsWith("ci-only-")) &&
     (process.env.NODE_ENV !== "production" || isLocalTestMode() || /^https:\/\/[^/]+$/.test(process.env.HQ_PUBLIC_ORIGIN || ""));
 }
 export function timingSafeStringEqual(a: string, b: string) {
