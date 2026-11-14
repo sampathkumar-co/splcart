@@ -22,8 +22,17 @@ enum Stage {
   FOLLOW_UP
 }
 
-enum Decision { PENDING APPROVED REJECTED }
-enum RunStatus { RUNNING COMPLETED FAILED BLOCKED }
+enum Decision {
+  PENDING
+  APPROVED
+  REJECTED
+}
+enum RunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  BLOCKED
+}
 
 model Prospect {
   id                  String   @id @default(uuid())
