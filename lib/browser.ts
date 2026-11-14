@@ -76,14 +76,16 @@ export async function inspectPublicTabs(rawUrls: string[]): Promise<BrowserSessi
   if (urls.some(u => new URL(u).hostname.replace(/^www\./, "") !== base))
     throw new Error("RESEARCH_SAME_BUSINESS_ONLY");
   if (new Set(urls).size !== urls.length) throw new Error("INVALID_DUPLICATE_TAB");
-  const realProduction = process.env.NODE_ENV === "production" && process.env.HQ_TEST_MODE !== "1";
+  const testMode = process.env.HQ_TEST_MODE === "1" &&
+    process.env.HQ_PUBLIC_ORIGIN === "http://127.0.0.1:3000";
+  const realProduction = process.env.NODE_ENV === "production" && !testMode;
   if (!permittedProductionHost(base, realProduction, false, process.env.HQ_ALLOWED_RESEARCH_HOSTS || ""))
     throw new Error("RESEARCH_HOST_NOT_ALLOWLISTED");
   // Real production browser execution must happen in the isolated worker.
   if (realProduction && process.env.HQ_BROWSER_WORKER_PROCESS !== "1")
     throw new Error("RESEARCH_ISOLATED_WORKER_REQUIRED");
   const browser = await chromium.launch({ headless: true,
-    args: process.env.HQ_TEST_MODE === "1" ? ["--no-sandbox"] : [] });
+    args: testMode ? ["--no-sandbox"] : [] });
   try {
     const context = await browser.newContext({
       locale: "en-IN", userAgent: HQ_RESEARCH_USER_AGENT, javaScriptEnabled: false,
