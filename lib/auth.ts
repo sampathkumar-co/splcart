@@ -17,7 +17,7 @@ export function authConfigured() {
   const password = process.env.OWNER_PASSWORD || "";
   return secret.length >= 32 && username.length >= 3 &&
     password.length >= 16 && password !== "REPLACE_WITH_LONG_RANDOM_SECRET" &&
-    (!process.env.HQ_PUBLIC_ORIGIN || process.env.HQ_PUBLIC_ORIGIN.startsWith("https://") || isLocalTestMode());
+    (process.env.NODE_ENV !== "production" || isLocalTestMode() || /^https:\/\/[^/]+$/.test(process.env.HQ_PUBLIC_ORIGIN || ""));
 }
 export function timingSafeStringEqual(a: string, b: string) {
   const left = Buffer.from(a), right = Buffer.from(b);
