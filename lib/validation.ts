@@ -8,6 +8,7 @@ export const publicUrl = z.url().max(1000).refine(v => {
 const text = (max: number) => z.string().trim().min(2).max(max);
 const id = z.uuid();
 export const actionInput = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("set_research_pause"), paused: z.boolean(), reason: z.string().trim().min(3).max(300) }).strict(),
   z.object({ action: z.literal("add_prospect"), name: text(140), city: text(80), category: text(80), businessSourceUrl: publicUrl, evidenceSummary: text(1500), researchRunId: id.optional() }),
   z.object({ action: z.literal("add_product"), splcartProductId: text(100), title: text(150), category: text(80), material: text(80), unitDescription: text(100), priceRupees: z.coerce.number().positive().max(1000000), productUrl: publicUrl }),
   z.object({ action: z.literal("add_match"), prospectId: id, productId: id,
