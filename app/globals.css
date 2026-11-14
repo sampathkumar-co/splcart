@@ -43,3 +43,29 @@
 .status-void{color:#c89b94;border-color:#69514c;background:#342b2b}
 .status-reference-only{color:#e1bd88;border-color:#736548;background:#332f26}
 @media(max-width:560px){.quote-card{padding:13px}.quote-actions button{flex:1}}
+
+
+/* Standalone Headquarters owner sign-in, no storefront identity reuse. */
+.login-page{min-height:100dvh;display:grid;place-items:center;padding:32px 18px;background:
+  radial-gradient(circle at 20% 12%,rgba(180,138,74,.20),transparent 34%),
+  radial-gradient(circle at 90% 95%,rgba(43,85,88,.22),transparent 38%),
+  #0b1013;color:#e5dfd3}
+.login-shell{width:min(100%,480px);background:linear-gradient(140deg,#252626,#161d20);
+  border:1px solid #5a4b35;box-shadow:0 38px 100px #0008;border-radius:14px;padding:38px}
+.login-brand{display:flex;align-items:center;gap:14px;color:#cfac78;margin-bottom:38px}
+.login-brand div{display:grid;gap:3px}.login-brand strong{letter-spacing:.20em;font-size:20px}
+.login-brand span{font-size:10px;letter-spacing:.22em;color:#b7a889}
+.login-eyebrow{display:flex;align-items:center;gap:7px;color:#cbb081;letter-spacing:.13em;font-size:10px;font-weight:800}
+.login-shell h1{font:600 clamp(25px,5vw,34px) Georgia,serif;line-height:1.17;color:#f1e9db;margin:14px 0}
+.login-shell p{color:#aeb6b2;font-size:12px;line-height:1.75;margin-bottom:28px}
+.login-form{display:grid;gap:12px}
+.login-form label{font-size:11px;color:#d2bea0;font-weight:700;letter-spacing:.04em}
+.login-form input{border:1px solid #536065;border-radius:7px;padding:13px;background:#101719;color:#fff;outline:none;width:100%;font-size:14px}
+.login-form input:focus-visible{border-color:#dfbf88;box-shadow:0 0 0 2px #dfbf8840}
+.login-form button{display:flex;gap:9px;align-items:center;justify-content:center;background:#ccb081;color:#192024;border:0;border-radius:7px;font-size:12px;font-weight:800;padding:14px;margin-top:15px;cursor:pointer}
+.login-form button:disabled{opacity:.65;cursor:not-allowed}
+.login-error{background:#432a2e;color:#f3d3ce;padding:12px;border:1px solid #855c5c;border-radius:6px;font-size:12px;margin-bottom:22px}
+.login-shell footer{font-size:10px;color:#81908e;line-height:1.6;margin-top:29px}
+.hq-signout{border:1px solid #5b5344;background:#292c2c;color:#dfc7a0;padding:7px 10px;border-radius:5px;display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;cursor:pointer}
+.hq-signout:hover,.hq-signout:focus-visible{border-color:#dab679;background:#403a30}
+@media(max-width:500px){.login-shell{padding:28px 24px}.hq-signout{padding:7px}}
