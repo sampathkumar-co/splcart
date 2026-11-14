@@ -10,7 +10,15 @@ const id = z.uuid();
 export const actionInput = z.discriminatedUnion("action", [
   z.object({ action: z.literal("add_prospect"), name: text(140), city: text(80), category: text(80), businessSourceUrl: publicUrl, evidenceSummary: text(1500), researchRunId: id.optional() }),
   z.object({ action: z.literal("add_product"), splcartProductId: text(100), title: text(150), category: text(80), material: text(80), unitDescription: text(100), priceRupees: z.coerce.number().positive().max(1000000), productUrl: publicUrl.refine(v => new URL(v).hostname === "splcart.in" || new URL(v).hostname.endsWith(".splcart.in"), "Use a real SPLCART product link") }),
-  z.object({ action: z.literal("add_match"), prospectId: id, productId: id, competitorMaterial: text(80), competitorUnitDescription: text(100), competitorPriceRupees: z.coerce.number().positive().max(1000000), competitorEvidenceUrl: publicUrl, equivalentMaterials: z.boolean(), equivalentUnits: z.boolean() }),
+  z.object({ action: z.literal("add_match"), prospectId: id, productId: id,
+    competitorMaterial: text(80).optional(), competitorUnitDescription: text(100).optional(),
+    competitorPriceRupees: z.coerce.number().positive().max(1000000).optional(),
+    competitorEvidenceUrl: publicUrl.optional(),
+    equivalentMaterials: z.boolean().default(false), equivalentUnits: z.boolean().default(false),
+  }).superRefine((m,ctx) => {
+    if (m.competitorPriceRupees !== undefined && !m.competitorEvidenceUrl)
+      ctx.addIssue({code:"custom",path:["competitorEvidenceUrl"],message:"Price comparisons require an independent source URL"});
+  }),
   z.object({ action: z.literal("record_permission"), prospectId: id, consentEvidenceUrl: publicUrl, consentNote: text(600) }),
   z.object({ action: z.literal("review"), prospectId: id, decision: z.enum(["APPROVED", "REJECTED"]), note: text(600) }),
   z.object({ action: z.literal("advance"), prospectId: id, to: z.enum(["RESEARCHED","QUALIFIED","APPROVED","CONTACTED","INTERESTED","QUOTATION","NEGOTIATION","LOST","FOLLOW_UP"]), note: text(600), evidenceUrl: publicUrl.optional() }),
