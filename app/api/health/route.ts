@@ -1,0 +1,1 @@
+export async function GET() { return Response.json({ service: "prasanth-jewellers-ai-headquarters", status: "running", integrations: { splcart: "BLOCKED_UNTIL_CONTRACT_VERIFIED", outreach: "MANUAL_ONLY" } }); }
