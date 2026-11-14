@@ -27,6 +27,11 @@ enum Decision {
   APPROVED
   REJECTED
 }
+enum QuoteStatus {
+  DRAFT
+  APPROVED
+  VOID
+}
 enum RunStatus {
   RUNNING
   COMPLETED
@@ -55,6 +60,7 @@ model Prospect {
   matches             ProductMatch[]
   activities          Activity[]
   conversion          Conversion?
+  quotes              Quote[]
   @@unique([businessSourceUrl, name])
   @@index([stage, updatedAt])
 }
@@ -73,6 +79,7 @@ model Product {
   verificationSource  String   @default("OWNER_ATTESTED")
   createdAt           DateTime @default(now())
   matches             ProductMatch[]
+  quotes              Quote[]
 }
 
 model ProductMatch {
@@ -130,4 +137,28 @@ model ResearchRun {
   startedAt   DateTime  @default(now())
   finishedAt  DateTime?
   @@index([startedAt])
+}
+
+/**
+ * Standalone HQ quote snapshots. No SPLCART write or order integration.
+ * An approved quote is owner's attestation, not proof of stock or payment.
+ */
+model Quote {
+  id                        String      @id @default(uuid())
+  prospectId                String
+  productId                 String
+  quantity                  Int
+  unitPricePaise            Int
+  deliveryPaise             Int         @default(0)
+  productTitleSnapshot      String
+  productUrlSnapshot        String
+  productSourceSnapshot     String
+  note                      String      @default("")
+  status                    QuoteStatus @default(DRAFT)
+  approvedAt                DateTime?
+  validUntil                DateTime?
+  createdAt                 DateTime    @default(now())
+  prospect                  Prospect    @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  product                   Product     @relation(fields: [productId], references: [id], onDelete: Restrict)
+  @@index([prospectId, createdAt])
 }
