@@ -1,20 +1,21 @@
 import {afterEach, beforeEach, describe,expect,it} from "vitest";
 import {authConfigured,checkOwnerCredentials,issueSession,sessionCookieOptions,validateSession} from "../lib/auth";
+const mutableEnv = process.env as Record<string,string|undefined>;
 const variables=["HQ_SESSION_SECRET","OWNER_USERNAME","OWNER_PASSWORD","HQ_PUBLIC_ORIGIN","HQ_TEST_MODE","NODE_ENV"] as const;
 const originals=Object.fromEntries(variables.map(key=>[key,process.env[key]])) as Record<string,string|undefined>;
 beforeEach(()=>{
- process.env.OWNER_USERNAME="ci-owner";
- process.env.OWNER_PASSWORD="ci-own-password-very-long";
- process.env.HQ_SESSION_SECRET="ci-unit-only-an-unpredictable-signing-secret-over-32-bytes";
- process.env.NODE_ENV="test";
- process.env.HQ_TEST_MODE="1";
- process.env.HQ_PUBLIC_ORIGIN="http://127.0.0.1:3000";
+ mutableEnv.OWNER_USERNAME="ci-owner";
+ mutableEnv.OWNER_PASSWORD="ci-own-password-very-long";
+ mutableEnv.HQ_SESSION_SECRET="ci-unit-only-an-unpredictable-signing-secret-over-32-bytes";
+ mutableEnv.NODE_ENV="test";
+ mutableEnv.HQ_TEST_MODE="1";
+ mutableEnv.HQ_PUBLIC_ORIGIN="http://127.0.0.1:3000";
 });
-afterEach(()=>{for(const k of variables){if(originals[k]===undefined)delete process.env[k];else process.env[k]=originals[k];}});
+afterEach(()=>{for(const k of variables){if(originals[k]===undefined)delete mutableEnv[k];else mutableEnv[k]=originals[k];}});
 describe("private owner HMAC session",()=>{
  it("requires real owner config and won't accept placeholder secrets",()=>{
    expect(authConfigured()).toBe(true);
-   process.env.HQ_SESSION_SECRET="short";
+   mutableEnv.HQ_SESSION_SECRET="short";
    expect(authConfigured()).toBe(false);
    expect(validateSession("bogus")).toBe(false);
  });
@@ -30,15 +31,15 @@ describe("private owner HMAC session",()=>{
    expect(validateSession(cookie,now+8*3600000+1)).toBe(false);
    const [body,mac]=cookie.split(".");
    expect(validateSession(body+"."+mac.slice(0,-1)+"a",now)).toBe(false);
-   process.env.OWNER_USERNAME="a-different-account";
+   mutableEnv.OWNER_USERNAME="a-different-account";
    expect(validateSession(cookie,now)).toBe(false);
  });
  it("requires HTTPS public origin for real production",()=>{
-   process.env.NODE_ENV="production";
-   delete process.env.HQ_TEST_MODE;
-   process.env.HQ_PUBLIC_ORIGIN="http://127.0.0.1:3000";
+   mutableEnv.NODE_ENV="production";
+   delete mutableEnv.HQ_TEST_MODE;
+   mutableEnv.HQ_PUBLIC_ORIGIN="http://127.0.0.1:3000";
    expect(authConfigured()).toBe(false);
-   process.env.HQ_PUBLIC_ORIGIN="https://headquarters.example.org";
+   mutableEnv.HQ_PUBLIC_ORIGIN="https://headquarters.example.org";
    expect(authConfigured()).toBe(true);
    expect(sessionCookieOptions()).toMatchObject({httpOnly:true,secure:true,sameSite:"strict",path:"/"});
  });
