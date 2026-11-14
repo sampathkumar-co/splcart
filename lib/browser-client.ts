@@ -7,7 +7,7 @@ export async function executeResearchSession(urls: string[]): Promise<BrowserSes
     return inspectPublicTabs(urls);
   const endpoint = process.env.HQ_BROWSER_WORKER_URL || "";
   const token = process.env.HQ_BROWSER_WORKER_TOKEN || "";
-  if (!/^http:\/\/hq-browser:3900$/.test(endpoint) || token.length < 32 ||
+  if (!/^http:\/\/hq-browser:3900$/.test(endpoint) || (token.length < 32 || token.includes("REPLACE_WITH") || token.startsWith("ci-only-")) ||
       process.env.HQ_BROWSER_EGRESS_VERIFIED !== "1")
     throw new Error("RESEARCH_ISOLATED_WORKER_REQUIRED");
   let response: Response;
