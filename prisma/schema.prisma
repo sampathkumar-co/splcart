@@ -165,3 +165,10 @@ model Quote {
   product                   Product     @relation(fields: [productId], references: [id], onDelete: Restrict)
   @@index([prospectId, createdAt])
 }
+
+/** Postgres-backed counters shared across independent HQ server workers. */
+model RateLimitBucket {
+  key       String   @id
+  count     Int      @default(0)
+  windowEnd DateTime
+}
