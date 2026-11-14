@@ -12,7 +12,8 @@ Standalone Next.js + PostgreSQL Headquarters in the user-chosen [`sampathkumar-c
 4. Owner registers product links and owner-entered snapshots from public jewellery listings, optionally pointing to SPLCART. These remain `OWNER_ATTESTED` and do not connect to or modify the store.
 5. Owner matches products to retailer needs **without mandatory competitor pricing**. An independently sourced comparable price is optional. Scores are deterministic and conservative: unknown delivered prices or material/quantity equivalence never earn verified price-advantage points.
 6. Owner records wholesale-intent evidence and approves or rejects leads, then documents permitted manual outreach. Quotes are real persisted standalone HQ drafts, with explicit owner price/availability confirmation, seven-day validity, audit history, and manual copy. No external message is sent. Owner-reported conversions are **never counted as verified revenue**.
-7. The premium four-room 3D office now has **all 16 role workstations**, clickable desk focus and an always-available accessible 2D role panel. States come from actual persisted research work or are labelled ON_DEMAND, MANUAL_ONLY or NOT_CONFIGURED; no simulated personnel.
+7. Owner can pause **new** website research from the Web Discovery desk and resume it with an explicit reason. Every change is recorded in an append-only HQ system audit. This does not cancel a browser session already in progress.
+8. The premium four-room 3D office now has **all 16 role workstations**, clickable desk focus and an always-available accessible 2D role panel. States come from actual persisted research work or are labelled ON_DEMAND, MANUAL_ONLY or NOT_CONFIGURED; no simulated personnel.
 
 ## Run locally
 
