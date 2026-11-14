@@ -1,0 +1,39 @@
+name: Headquarters quality gate
+on:
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'prisma/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'proxy.ts'
+      - '.github/workflows/hq-ci.yml'
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://hq:hq@localhost:5432/hq?schema=public
+      OWNER_USERNAME: ci-owner
+      OWNER_PASSWORD: ci-not-a-real-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: TypeScript typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Production build
+        run: npm run build
