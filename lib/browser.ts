@@ -54,7 +54,7 @@ async function extractPage(page: Page, url: string): Promise<BrowserEvidence> {
   const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 18000 });
   if (!response || !response.ok()) throw new Error("PAGE_HTTP_" + (response?.status() ?? "NO_RESPONSE"));
   const finalUrl = await assertPublicUrl(page.url());
-  if(new URL(finalUrl).hostname.replace(/^www\\./,"")!==new URL(url).hostname.replace(/^www\\./,""))throw new Error("RESEARCH_REDIRECTED_OUTSIDE_BUSINESS");
+  if(new URL(finalUrl).hostname.replace(/^www\./,"")!==new URL(url).hostname.replace(/^www\./,""))throw new Error("RESEARCH_REDIRECTED_OUTSIDE_BUSINESS");
   const snapshot = await page.evaluate(() => ({
     title: document.title.slice(0, 200),
     description: (document.querySelector('meta[name="description"]')?.getAttribute("content") || "").slice(0, 450),
@@ -84,7 +84,7 @@ export async function inspectPublicTabs(rawUrls: string[]): Promise<BrowserSessi
     await context.route("**/*", async route => {
       try {
         const resourceUrl=await assertPublicUrl(route.request().url());
-        if(new URL(resourceUrl).hostname.replace(/^www\\./,"")!==base)return await route.abort();
+        if(new URL(resourceUrl).hostname.replace(/^www\./,"")!==base)return await route.abort();
         if (["image", "font", "media", "stylesheet"].includes(route.request().resourceType()))
           return await route.abort();
         return await route.continue();
