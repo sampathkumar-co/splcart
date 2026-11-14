@@ -7,12 +7,12 @@ Standalone Next.js + PostgreSQL application built in the user-chosen [`sampathku
 ## Vertical built first
 
 1. Owner opens a Google search in their own browser and chooses an independently hosted public business website.
-2. Owner submits the HTTPS site to **Playwright Chromium**, which visits the actual page, extracts factual headings/source links and stores the result, including errors. No mass scraping, Google Maps scraping, or authentication bypass.
+2. Owner submits up to **three explicit HTTPS pages from the same retailer website** to a single Playwright Chromium browser session. The app records each real tab's source, visible evidence or failure, and persisted run status. It does not automatically scrape Google or crawl arbitrary links. No mass scraping, Google Maps scraping, or authentication bypass.
 3. Owner registers a source-backed retailer lead from a completed inspection, or adds an explicitly unverified entry.
 4. Owner enters real SPLCART product catalogue records, clearly labelled `OWNER_ATTESTED` until an authenticated integration can reconcile them.
 5. Owner records evidenced comparisons. Scores are deterministic, explained and **conservative**: no claimed price advantage unless real API pricing, material, units, delivered prices and freshness are independently verified.
 6. Owner reviews/approves leads, records manual outreach history and interest, quotations and owner-reported orders. Contact is never sent automatically. Owner reports **never count** as verified revenue.
-7. The premium 3D office and accessible 2D view read the same persisted work state and do not simulate actions.
+7. The premium four-room 3D office now has **all 16 role workstations**, clickable desk focus and an always-available accessible 2D role panel. States come from actual persisted research work or are labelled ON_DEMAND, MANUAL_ONLY or NOT_CONFIGURED; no simulated personnel.
 
 ## Run locally
 
@@ -36,6 +36,14 @@ npm run build
 ```
 
 For 3D use, WebGL must be available; the complete 2D view works without it. Research performs **one owner-triggered HTTPS page inspection**, not a queue of uncontrolled spiders. Playwright is an optional runtime dependency and will report an explicit failure if Chromium is not installed.
+
+## Real open-source office reuse and quality gates
+
+- Reused the **MIT-licensed Hermes3D camera-navigation pattern** with attribution and copyright retained in [docs/third-party/Hermes3D-LICENSE.txt](docs/third-party/Hermes3D-LICENSE.txt). Added original jewellery-branded architectural geometry and data-driven workstation placement; **the full Hermes3D application has not been imported**. [Foundation audit](docs/GITHUB_FOUNDATIONS.md).
+- Real Playwright Chromium UI acceptance test: `scripts/office-e2e.mjs`. Verifies 16 status-linked workstations, 3D canvas, 2D fallback, responsive viewport and browser screenshots. Its canvas pixel-diversity assertion detects an empty WebGL scene.
+- GitHub Actions CI also runs the API/PostgreSQL workflow and `scripts/real-browser-smoke.mjs`, an actual two-tab HTTPS visit to neutral IANA `example.com`. **The sample domain is never treated as a business lead.** External networking can make this smoke check fail; inspect its log rather than claiming success.
+- The 3D canvas must remain useful on laptop GPUs, and the full sales workflow must remain possible through the 2D controls.
+- Every new coding chat must first inspect [AGENTS.md](AGENTS.md), current PR and latest CI; update the chronological handoff after substantive changes.
 
 ## Known blockers and safety
 
