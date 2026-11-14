@@ -27,3 +27,19 @@
 @media(max-width:1200px){.station-console-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:780px){.station-console-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.station-console-head{display:block}.station-console-head small{display:block;margin-top:8px}.office-canvas{min-height:390px;height:440px}}
 @media(max-width:480px){.station-console-grid{grid-template-columns:1fr}.station-console{padding:15px}.station-chip-name{font-size:11px}.station-details{align-items:start}}
+
+/* Owner-controlled quotation console: visible approval, no automatic sending */
+.quote-list{display:flex;flex-direction:column;gap:10px;margin:17px 0 4px}
+.quote-card{padding:15px 16px;border-radius:8px;border:1px solid #4e4c42;background:linear-gradient(125deg,#252725,#1c2629)}
+.quote-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.quote-card-head strong{font:700 12px Manrope,sans-serif;color:#f0dbb4}
+.quote-card p{font-size:11px;line-height:1.6;color:#b1bab7}
+.quote-card p strong{font-size:13px;color:#e8c991}
+.quote-card a{color:#dec18d;text-decoration:underline}
+.quote-actions{display:flex;flex-wrap:wrap;gap:8px}
+.quote-actions button{border:1px solid #786b50;border-radius:5px;padding:9px 11px;color:#e6cda0;background:#35352e;font-size:10px;font-weight:700}
+.quote-actions button:hover:not(:disabled){background:#504839}
+.status-draft{color:#dfc38b;border-color:#79684b;background:#3a3429}
+.status-void{color:#c89b94;border-color:#69514c;background:#342b2b}
+.status-reference-only{color:#e1bd88;border-color:#736548;background:#332f26}
+@media(max-width:560px){.quote-card{padding:13px}.quote-actions button{flex:1}}
