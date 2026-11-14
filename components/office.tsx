@@ -11,7 +11,7 @@
  */
 import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import { RoundedBox, Text } from "@react-three/drei";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { ROLE_SPECS, type AgentRecord, type AgentRole } from "@/lib/agent-roster";
 import { OfficeCamera, type OfficeView } from "./office-camera";
 
@@ -163,6 +163,7 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
  selectedAgentId?:string|null;onAgentSelect?:(agentId:string)=>void;
 }){
  const [view,setView]=useState<OfficeView>("overview");
+ useEffect(()=>{setView(selected)},[selected]);
  const chooseRoom=(room:RoomKey)=>{setView(room);onSelect(room);};
  const chooseAgent=(id:string,room:RoomKey)=>{onAgentSelect?.(id);chooseRoom(room);};
  return <div className="office-canvas" role="group" aria-label="Interactive 3D Prasanth Jewellery Headquarters. Sixteen agents have evidence-based statuses.">
