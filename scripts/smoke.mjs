@@ -1,12 +1,12 @@
 /** CI-only tests with ephemeral PostgreSQL and invented fixtures. Never run against production. */
 import assert from 'node:assert/strict';
 import { PrismaClient } from '@prisma/client';
+import { authenticateOwner, authHeaders, base } from './ci-auth.mjs';
 const db = new PrismaClient();
-const base = 'http://127.0.0.1:3000';
-const auth = 'Basic ' + Buffer.from('ci-owner:ci-not-a-real-secret').toString('base64');
+let cookie = '';
 async function send(path, body, authorized = true) {
   const response = await fetch(base + path, { method: body ? 'POST' : 'GET',
-    headers: { ...(authorized ? { Authorization: auth } : {}), ...(body ? { 'Content-Type':'application/json' } : {}) },
+    headers: { ...(authorized ? authHeaders(cookie,!!body) : (body ? {Origin:base,'Content-Type':'application/json'} : {})) },
     body: body ? JSON.stringify(body) : undefined, cache:'no-store' });
   const value = await response.json().catch(()=>({}));
   return { status: response.status, value };
@@ -15,6 +15,20 @@ const checked = (title, ok) => { assert.ok(ok,title); console.log('PASS', title)
 try {
   const health = await send('/api/health'); checked('health endpoint',health.status===200);
   const noAuth = await send('/api/dashboard',null,false); checked('dashboard requires owner auth',noAuth.status===401);
+  const basic=await fetch(base+'/api/dashboard',{headers:{Authorization:'Basic '+Buffer.from('ci-owner:ci-not-a-real-secret').toString('base64')}});
+  checked('legacy Basic password is not accepted on protected HQ APIs', basic.status===401);
+  const bad=await fetch(base+'/api/auth/login',{method:'POST',headers:{Origin:base,'Content-Type':'application/json'},
+    body:JSON.stringify({username:'invalid-user',password:'wrong-password-123456'})});
+  checked('bad owner login rejected without session',bad.status===401 && !bad.headers.get('set-cookie'));
+  cookie=await authenticateOwner();
+  checked('owner receives a signed HttpOnly session cookie',cookie.startsWith('hq_session='));
+  const forged=await fetch(base+'/api/dashboard',{headers:{Cookie:'hq_session=not-signed'}});
+  checked('unsigned forged session cannot access HQ database',forged.status===401);
+  const csrf=await fetch(base+'/api/actions',{method:'POST',
+    headers:{Cookie:cookie,Origin:'https://outside.example.org','Content-Type':'application/json'},
+    body:JSON.stringify({action:'test'})});
+  checked('authenticated cross-site mutation is rejected',csrf.status===403);
+
   const blank = await send('/api/dashboard'); checked('dashboard responds to authorized owner',blank.status===200 && blank.value.stats.researched===0);
   const product = await send('/api/actions',{action:'add_product',splcartProductId:'CI-ONLY-CZ-1',title:'CI-only jewellery fixture',category:'CZ jewellery',material:'alloy',unitDescription:'one piece',priceRupees:250,productUrl:'https://splcart.in/products/ci-only-fixture'});
   checked('owner-attested product persists',product.status===201 && product.value.id);
