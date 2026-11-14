@@ -1,5 +1,5 @@
 import {afterEach, beforeEach, describe,expect,it} from "vitest";
-import {authConfigured,checkOwnerCredentials,issueSession,sessionCookieOptions,validateSession} from "../lib/auth";
+import {authConfigured,checkOwnerCredentials,issueSession,isLocalTestMode,sessionCookieOptions,validateSession} from "../lib/auth";
 const mutableEnv = process.env as Record<string,string|undefined>;
 const variables=["HQ_SESSION_SECRET","OWNER_USERNAME","OWNER_PASSWORD","HQ_PUBLIC_ORIGIN","HQ_TEST_MODE","NODE_ENV"] as const;
 const originals=Object.fromEntries(variables.map(key=>[key,process.env[key]])) as Record<string,string|undefined>;
@@ -33,6 +33,16 @@ describe("private owner HMAC session",()=>{
    expect(validateSession(body+"."+mac.slice(0,-1)+"a",now)).toBe(false);
    mutableEnv.OWNER_USERNAME="a-different-account";
    expect(validateSession(cookie,now)).toBe(false);
+ });
+ it("cannot enable insecure CI mode on a non-local real hostname",()=>{
+   mutableEnv.NODE_ENV="production";
+   mutableEnv.HQ_TEST_MODE="1";
+   mutableEnv.HQ_PUBLIC_ORIGIN="https://hq.example.org";
+   expect(isLocalTestMode()).toBe(false);
+   expect(sessionCookieOptions().secure).toBe(true);
+   mutableEnv.HQ_PUBLIC_ORIGIN="http://127.0.0.1:3000";
+   expect(isLocalTestMode()).toBe(true);
+   expect(sessionCookieOptions().secure).toBe(false);
  });
  it("requires HTTPS public origin for real production",()=>{
    mutableEnv.NODE_ENV="production";
