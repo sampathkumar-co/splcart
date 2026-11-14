@@ -1,5 +1,6 @@
 import { db } from "@/lib/prisma";
 import { scoreProspect, canMove } from "@/lib/domain";
+import { canApproveQuote, totalQuotePaise } from "@/lib/quotation";
 import { actionInput, apiError } from "@/lib/validation";
 import { fullProspect } from "@/lib/serialize";
 import { Prisma } from "@prisma/client";
@@ -80,7 +81,13 @@ export async function POST(req: Request) {
         if (!canMove(p.stage, data.to, p.decision === "APPROVED")) notAllowed("NOT_ALLOWED_STAGE_TRANSITION");
         if (data.to === "QUALIFIED" && !scoreProspect(p, p.matches).qualified) notAllowed("REQUIRES_VERIFIED_QUALIFICATION");
         if (data.to === "APPROVED" && p.decision !== "APPROVED") notAllowed("REQUIRES_OWNER_APPROVAL");
-        if (data.to === "CONTACTED") {
+        if (data.to === "QUOTATION") {
+          const approved = await db.quote.findFirst({
+            where: { prospectId: p.id, status: "APPROVED", validUntil: { gt: new Date() } },
+          });
+          if (!approved) notAllowed("REQUIRES_OWNER_APPROVED_CURRENT_QUOTE");
+        }
+                if (data.to === "CONTACTED") {
           if (!data.evidenceUrl) notAllowed("REQUIRES_MANUAL_OUTREACH_EVIDENCE");
           if (!p.contactConsentUrl || !p.consentGrantedAt || Date.now() - p.consentGrantedAt.getTime() > 365 * 86400000)
             notAllowed("REQUIRES_DOCUMENTED_CONTACT_ELIGIBILITY");
@@ -91,10 +98,81 @@ export async function POST(req: Request) {
         });
         return Response.json({ success: true });
       }
+      case "create_quote": {
+        const [p, product, match] = await Promise.all([
+          db.prospect.findUnique({ where: { id: data.prospectId } }),
+          db.product.findUnique({ where: { id: data.productId } }),
+          db.productMatch.findUnique({ where: { prospectId_productId: { prospectId: data.prospectId, productId: data.productId } } }),
+        ]);
+        if (!p || !product) notAllowed("NOT_FOUND");
+        if (!match) notAllowed("REQUIRES_MATCHED_PRODUCT");
+        if (p.decision === "REJECTED" || ["LOST", "WON_VERIFIED"].includes(p.stage)) notAllowed("NOT_ALLOWED_QUOTE_STAGE");
+        const unitPricePaise = paise(data.unitPriceRupees);
+        const deliveryPaise = paise(data.deliveryRupees);
+        totalQuotePaise(data.quantity, unitPricePaise, deliveryPaise);
+        const quote = await db.$transaction(async tx => {
+          const created = await tx.quote.create({ data: {
+            prospectId: p.id, productId: product.id, quantity: data.quantity,
+            unitPricePaise, deliveryPaise,
+            productTitleSnapshot: product.title,
+            productUrlSnapshot: product.productUrl,
+            productSourceSnapshot: product.verificationSource,
+            note: data.note,
+          } });
+          await tx.activity.create({ data: {
+            prospectId: p.id, event: "QUOTE_DRAFTED", actor: "OWNER",
+            note: "Created quote draft " + created.id + " for " + data.quantity + " x " + product.title + ". No message was sent.",
+            evidenceUrl: product.productUrl,
+          } });
+          return created;
+        });
+        return Response.json({ id: quote.id, status: "DRAFT", totalRupees: totalQuotePaise(quote.quantity, quote.unitPricePaise, quote.deliveryPaise) / 100 }, { status: 201 });
+      }
+      case "approve_quote": {
+        const q = await db.quote.findUnique({ where: { id: data.quoteId }, include: { prospect: true } });
+        if (!q) notAllowed("NOT_FOUND");
+        if (q.status !== "DRAFT") notAllowed("NOT_ALLOWED_QUOTE_STATE");
+        if (!canApproveQuote(q.prospect)) notAllowed("REQUIRES_APPROVED_PERMISSIONED_CONTACT");
+        totalQuotePaise(q.quantity, q.unitPricePaise, q.deliveryPaise);
+        const approvedAt = new Date();
+        const validUntil = new Date(approvedAt.getTime() + 7 * 86400000);
+        await db.$transaction(async tx => {
+          const changed = await tx.quote.updateMany({
+            where: { id: q.id, status: "DRAFT" },
+            data: { status: "APPROVED", approvedAt, validUntil },
+          });
+          if (changed.count !== 1) notAllowed("NOT_ALLOWED_QUOTE_STATE");
+          await tx.quote.updateMany({
+            where: { prospectId: q.prospectId, productId: q.productId, id: { not: q.id }, status: "APPROVED" },
+            data: { status: "VOID" },
+          });
+          await tx.activity.create({ data: {
+            prospectId: q.prospectId, event: "QUOTE_OWNER_APPROVED", actor: "OWNER",
+            note: "Owner attested price and availability, approved quote " + q.id + " for manual sharing only. No external message was sent.",
+            evidenceUrl: q.productUrlSnapshot,
+          } });
+        });
+        return Response.json({ id: q.id, status: "APPROVED", validUntil: validUntil.toISOString(), message: "Approved for owner-controlled manual sharing; no message sent." });
+      }
+      case "void_quote": {
+        const q = await db.quote.findUnique({ where: { id: data.quoteId } });
+        if (!q) notAllowed("NOT_FOUND");
+        if (q.status === "VOID") notAllowed("NOT_ALLOWED_QUOTE_STATE");
+        await db.$transaction(async tx => {
+          await tx.quote.update({ where: { id: q.id }, data: { status: "VOID" } });
+          await tx.activity.create({ data: {
+            prospectId: q.prospectId, event: "QUOTE_VOIDED", actor: "OWNER",
+            note: "Owner voided quote " + q.id + ".",
+          } });
+        });
+        return Response.json({ id: q.id, status: "VOID" });
+      }
       case "record_order": {
         const p = await db.prospect.findUnique({ where: { id: data.prospectId } });
         if (!p) notAllowed("NOT_FOUND");
         if (!["QUOTATION", "NEGOTIATION"].includes(p.stage) || p.decision !== "APPROVED") notAllowed("REQUIRES_APPROVED_QUOTATION_STAGE");
+        const approvedQuote = await db.quote.findFirst({ where: { prospectId: p.id, status: "APPROVED" } });
+        if (!approvedQuote) notAllowed("REQUIRES_OWNER_APPROVED_QUOTE");
         await db.$transaction(async tx => {
           await tx.conversion.upsert({ where: { prospectId: p.id }, create: { prospectId: p.id,
             orderReference: data.orderReference, grossAmountPaise: paise(data.amountRupees), evidenceUrl: data.evidenceUrl },
