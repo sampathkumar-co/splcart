@@ -30,6 +30,7 @@ try {
   assert.equal(response?.status(), 200, "authenticated app must load");
   await page.locator(".station-chip").first().waitFor({ timeout: 35_000 });
   assert.equal(await page.locator(".station-chip").count(), 16, "there must be sixteen truthful workstations");
+  await page.locator(".office-canvas canvas").waitFor({state:"visible",timeout:30_000});
   assert.equal(await page.locator(".office-canvas canvas").count(), 1, "3D scene must mount a WebGL canvas");
   assert.equal(await page.locator(".station-chip .status-running").count(), 0, "empty CI database must not claim any active autonomous agents");
   await page.getByRole("button", { name: /Google & Web Discovery/ }).first().click();
