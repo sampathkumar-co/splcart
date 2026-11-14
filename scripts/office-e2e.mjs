@@ -16,18 +16,20 @@ const browser = await chromium.launch({
 const ctx = await browser.newContext({
   viewport: { width: 1600, height: 1000 },
   deviceScaleFactor: 1,
-  httpCredentials: {
-    username: process.env.OWNER_USERNAME || "ci-owner",
-    password: process.env.OWNER_PASSWORD || "ci-not-a-real-secret",
-  },
 });
 const page = await ctx.newPage();
 const failures = [];
 page.on("pageerror", error => failures.push(error.message));
 page.on("console", msg => { if(msg.type()==="error")console.log("BROWSER_CONSOLE_ERROR",msg.text().slice(0,280)); });
 try {
-  const response = await page.goto(base, { waitUntil: "domcontentloaded", timeout: 40_000 });
-  assert.equal(response?.status(), 200, "authenticated app must load");
+  const unauthenticated = await page.goto(base, { waitUntil: "domcontentloaded", timeout: 40_000 });
+  assert.equal(unauthenticated?.status(), 200, "login page must load through protected redirect");
+  assert.equal(new URL(page.url()).pathname, "/login", "private homepage must require owner session");
+  await page.getByLabel("Owner username").fill(process.env.OWNER_USERNAME || "ci-owner");
+  await page.getByLabel("Password").fill(process.env.OWNER_PASSWORD || "ci-not-a-real-secret");
+  await page.getByRole("button", { name: "Enter headquarters" }).click();
+  await page.waitForURL(url => url.pathname === "/", { timeout: 30_000 });
+  console.log("PASS private owner session login through real browser");
   await page.locator(".station-chip").first().waitFor({ timeout: 35_000 });
   assert.equal(await page.locator(".station-chip").count(), 16, "there must be sixteen truthful workstations");
   await page.locator(".office-canvas canvas").waitFor({state:"visible",timeout:30_000});
@@ -97,6 +99,10 @@ try {
   await page.screenshot({path:"artifacts/hq-mobile.png",fullPage:true});
   console.log("PASS mobile-sized responsive render");
   assert.deepEqual(failures, [], "no uncaught page errors");
+  await page.getByRole("button", { name: /Sign out/ }).click();
+  await page.waitForURL(url => url.pathname === "/login", { timeout: 15_000 });
+  console.log("PASS owner sign out clears active browser session");
+
 } finally {
   await browser.close();
 }
