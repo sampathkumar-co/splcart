@@ -1,6 +1,7 @@
 import { db } from "@/lib/prisma";
 import { fullProspect, serializeProspect } from "@/lib/serialize";
 import { apiError } from "@/lib/validation";
+import { getAgentRecords } from "@/lib/agent-roster";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {
@@ -22,13 +23,7 @@ export async function GET() {
       runs: runs.map(r => ({ id: r.id, sourceUrl: r.sourceUrl, finalUrl: r.finalUrl, pageTitle: r.pageTitle, excerpt: r.excerpt,
         status: r.status, errorCode: r.errorCode, startedAt: r.startedAt.toISOString(), finishedAt: r.finishedAt?.toISOString() || null,
         evidence: r.evidenceJson })),
-      agents: [
-        { name: "Web Discovery", status: runs.some(r => r.status === "RUNNING") ? "RUNNING" : "IDLE" },
-        { name: "Matching & Scoring", status: "ON_DEMAND" },
-        { name: "Wholesale Outreach", status: "OWNER_ONLY" },
-        { name: "Creative Studio", status: "NOT_CONFIGURED" },
-        { name: "Voice Calling", status: "NOT_CONFIGURED" },
-      ],
+      agents: getAgentRecords(runs),
       integrations: { splcart: "CONTRACT_NOT_VERIFIED", browser: "MANUAL_BROWSER_RESEARCH", outreach: "MANUAL_ONLY", revenue: "OWNER_REPORTED_UNTIL_RECONCILED" },
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) { return apiError(e); }
