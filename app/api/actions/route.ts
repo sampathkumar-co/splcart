@@ -1,6 +1,7 @@
 import { db } from "@/lib/prisma";
 import { scoreProspect, canMove } from "@/lib/domain";
 import { canApproveQuote, totalQuotePaise } from "@/lib/quotation";
+import { verifyCapturedBusinessClaim } from "@/lib/source-evidence";
 import { actionInput, apiError } from "@/lib/validation";
 import { fullProspect } from "@/lib/serialize";
 import { Prisma } from "@prisma/client";
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
           name: data.name, city: data.city, category: data.category, businessSourceUrl: data.businessSourceUrl,
           businessHost: host,
           businessWebsiteUrl: data.businessSourceUrl, evidenceSummary: data.evidenceSummary,
-          independentSource: !!proof, verifiedBusinessAt: proof ? new Date() : null,
+          independentSource: !!proof, verifiedBusinessAt: null,
           activities: { create: { event: "LEAD_CREATED", note: proof ? `Owner registered lead from browser run ${data.researchRunId}` : "Owner-entered lead; independent browser verification outstanding", evidenceUrl: data.businessSourceUrl } }
         } });
         return Response.json({ id: prospect.id }, { status: 201 });
@@ -54,6 +55,29 @@ export async function POST(req: Request) {
             competitorPriceCheckedAt: data.competitorPriceRupees === undefined ? null : new Date(), equivalentMaterials: data.equivalentMaterials, equivalentUnits: data.equivalentUnits } });
         await db.activity.create({ data: { prospectId: data.prospectId, event: "MATCH_RECORDED", note: `Owner-linked ${product.title} to retailer demand. ${data.competitorPriceRupees ? "Competitor price source recorded." : "No competitor price evidence; no price advantage claimed."}`, evidenceUrl: data.competitorEvidenceUrl ?? null } });
         return Response.json({ id: match.id });
+      }
+      case "verify_business": {
+        const [p, run] = await Promise.all([
+          db.prospect.findUnique({ where: { id: data.prospectId } }),
+          db.researchRun.findFirst({ where: { id: data.researchRunId, status: "COMPLETED" } }),
+        ]);
+        if (!p || !run) notAllowed("REQUIRES_COMPLETED_SITE_RESEARCH");
+        const evidenceUrl = run.finalUrl || run.sourceUrl;
+        if (retailerHost(evidenceUrl) !== retailerHost(p.businessSourceUrl)) notAllowed("RESEARCH_SOURCE_MISMATCH");
+        if (!verifyCapturedBusinessClaim(run.evidenceJson, data.evidenceText, p.category))
+          notAllowed("REQUIRES_CAPTURED_CATEGORY_EVIDENCE");
+        await db.$transaction(async tx => {
+          await tx.prospect.update({ where: { id: p.id }, data: {
+            independentSource: true, verifiedBusinessAt: new Date(),
+            verificationEvidenceText: data.evidenceText, verificationEvidenceUrl: evidenceUrl,
+          } });
+          await tx.activity.create({ data: {
+            prospectId: p.id, event: "BUSINESS_SOURCE_OWNER_REVIEWED",
+            note: "Owner matched category and quoted text to a completed real browser capture: " + data.evidenceText,
+            evidenceUrl,
+          } });
+        });
+        return Response.json({ status: "OWNER_REVIEWED_CAPTURED_EVIDENCE", sourceUrl: evidenceUrl });
       }
       case "record_wholesale_intent": {
         const p = await db.prospect.findUnique({ where: { id: data.prospectId } });
