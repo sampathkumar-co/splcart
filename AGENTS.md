@@ -59,6 +59,23 @@ A cinematic architectural headquarters rather than a toy office. Dark obsidian t
 4. Preserve API invariants and real/source-attributed records. Write unit, API integration and UI/browser tests when infrastructure permits. Explicitly report unrun tests.
 5. After each milestone update the progress/handoff below with changed paths, tests and results, known blockers, next task, PR URL/branch and measured costs. Keep the full vision intact; do not rewrite history.
 
+## 2026-11-14 owner directive — finish using existing GitHub foundations
+
+**Current priority:** deliver the most complete independently testable wholesale acquisition vertical possible, backed by a usable ultra-premium 3D office. The owner explicitly prefers adapting existing, license-verified GitHub code rather than rebuilding established components. This instruction supersedes any earlier preference to craft every 3D interaction from scratch.
+
+**Reuse contract:** [Hermes3D](https://github.com/iamlukethedev/Hermes3D) is the primary MIT-licensed source for office camera/scene/agent-runtime patterns. Preserve notices in `docs/third-party`; audit imported code and assets before each import. Adapt in isolated components. Do not transplant Hermes-specific services, sample businesses or simulated agent runs. Reuse [browser-use](https://github.com/browser-use/browser-use) only once an isolated Python/browser worker and its site permissions, network policies and metered model costs are tested; owner-triggered direct Playwright research is the current safe real-browser fallback. Full comparison: `docs/GITHUB_FOUNDATIONS.md`.
+
+**Product acceptance criteria for the first customer-acquisition release:**
+1. One independently permitted business website can be inspected through a real, recorded Playwright browser execution with actionable evidence and honest failure states. No Google/Maps mass scraping, CAPTCHA bypass, or pretend browser sessions.
+2. An independently source-linked retailer is deduplicated and associated with owner-entered or genuinely read-only-verified SPLCART products. Every source, price and material assertion carries provenance; unknown price/availability = unknown.
+3. Deterministic scoring cannot assign verified price advantage without same units/materials, genuine confirmed catalogue and delivered-price evidence.
+4. Owner can approve/reject, document contact eligibility, manually record actual outreach/quote, and reconcile a genuine sale only after confirming payment through an inspected trusted order source. Reported sales are never verified revenue.
+5. A high-fidelity dark champagne-gold architectural office exposes *all sixteen role workstations* without falsely implying they run. Real browser, approval and sales states can be inspected from an accessible 2D alternative.
+6. GitHub CI checks type safety, unit/domain rules, PostgreSQL/API workflow and Next production build. Chromium/WebGL visual QA and external integration results must be explicitly reported separately.
+7. Existing live SPLCART storefront remains untouched. HQ stays a separate app, on a draft PR until actual browser/source-policy, security and deployment gates pass.
+
+**Completion semantics:** UI/code/CI done ≠ autonomous revenue generation done. Never mark SPLCART catalogue sync, AI calling, creative Reels, Google search automation or paid revenue verified without a real integration and test proof.
+
 ## Progress / handoff (update chronologically)
 ### 2026-11-14 — Project initiated
 - User explicitly chose `sampathkumar-co/splcart` GitHub repository. It is empty, public, default branch `main`; the deployed SPLCART storefront is **not** present in this repo.
