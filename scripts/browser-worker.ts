@@ -13,7 +13,7 @@ const secret = process.env.HQ_BROWSER_WORKER_TOKEN || "";
 const hosts = process.env.HQ_ALLOWED_RESEARCH_HOSTS || "";
 if (process.env.HQ_BROWSER_WORKER_PROCESS !== "1" ||
     process.env.HQ_BROWSER_EGRESS_VERIFIED !== "1" ||
-    secret.length < 32 || !hosts.trim() ||
+    (secret.length < 32 || secret.includes("REPLACE_WITH") || (process.env.HQ_TEST_MODE !== "1" && secret.startsWith("ci-only-"))) || !hosts.trim() ||
     process.env.DATABASE_URL || process.env.OWNER_PASSWORD) {
   throw new Error("WORKER_SECURITY_CONFIG_INVALID");
 }
