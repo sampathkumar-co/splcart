@@ -172,3 +172,21 @@ model RateLimitBucket {
   count     Int      @default(0)
   windowEnd DateTime
 }
+
+/** Owner pause blocks NEW browser research, not a cancellation of active tabs. */
+model SystemControl {
+  id             String   @id
+  researchPaused Boolean  @default(false)
+  reason         String   @default("")
+  updatedAt      DateTime @updatedAt
+}
+
+/** Append-only high-level operational control audit, separate from prospect history. */
+model SystemAudit {
+  id        String   @id @default(uuid())
+  event     String
+  reason    String
+  actor     String   @default("OWNER")
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
