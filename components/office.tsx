@@ -11,7 +11,7 @@
  */
 import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import { RoundedBox, Text } from "@react-three/drei";
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { ROLE_SPECS, type AgentRecord, type AgentRole } from "@/lib/agent-roster";
 import { OfficeCamera, type OfficeView } from "./office-camera";
 
@@ -80,10 +80,11 @@ function LightRail({x,z,length=5.7}:{x:number;z:number;length?:number}){
 }
 function Walls(){
  return <group>
-  <Block at={[0,-.24,.08]} size={[15.85,.38,12.3]} color="#0d1114" metalness={.38} roughness={.26} />
+  <Block at={[0,-.24,.08]} size={[15.85,.38,12.3]} color="#25282a" metalness={.30} roughness={.30} />
   {Array.from({length:15},(_,i)=><Block key={i} at={[-7.25+i*1.02,-.035,.1]} size={[.012,.012,11.7]} color="#725e42" metalness={.86}/>)}
-  {[-7.55,7.55].map(x=><Block key={x} at={[x,1.55,.08]} size={[.095,3.3,11.9]} color="#81705b" metalness={.72}/>)}
-  {[-5.83,5.88].map(z=><Block key={z} at={[0,1.55,z]} size={[15.18,3.3,.09]} color="#7c6950" metalness={.64} opacity={.40}/>)}
+  {[-7.55,7.55].map(x=><Block key={x} at={[x,.56,.08]} size={[.095,1.2,11.9]} color="#a28b69" metalness={.68} opacity={.65}/>)}
+  <Block at={[0,1.75,-5.83]} size={[15.18,3.1,.09]} color="#8e948e" metalness={.18} opacity={.25}/>
+  <Block at={[0,.30,5.88]} size={[15.18,.48,.08]} color="#a38f71" metalness={.66} opacity={.50}/>
   {[-7.5,0,7.5].map(x=><Block key={x} at={[x,3.35,.1]} size={[.11,.15,11.9]} color="#b09872" metalness={.79}/>)}
   <Block at={[0,3.37,-5.85]} size={[15.4,.24,.14]} color="#d1bb90" metalness={.6}/>
   <Text position={[0,3.72,-5.53]} fontSize={.36} color="#f7e1ae" letterSpacing={.15}>PRASANTH · AI HEADQUARTERS</Text>
@@ -153,9 +154,9 @@ function Building({selected,selectedAgentId,agents,onChooseAgent,onChooseRoom}:{
  return <group rotation={[0,-.105,0]}>
    <Walls/>
    {rooms.map(room=><Room key={room.value} room={room} chosen={selected===room.value} agents={agents} selectedAgentId={selectedAgentId} onChooseAgent={onChooseAgent} onChooseRoom={onChooseRoom}/>)}
-   <ambientLight intensity={.78}/>
-   <hemisphereLight intensity={.65} color="#fff0d9" groundColor="#17181b"/>
-   <directionalLight position={[4.5,10,3.5]} intensity={1.6} color="#ffe4bb" castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
+   <ambientLight intensity={1.20}/>
+   <hemisphereLight intensity={1.2} color="#fff3dc" groundColor="#292d30"/>
+   <directionalLight position={[4.5,10,3.5]} intensity={2.2} color="#ffe4bb" castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
  </group>;
 }
 export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgentSelect}:{
@@ -163,13 +164,14 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
  selectedAgentId?:string|null;onAgentSelect?:(agentId:string)=>void;
 }){
  const [view,setView]=useState<OfficeView>("overview");
- useEffect(()=>{setView(selected)},[selected]);
+ const firstRender=useRef(true);
+ useEffect(()=>{if(firstRender.current){firstRender.current=false;return;}setView(selected)},[selected]);
  const chooseRoom=(room:RoomKey)=>{setView(room);onSelect(room);};
  const chooseAgent=(id:string,room:RoomKey)=>{onAgentSelect?.(id);chooseRoom(room);};
  return <div className="office-canvas" role="group" aria-label="Interactive 3D Prasanth Jewellery Headquarters. Sixteen agents have evidence-based statuses.">
    <Canvas shadows camera={{position:[13.5,13.5,16.5],fov:42,near:.1,far:90}} dpr={[1,1.5]} gl={{alpha:false,antialias:true,powerPreference:"high-performance"}}>
-    <color attach="background" args={["#10171b"]}/>
-    <fog attach="fog" args={["#10171b",33,58]}/>
+    <color attach="background" args={["#182027"]}/>
+    <fog attach="fog" args={["#182027",42,72]}/>
     <Suspense fallback={null}><Building selected={selected} selectedAgentId={selectedAgentId} agents={agents} onChooseAgent={chooseAgent} onChooseRoom={chooseRoom}/></Suspense>
     <OfficeCamera view={view}/>
    </Canvas>
