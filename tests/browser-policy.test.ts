@@ -11,6 +11,8 @@ describe("owner-triggered browser source safety",()=>{
  it("does not treat automation as permission to scrape search and social sites",async()=>{
   await expect(assertPublicUrl("https://www.google.com/maps")).rejects.toThrow("SOURCE_POLICY_REVIEW_REQUIRED");
   await expect(assertPublicUrl("https://www.instagram.com/")).rejects.toThrow("SOURCE_POLICY_REVIEW_REQUIRED");
+  await expect(assertPublicUrl("https://splcart.in/products/example")).rejects.toThrow("SOURCE_POLICY_REVIEW_REQUIRED");
+  await expect(assertPublicUrl("https://api.splcart.in/")).rejects.toThrow("SOURCE_POLICY_REVIEW_REQUIRED");
  });
  it("bounds requested browser tabs before starting Chrome",async()=>{
   await expect(inspectPublicTabs([])).rejects.toThrow("INVALID_TAB_COUNT");
