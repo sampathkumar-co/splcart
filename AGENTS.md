@@ -998,3 +998,158 @@ Each phase must produce working, testable functionality.
 ---
 
 # 13. DEVELOPER DELIVERABLES
+
+Deliver:
+
+1. Complete architecture documentation.
+2. Modular project source code.
+3. Database schema and migrations.
+4. AI agent definitions and tool permissions.
+5. Orchestration engine.
+6. Premium interactive 3D office.
+7. Functional owner dashboard.
+8. Real task monitoring.
+9. Browser research integrations.
+10. Instagram lead ranking.
+11. Google wholesale lead discovery.
+12. SPLCART integration.
+13. Reel generation pipeline.
+14. Social publishing integration.
+15. Customer messaging integrations.
+16. Voice-agent integration.
+17. Consent and approval controls.
+18. Revenue analytics.
+19. Cost monitoring.
+20. Automated tests.
+21. Security tests.
+22. Deployment configuration.
+23. Setup and operating documentation.
+24. Failure recovery documentation.
+25. User guide for the business owner.
+
+Include integration tests, workflow tests and end-to-end tests.
+
+Never mark a feature complete merely because a UI screen exists.
+
+---
+
+# 14. DEFINITION OF DONE
+
+An agent is only considered implemented when:
+
+- It has clearly defined responsibilities.
+- It has appropriate real tools or data sources.
+- It can accept an assigned task.
+- It performs the task or reports an explicit blocker.
+- It produces verifiable output.
+- It records evidence.
+- It handles failures.
+- It respects permissions.
+- Its cost is measurable.
+- It can be supervised and stopped.
+- Its status in the 3D office reflects reality.
+
+No placeholder data in production dashboards.
+
+No fabricated API responses.
+
+No fake browser sessions.
+
+No dummy Reels presented as completed deliverables.
+
+No simulated sales presented as real revenue.
+
+No hardcoded successful agent status.
+
+If an integration requires permissions, credentials, compliance verification or external approval, implement the functioning internal interface and clearly mark the integration as blocked until those requirements are met.
+
+Never claim the integration is production-ready before testing it.
+
+---
+
+# 15. FINAL EXPERIENCE
+
+The business owner opens the AI Headquarters.
+
+The 3D office displays agents working in real time.
+
+The Marketing Manager is coordinating daily jewellery campaigns.
+
+The Trend Agent is researching relevant content.
+
+The Creative Director is preparing scripts.
+
+The Reel Generator is rendering videos.
+
+The Social Publisher is managing approved posts.
+
+The Instagram Agent is researching potential resellers.
+
+The Google Agent is discovering wholesale businesses.
+
+The Sales Manager is evaluating qualified opportunities.
+
+The Voice Agent is handling authorized wholesale calls.
+
+The Customer Agent is responding to eligible incoming messages.
+
+The Jewellery Advisor is matching real SPLCART products.
+
+The General Manager is evaluating task completion, cost and business outcomes.
+
+The owner sees:
+- What every agent is doing.
+- What work has been completed.
+- Which leads are worth contacting.
+- Which videos are ready to publish.
+- Which customers need attention.
+- Which wholesale prospects are interested.
+- How much the system has spent.
+- What sales can be attributed to its work.
+- What requires approval.
+
+The system should continuously improve using actual business feedback.
+
+**Success is measured by qualified customers, profitable sales and repeat wholesale relationships, not the number of AI agents or animations displayed.**
+
+---
+
+# 16. EXECUTION INSTRUCTIONS
+
+Start by analyzing the existing environment and determining what is feasible.
+
+Do not immediately generate a large untested codebase.
+
+First:
+1. Inspect the existing project and its dependencies.
+2. Identify reusable open-source components and verify their licenses.
+3. Evaluate technical and legal constraints.
+4. Propose the final architecture.
+5. Create a prioritized implementation plan with measurable milestones.
+6. Establish a working development environment.
+7. Implement the first real vertical workflow end-to-end.
+8. Test it with genuine authorized data.
+9. Expand systematically to the remaining workflows.
+10. Verify the completed system through actual UI and backend tests.
+
+Where independent implementation tasks can safely run concurrently, use separate development agents with clear file ownership and integration contracts.
+
+Avoid conflicting code changes.
+
+Preserve existing production applications.
+
+Do not stop at documentation, mockups or scaffolding. Progress to functioning implementation within the available environment and permissions.
+
+At the end of each implementation milestone, provide:
+- Features implemented.
+- Files created or changed.
+- Actual tests executed.
+- Verified working functionality.
+- Known limitations.
+- Credentials or permissions still required.
+- Actual or measured costs.
+- Next highest-priority engineering tasks.
+
+**Build the system as if Prasanth Jewellers will depend on it to acquire customers and generate real commercial revenue every day.**
+
+The final standard is a secure, beautiful, reliable and economically sustainable autonomous AI workforce, with meaningful owner control and measurable outcomes.
