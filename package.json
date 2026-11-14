@@ -11,7 +11,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "browser:install": "playwright install chromium",
-    "browser:worker": "tsx scripts/browser-worker.ts"
+    "browser:worker": "tsx scripts/browser-worker.ts",
+    "db:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
