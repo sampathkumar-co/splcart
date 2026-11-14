@@ -49,6 +49,18 @@ export async function POST(req: Request) {
         await db.activity.create({ data: { prospectId: data.prospectId, event: "MATCH_RECORDED", note: `Manual evidence comparison against ${product.title}; no unverified price advantage claimed`, evidenceUrl: data.competitorEvidenceUrl } });
         return Response.json({ id: match.id });
       }
+      case "record_permission": {
+        const p = await db.prospect.findUnique({ where: { id: data.prospectId } });
+        if (!p) notAllowed("NOT_FOUND");
+        await db.$transaction(async tx => {
+          await tx.prospect.update({ where: { id: p.id }, data: {
+            contactConsentUrl: data.consentEvidenceUrl, consentGrantedAt: new Date()
+          } });
+          await tx.activity.create({ data: { prospectId: p.id, event: "CONTACT_PERMISSION_OWNER_ATTESTED",
+            note: `Owner documented outreach eligibility: ${data.consentNote}. Verify permissions before actual contact.`, evidenceUrl: data.consentEvidenceUrl } });
+        });
+        return Response.json({ status: "OWNER_ATTESTED_PERMISSION" });
+      }
       case "review": {
         const p = await db.prospect.findUnique({ where: { id: data.prospectId }, ...fullProspect });
         if (!p) notAllowed("NOT_FOUND");
@@ -68,7 +80,11 @@ export async function POST(req: Request) {
         if (!canMove(p.stage, data.to, p.decision === "APPROVED")) notAllowed("NOT_ALLOWED_STAGE_TRANSITION");
         if (data.to === "QUALIFIED" && !scoreProspect(p, p.matches).qualified) notAllowed("REQUIRES_VERIFIED_QUALIFICATION");
         if (data.to === "APPROVED" && p.decision !== "APPROVED") notAllowed("REQUIRES_OWNER_APPROVAL");
-        if (data.to === "CONTACTED" && !data.evidenceUrl) notAllowed("REQUIRES_MANUAL_OUTREACH_EVIDENCE");
+        if (data.to === "CONTACTED") {
+          if (!data.evidenceUrl) notAllowed("REQUIRES_MANUAL_OUTREACH_EVIDENCE");
+          if (!p.contactConsentUrl || !p.consentGrantedAt || Date.now() - p.consentGrantedAt.getTime() > 365 * 86400000)
+            notAllowed("REQUIRES_DOCUMENTED_CONTACT_ELIGIBILITY");
+        }
         await db.$transaction(async tx => {
           await tx.prospect.update({ where: { id: p.id }, data: { stage: data.to } });
           await tx.activity.create({ data: { prospectId: p.id, event: `STAGE_${data.to}`, note: data.note, evidenceUrl: data.evidenceUrl } });
