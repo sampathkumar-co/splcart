@@ -10,6 +10,7 @@
 import { chromium, type Page } from "playwright";
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
+import { evaluateSiteRobots, permittedProductionHost, HQ_RESEARCH_USER_AGENT, type RobotsDecision } from "./source-policy";
 
 const FORBIDDEN = /(^|\.)(localhost|local|internal|test|invalid)$/i;
 const DENIED_NAMES = new Set(["metadata.google.internal", "metadata", "instance-data"]);
@@ -48,7 +49,7 @@ export type BrowserEvidence = {
   excerpt: string; capturedAt: string;
 };
 export type BrowserTab = { sourceUrl: string; status: "COMPLETED" | "FAILED"; evidence?: BrowserEvidence; errorCode?: string };
-export type BrowserSessionEvidence = { provider: "PLAYWRIGHT"; tabs: BrowserTab[]; completed: number; failed: number; capturedAt: string };
+export type BrowserSessionEvidence = { provider: "PLAYWRIGHT"; tabs: BrowserTab[]; completed: number; failed: number; capturedAt: string; sourcePolicy: RobotsDecision };
 
 async function extractPage(page: Page, url: string): Promise<BrowserEvidence> {
   const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 18000 });
@@ -75,10 +76,17 @@ export async function inspectPublicTabs(rawUrls: string[]): Promise<BrowserSessi
   if (urls.some(u => new URL(u).hostname.replace(/^www\./, "") !== base))
     throw new Error("RESEARCH_SAME_BUSINESS_ONLY");
   if (new Set(urls).size !== urls.length) throw new Error("INVALID_DUPLICATE_TAB");
-  const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
+  const realProduction = process.env.NODE_ENV === "production" && process.env.HQ_TEST_MODE !== "1";
+  if (!permittedProductionHost(base, realProduction, false, process.env.HQ_ALLOWED_RESEARCH_HOSTS || ""))
+    throw new Error("RESEARCH_HOST_NOT_ALLOWLISTED");
+  // Real production browser execution must happen in the isolated worker.
+  if (realProduction && process.env.HQ_BROWSER_WORKER_PROCESS !== "1")
+    throw new Error("RESEARCH_ISOLATED_WORKER_REQUIRED");
+  const browser = await chromium.launch({ headless: true,
+    args: process.env.HQ_TEST_MODE === "1" ? ["--no-sandbox"] : [] });
   try {
     const context = await browser.newContext({
-      locale: "en-IN", javaScriptEnabled: false,
+      locale: "en-IN", userAgent: HQ_RESEARCH_USER_AGENT, javaScriptEnabled: false,
       acceptDownloads: false, serviceWorkers: "block",
     });
     await context.route("**/*", async route => {
@@ -90,21 +98,42 @@ export async function inspectPublicTabs(rawUrls: string[]): Promise<BrowserSessi
         return await route.continue();
       } catch { return await route.abort(); }
     });
-    // One Chromium session, multiple real browser tabs, each independently reported.
-    const results = await Promise.all(urls.map(async url => {
-      const page = await context.newPage();
+    // Check the site's live robots policy using the same bounded browser route.
+    const robotsUrl = "https://" + new URL(urls[0]).hostname + "/robots.txt";
+    const robotsPage = await context.newPage();
+    let status = 0, robotsText = "";
+    try {
+      const response = await robotsPage.goto(robotsUrl, {waitUntil:"domcontentloaded",timeout:12_000});
+      status = response?.status() || 0;
+      if (status === 200) {
+        const length = Number(response?.headers()["content-length"] || "0");
+        if (length > 500_000) throw new Error("ROBOTS_POLICY_TOO_LARGE");
+        robotsText = await response!.text();
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message.startsWith("ROBOTS_POLICY_TOO_LARGE")) throw e;
+      throw new Error("ROBOTS_POLICY_UNAVAILABLE");
+    } finally { await robotsPage.close(); }
+    const sourcePolicy = evaluateSiteRobots(new URL(urls[0]).origin,status,robotsText,urls);
+
+    // One Chromium session, three genuine open tabs; visit them sequentially
+    // to honor crawl delay and avoid accidental burst traffic to a retailer.
+    const pages = await Promise.all(urls.map(()=>context.newPage()));
+    const results: BrowserTab[] = [];
+    for (const [index,url] of urls.entries()) {
+      if (index > 0 && sourcePolicy.crawlDelayMs > 0)
+        await new Promise(resolve=>setTimeout(resolve,sourcePolicy.crawlDelayMs));
+      const page = pages[index];
       try {
         const evidence = await extractPage(page, url);
-        return { sourceUrl: url, status: "COMPLETED" as const, evidence };
+        results.push({ sourceUrl: url, status: "COMPLETED", evidence });
       } catch (e) {
-        return { sourceUrl: url, status: "FAILED" as const,
-          errorCode: e instanceof Error ? e.message.slice(0, 100) : "BROWSER_ERROR" };
-      } finally {
-        await page.close();
-      }
-    }));
+        results.push({ sourceUrl: url, status: "FAILED",
+          errorCode: e instanceof Error ? e.message.slice(0, 100) : "BROWSER_ERROR" });
+      } finally { await page.close(); }
+    }
     await context.close();
-    return { provider: "PLAYWRIGHT", tabs: results,
+    return { provider: "PLAYWRIGHT", tabs: results, sourcePolicy,
       completed: results.filter(r=>r.status==="COMPLETED").length,
       failed: results.filter(r=>r.status==="FAILED").length,
       capturedAt: new Date().toISOString() };
