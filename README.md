@@ -8,7 +8,7 @@ Standalone Next.js + PostgreSQL Headquarters in the user-chosen [`sampathkumar-c
 
 1. Owner opens a Google search in their own browser and chooses an independently hosted public business website.
 2. Owner submits up to **three explicit HTTPS pages from the same retailer website** to a single Playwright Chromium browser session. The app records each real tab's source, visible evidence or failure, and persisted run status. It does not automatically scrape Google or crawl arbitrary links. No mass scraping, Google Maps scraping, or authentication bypass.
-3. Owner registers a source-backed retailer lead from a completed inspection, or adds an explicitly unverified entry.
+3. Owner registers a retailer lead from a completed inspection, but **the website visit alone does not verify the business**. The owner must cite 16+ characters of actual captured category-related business evidence to grant website-verification points. Invented excerpts are rejected.
 4. Owner registers product links and owner-entered snapshots from public jewellery listings, optionally pointing to SPLCART. These remain `OWNER_ATTESTED` and do not connect to or modify the store.
 5. Owner matches products to retailer needs **without mandatory competitor pricing**. An independently sourced comparable price is optional. Scores are deterministic and conservative: unknown delivered prices or material/quantity equivalence never earn verified price-advantage points.
 6. Owner records wholesale-intent evidence and approves or rejects leads, then documents permitted manual outreach. Quotes are real persisted standalone HQ drafts, with explicit owner price/availability confirmation, seven-day validity, audit history, and manual copy. No external message is sent. Owner-reported conversions are **never counted as verified revenue**.
@@ -44,6 +44,7 @@ For 3D use, WebGL must be available; the complete 2D view works without it. Rese
 - GitHub Actions CI also runs the API/PostgreSQL workflow and `scripts/real-browser-smoke.mjs`, an actual two-tab HTTPS visit to neutral IANA `example.com`. **The sample domain is never treated as a business lead.** External networking can make this smoke check fail; inspect its log rather than claiming success.
 - The 3D canvas must remain useful on laptop GPUs, and the full sales workflow must remain possible through the 2D controls.
 - Every new coding chat must first inspect [AGENTS.md](AGENTS.md), current PR and latest CI; update the chronological handoff after substantive changes.
+- Both source-evidence review and quote approval have automated HTTP + PostgreSQL regression checks, and the quote clipboard can be exercised in a real Chromium session. See `tests/source-evidence.test.ts`, `tests/quotation.test.ts`, `scripts/smoke.mjs`, and `scripts/office-e2e.mjs`.
 
 ## Known blockers and safety
 
