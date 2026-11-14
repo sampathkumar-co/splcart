@@ -14,6 +14,14 @@ export const actionInput = z.discriminatedUnion("action", [
   z.object({ action: z.literal("record_permission"), prospectId: id, consentEvidenceUrl: publicUrl, consentNote: text(600) }),
   z.object({ action: z.literal("review"), prospectId: id, decision: z.enum(["APPROVED", "REJECTED"]), note: text(600) }),
   z.object({ action: z.literal("advance"), prospectId: id, to: z.enum(["RESEARCHED","QUALIFIED","APPROVED","CONTACTED","INTERESTED","QUOTATION","NEGOTIATION","LOST","FOLLOW_UP"]), note: text(600), evidenceUrl: publicUrl.optional() }),
+  z.object({ action: z.literal("create_quote"), prospectId: id, productId: id,
+    quantity: z.coerce.number().int().min(1).max(5000),
+    unitPriceRupees: z.coerce.number().positive().max(1000000),
+    deliveryRupees: z.coerce.number().min(0).max(200000),
+    note: z.string().trim().max(600).default("") }).strict(),
+  z.object({ action: z.literal("approve_quote"), quoteId: id,
+    priceConfirmed: z.literal(true), availabilityConfirmed: z.literal(true) }).strict(),
+  z.object({ action: z.literal("void_quote"), quoteId: id }).strict(),
   z.object({ action: z.literal("record_order"), prospectId: id, orderReference: text(120), amountRupees: z.coerce.number().positive().max(100000000), evidenceUrl: publicUrl }),
 ]);
 export const researchInput = z.object({ url: publicUrl, extraUrls: z.array(publicUrl).max(2).optional() }).strict();
