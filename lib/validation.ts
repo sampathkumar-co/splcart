@@ -9,7 +9,7 @@ const text = (max: number) => z.string().trim().min(2).max(max);
 const id = z.uuid();
 export const actionInput = z.discriminatedUnion("action", [
   z.object({ action: z.literal("add_prospect"), name: text(140), city: text(80), category: text(80), businessSourceUrl: publicUrl, evidenceSummary: text(1500), researchRunId: id.optional() }),
-  z.object({ action: z.literal("add_product"), splcartProductId: text(100), title: text(150), category: text(80), material: text(80), unitDescription: text(100), priceRupees: z.coerce.number().positive().max(1000000), productUrl: publicUrl.refine(v => new URL(v).hostname === "splcart.in" || new URL(v).hostname.endsWith(".splcart.in"), "Use a real SPLCART product link") }),
+  z.object({ action: z.literal("add_product"), splcartProductId: text(100), title: text(150), category: text(80), material: text(80), unitDescription: text(100), priceRupees: z.coerce.number().positive().max(1000000), productUrl: publicUrl }),
   z.object({ action: z.literal("add_match"), prospectId: id, productId: id,
     competitorMaterial: text(80).optional(), competitorUnitDescription: text(100).optional(),
     competitorPriceRupees: z.coerce.number().positive().max(1000000).optional(),
