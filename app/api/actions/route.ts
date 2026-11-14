@@ -6,6 +6,7 @@ import { fullProspect } from "@/lib/serialize";
 import { Prisma } from "@prisma/client";
 export const runtime = "nodejs";
 const paise = (rupees: number) => Math.round(rupees * 100);
+const retailerHost = (raw: string) => new URL(raw).hostname.toLowerCase().replace(/^www\./, "");
 function notAllowed(msg: string): never { throw new Error(msg); }
 
 export async function POST(req: Request) {
@@ -18,10 +19,14 @@ export async function POST(req: Request) {
           const r = await db.researchRun.findFirst({ where: { id: data.researchRunId, status: "COMPLETED" } });
           if (!r) notAllowed("RESEARCH_PROOF_NOT_FOUND");
           proof = { sourceUrl: r.sourceUrl, finalUrl: r.finalUrl };
-          if (new URL(data.businessSourceUrl).hostname !== new URL(proof.finalUrl || proof.sourceUrl).hostname) notAllowed("RESEARCH_SOURCE_MISMATCH");
+          if (retailerHost(data.businessSourceUrl) !== retailerHost(proof.finalUrl || proof.sourceUrl)) notAllowed("RESEARCH_SOURCE_MISMATCH");
         }
-        const prospect = await db.prospect.create({ data: {
+        const host = retailerHost(data.businessSourceUrl);
+        const existing = await db.prospect.findFirst({ where: { businessHost: host }, select: { id: true, name: true } });
+        if (existing) return Response.json({ error: "DUPLICATE_BUSINESS_WEBSITE", existingLeadId: existing.id, existingName: existing.name }, { status: 409 });
+                const prospect = await db.prospect.create({ data: {
           name: data.name, city: data.city, category: data.category, businessSourceUrl: data.businessSourceUrl,
+          businessHost: host,
           businessWebsiteUrl: data.businessSourceUrl, evidenceSummary: data.evidenceSummary,
           independentSource: !!proof, verifiedBusinessAt: proof ? new Date() : null,
           activities: { create: { event: "LEAD_CREATED", note: proof ? `Owner registered lead from browser run ${data.researchRunId}` : "Owner-entered lead; independent browser verification outstanding", evidenceUrl: data.businessSourceUrl } }
