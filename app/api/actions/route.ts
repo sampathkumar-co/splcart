@@ -5,6 +5,7 @@ import { verifyCapturedBusinessClaim } from "@/lib/source-evidence";
 import { actionInput, apiError } from "@/lib/validation";
 import { fullProspect } from "@/lib/serialize";
 import { Prisma } from "@prisma/client";
+import { consumeRateLimit, throttled } from "@/lib/rate-limit";
 export const runtime = "nodejs";
 const paise = (rupees: number) => Math.round(rupees * 100);
 const retailerHost = (raw: string) => new URL(raw).hostname.toLowerCase().replace(/^www\./, "");
@@ -12,6 +13,8 @@ function notAllowed(msg: string): never { throw new Error(msg); }
 
 export async function POST(req: Request) {
   try {
+    const limit = await consumeRateLimit("owner-actions", 180, 60_000);
+    if (!limit.allowed) return throttled(limit.retryAfterSeconds);
     const data = actionInput.parse(await req.json());
     switch (data.action) {
       case "add_prospect": {
