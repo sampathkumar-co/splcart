@@ -50,6 +50,20 @@ export async function POST(req: Request) {
         await db.activity.create({ data: { prospectId: data.prospectId, event: "MATCH_RECORDED", note: `Owner-linked ${product.title} to retailer demand. ${data.competitorPriceRupees ? "Competitor price source recorded." : "No competitor price evidence; no price advantage claimed."}`, evidenceUrl: data.competitorEvidenceUrl ?? null } });
         return Response.json({ id: match.id });
       }
+      case "record_wholesale_intent": {
+        const p = await db.prospect.findUnique({ where: { id: data.prospectId } });
+        if (!p) notAllowed("NOT_FOUND");
+        await db.$transaction(async tx => {
+          await tx.prospect.update({ where: { id: p.id }, data: {
+            wholesaleIntentEvidenceUrl: data.evidenceUrl, wholesaleIntentNote: data.note,
+          } });
+          await tx.activity.create({ data: { prospectId: p.id,
+            event: "WHOLESALE_INTENT_OWNER_ATTESTED",
+            note: data.note + " (source owner supplied, independent verification required)",
+            evidenceUrl: data.evidenceUrl } });
+        });
+        return Response.json({ status: "OWNER_ATTESTED_INTENT", evidenceUrl: data.evidenceUrl });
+      }
       case "record_permission": {
         const p = await db.prospect.findUnique({ where: { id: data.prospectId } });
         if (!p) notAllowed("NOT_FOUND");
