@@ -14,7 +14,7 @@ import { evaluateSiteRobots, permittedProductionHost, HQ_RESEARCH_USER_AGENT, ty
 
 const FORBIDDEN = /(^|\.)(localhost|local|internal|test|invalid)$/i;
 const DENIED_NAMES = new Set(["metadata.google.internal", "metadata", "instance-data"]);
-const RESTRICTED_SOURCES = /(^|\.)(google\.(com|co\.in)|instagram\.com|facebook\.com|maps\.google\.com)$/i;
+const RESTRICTED_SOURCES = /(^|\.)(google\.(com|co\.in)|instagram\.com|facebook\.com|maps\.google\.com|splcart\.in)$/i;
 function privateIP(ip: string) {
   if (ip.includes(":")) {
     const s = ip.toLowerCase();
