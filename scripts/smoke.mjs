@@ -18,6 +18,12 @@ try {
   const blank = await send('/api/dashboard'); checked('dashboard responds to authorized owner',blank.status===200 && blank.value.stats.researched===0);
   const product = await send('/api/actions',{action:'add_product',splcartProductId:'CI-ONLY-CZ-1',title:'CI-only jewellery fixture',category:'CZ jewellery',material:'alloy',unitDescription:'one piece',priceRupees:250,productUrl:'https://splcart.in/products/ci-only-fixture'});
   checked('owner-attested product persists',product.status===201 && product.value.id);
+  const independentProduct=await send('/api/actions',{action:'add_product',splcartProductId:'CI-OWNER-SKU-2',
+    title:'CI-only independently referenced earring',category:'CZ jewellery',material:'alloy',
+    unitDescription:'pair',priceRupees:95,productUrl:'https://independent-source.example.org/earrings/ci-fixture'});
+  checked('HQ product register accepts non-SPLCART independent public product references',
+    independentProduct.status===201 && !!independentProduct.value.id);
+
   const evidence=await db.researchRun.create({ data:{provider:'CI_FIXTURE',sourceUrl:'https://ci-retailer.example.org',finalUrl:'https://ci-retailer.example.org',status:'COMPLETED',pageTitle:'CI ONLY retailer fixture',finishedAt:new Date()} });
   const lead=await send('/api/actions',{action:'add_prospect',name:'CI-only jewellery retailer',city:'Visakhapatnam',category:'CZ jewellery',businessSourceUrl:'https://ci-retailer.example.org',evidenceSummary:'CI fixture for transactional API contract',researchRunId:evidence.id});
   checked('source-backed prospect persists',lead.status===201 && lead.value.id);
