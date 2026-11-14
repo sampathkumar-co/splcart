@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example
+artifacts
+*.log
+*.zip
+dist
+coverage
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.webp
