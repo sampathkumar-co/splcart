@@ -83,3 +83,918 @@ A cinematic architectural headquarters rather than a toy office. Dark obsidian t
 - First functionality lives in `lib/browser.ts`, `app/api/{research,actions,dashboard}`, `lib/domain.ts`, `prisma/schema.prisma`, `components/{office,headquarters}.tsx`. All brand work exists in a separate new app; the actual storefront was not modified.
 - Immediate next engineering gate: make CI green, instantiate PostgreSQL, install Chromium, run real permitted source research, create an independently verified lead using actual website evidence, verify UI navigation and data updates. Auth hardening and DNS/network browser sandboxing required before external production access.
 - GitHub PR is draft and must NOT be merged until the above checks pass.
+
+### 2026-11-14 — CI verified core backend against isolated Postgres
+- Draft PR: https://github.com/sampathkumar-co/splcart/pull/1
+- CI run: https://github.com/sampathkumar-co/splcart/actions/runs/43584565641 (SUCCESS).
+- Verified: Node 22 dependency installation, Prisma 6.19.3 generation, TypeScript typecheck, Vitest (5/5 unit tests), temporary PostgreSQL 17 schema application, Next.js production build, and **17/17 genuine HTTP API + transaction smoke assertions** in `scripts/smoke.mjs`.
+- CI's lead, product, permission and order records were ONLY fixtures in an ephemeral test database; no real customers/sales were invented in the production workspace.
+- The owner's authorization is required before outreach; contact state now additionally requires documented eligibility and an evidence URL.
+- Browser Chromium launch against genuine retailer sites, 3D office visual QA, actual SPLCART product sync/order verification, secure deployment/auth, full migrations, external calling/social/Reels remain unverified/not built. PR stays DRAFT.
+- Next: migrate from basic auth to session/RBAC, restrict browser network and robots/access policies; inspect SPLCART API response/schema for read-only product synchronization; launch a real owner-authorized research session; verify UX in browser; implement migration and backup plan.
+
+## Original owner specification (archived for completeness)
+The complete original mission supplied by the owner follows verbatim. It is retained so future chats have *all* original requirements in this one file. **The latest decisions and security gates above supersede older proposed implementation methods below**. Do not treat an aspirational capability in this appendix as implemented or authorized.
+
+---
+
+# MASTER DEVELOPMENT PROMPT
+## PRASANTH JEWELLERS — AUTONOMOUS AI GROWTH HEADQUARTERS
+
+### YOUR ROLE
+
+You are a principal AI systems architect, senior full-stack engineer, autonomous agent engineer, creative technology director, cybersecurity engineer, product designer and growth automation strategist.
+
+Your mission is to design, build, integrate, test and deploy a production-ready **Autonomous AI Marketing and Sales Headquarters for Prasanth Jewellers**.
+
+Think like you are building a serious commercial AI workforce, not a prototype or a dashboard demonstrating imaginary agent activity.
+
+The final system must be capable of performing genuine, measurable business tasks with the minimum human intervention that is safe, legally permitted and commercially appropriate.
+
+The owner should be able to operate most of the digital marketing and sales organization from a single beautiful 3D virtual headquarters.
+
+**Core principle: Real execution. Real evidence. Real business outcomes.**
+
+---
+
+# 1. BUSINESS CONTEXT
+
+Business: **Prasanth Jewellers**
+
+Industry:
+- One-gram gold jewellery
+- Gold-plated and fashion jewellery
+- CZ jewellery
+- Mehandi jewellery
+- Silver jewellery
+- Retail and wholesale jewellery
+
+Existing e-commerce platform:
+- Website: https://splcart.in
+- API: https://api.splcart.in
+- Frontend: Next.js
+- Backend: NestJS
+- Database: PostgreSQL with Prisma
+- Deployment: Docker and Caddy on a VPS
+- Payments: Razorpay
+
+The business operates physical jewellery shops and wants to increase its online sales, wholesale orders, retailer relationships and repeat customers.
+
+**The existing SPLCART production platform must remain stable.**
+
+Before integrating, inspect the real application structure, API contracts and authentication. Do not assume endpoints exist.
+
+Build the AI Headquarters as an independent, separately deployable application. Integrate with SPLCART through secure, documented interfaces.
+
+Do not rewrite or destabilize the existing e-commerce application.
+
+### Business objective
+
+Build an autonomous growth system that:
+
+1. Discovers potential retail and wholesale customers.
+2. Finds jewellery retailers selling comparable products.
+3. Identifies genuine price advantages.
+4. Ranks qualified sales opportunities.
+5. Creates 2–3 promotional Reels per day.
+6. Handles authorized incoming customer conversations.
+7. Recommends products using SPLCART.
+8. Follows up with eligible interested customers.
+9. Makes compliant AI-powered calls to qualified wholesale prospects.
+10. Tracks resulting sales and customer relationships.
+11. Continuously improves decisions using measured results.
+
+**Do not implement an Operations department or a Finance department.**
+
+Inventory administration, accounting, business spending decisions and financial management remain with the owner.
+
+---
+
+# 2. AUTONOMOUS AI ORGANIZATION
+
+Create a hierarchical organization with **16 AI roles**, grouped under two departments and one General Manager.
+
+## LEADERSHIP
+
+### Agent 1: AI General Manager
+
+The central coordinator.
+
+Responsibilities:
+- Accept business goals from the owner.
+- Translate goals into executable plans.
+- Allocate tasks among department managers.
+- Track dependencies, budgets and deadlines.
+- Review evidence from completed tasks.
+- Detect duplicate work and agent failures.
+- Reassign tasks when necessary.
+- Prioritize activities that produce qualified leads and profitable sales.
+- Generate daily and weekly executive reports.
+- Request owner approvals for important actions.
+
+It must not merely call all other agents sequentially. It should support dependency-aware delegation, bounded parallel execution, retries, recovery and human approval.
+
+## DEPARTMENT A: AI MARKETING
+
+### Agent 2: Marketing Manager
+
+Coordinates the marketing specialists, approves internal creative plans, manages campaign schedules and monitors marketing effectiveness.
+
+### Agent 3: Trend Research Agent
+
+Research:
+- Jewellery trends.
+- Relevant public Instagram content.
+- Successful jewellery content formats.
+- Seasonal shopping trends.
+- Festivals and upcoming occasions.
+- Competing jewellery campaigns.
+- Popular jewellery aesthetics.
+- Potentially effective creative hooks.
+
+Generate original, evidence-backed content ideas. Do not copy copyrighted competitor videos.
+
+### Agent 4: Creative Director Agent
+
+Transform trend research into:
+- Video concepts.
+- Storyboards.
+- Scripts.
+- Hooks.
+- Captions.
+- Product selection.
+- Motion design instructions.
+- Typography directions.
+- Creative briefs.
+- Calls to action.
+
+The content must respect Prasanth Jewellers' identity and real product specifications.
+
+### Agent 5: Reel Generation Agent
+
+**Target: 2–3 finished Reels per day, approximately 60–90 per month.**
+
+Implement two creation methods.
+
+**Method A: Programmatic motion graphics**
+
+Use Claude Code or another coding agent to produce executable animations with appropriate open-source rendering tools such as Motion Canvas, HTML/CSS animation, Three.js, FFmpeg and compatible rendering engines.
+
+Potential features:
+- Product photography animation.
+- Smooth zoom and camera movements.
+- Lighting effects.
+- Jewellery highlighting.
+- Typography animation.
+- Cinematic transitions.
+- Background compositing.
+- Parallax effects.
+- Dynamic layouts.
+- Promotional price displays.
+- Festival creatives.
+- Template variations.
+- Audio synchronization.
+
+Use actual product photographs and verified prices. Avoid visually modifying jewellery in ways that misrepresent the item.
+
+**Method B: Generative AI video**
+
+Offer optional generative video providers through interchangeable adapters.
+
+Use paid video models selectively when they provide meaningful quality improvements.
+
+Track generation cost, retry count, model, prompt, duration and output quality.
+
+Never silently use expensive models.
+
+Support:
+- 9:16 vertical export.
+- 1080×1920 output when supported.
+- Instagram-ready MP4.
+- Configurable video durations.
+- Product attribution.
+- Watermark and branding.
+- Licensed or rights-cleared audio.
+- Video preview.
+- Approval and rejection.
+- Regeneration.
+- Automatic quality checks.
+
+The system must verify that promoted jewellery resembles the real catalogue product.
+
+Create a reusable motion-template library so the system does not generate every video from scratch.
+
+### Agent 6: Social Media Publishing Agent
+
+Responsibilities:
+- Prepare Instagram posts and Reels.
+- Manage the content calendar.
+- Publish approved content through authorized APIs.
+- Prepare captions, product links and hashtags.
+- Manage publishing failures.
+- Track published URLs.
+- Monitor permitted comments and engagement.
+
+The owner must be able to approve, reject or edit content before publication.
+
+Support configurable automatic publishing only after explicit owner authorization.
+
+### Agent 7: Marketing Performance Agent
+
+Analyze:
+- Views.
+- Reach.
+- Engagement.
+- Watch time where available.
+- Profile visits.
+- Website clicks.
+- Product enquiries.
+- Attributable SPLCART orders.
+- Conversion rates.
+- Revenue associated with campaigns.
+
+Identify successful creative patterns.
+
+Recommend improvements based on evidence rather than fabricated statistics.
+
+---
+
+# 3. DEPARTMENT B: AI SALES
+
+### Agent 8: Sales Manager
+
+Supervises all sales specialists.
+
+Responsibilities:
+- Assign research tasks.
+- Review lead quality.
+- Manage the wholesale pipeline.
+- Coordinate customer conversations.
+- Prevent duplicated outreach.
+- Monitor conversion.
+- Escalate commercial decisions.
+- Evaluate sales-agent performance.
+
+### Agent 9: Customer Conversation Agent
+
+Connect authorized Instagram and WhatsApp Business messaging services.
+
+Capabilities:
+- Understand incoming enquiries.
+- Identify customer intent.
+- Answer approved business questions.
+- Provide product links.
+- Answer questions about product specifications.
+- Assist with purchase decisions.
+- Hand off uncertain questions to human staff.
+- Preserve relevant conversation context.
+- Recognize when a human response is required.
+
+Use actual SPLCART product information.
+
+Do not invent stock, prices, discounts, delivery promises or refund policies.
+
+Respect message windows, customer consent and platform requirements.
+
+### Agent 10: Jewellery Recommendation Agent
+
+Understand:
+- Customer budget.
+- Jewellery category.
+- Design preferences.
+- Occasion.
+- Material preferences.
+- Style.
+- Price sensitivity.
+
+Retrieve suitable products from SPLCART.
+
+Provide recommendations with genuine product links, images, verified prices and availability.
+
+Explain recommendations in clear, customer-friendly language.
+
+### Agent 11: Lead Follow-up Agent
+
+Manage:
+- Interested customers.
+- Unfinished enquiries.
+- Requested callbacks.
+- Eligible cart-recovery conversations.
+- Pending product questions.
+- Follow-up reminders.
+
+Use consent-aware messaging.
+
+Avoid excessive or repeated contact.
+
+### Agent 12: Wholesale Relationship Agent
+
+Manage:
+- Qualified retailer leads.
+- Wholesale requirements.
+- Interested businesses.
+- Product quantities.
+- Requested catalogues.
+- Owner-approved quotations.
+- Negotiation progress.
+- Repeat-order opportunities.
+
+The agent may prepare offers but must not approve prices below owner-defined thresholds.
+
+### Agent 13: Customer Retention Agent
+
+Identify eligible repeat-customer opportunities.
+
+Prepare:
+- New collection announcements.
+- Relevant product recommendations.
+- Festival campaigns.
+- Reorder suggestions.
+- Retention messaging.
+
+Respect consent, communication preferences and platform restrictions.
+
+### Agent 14: Instagram Lead Discovery Agent
+
+**One of the highest-priority agents.**
+
+Its purpose is to find potential wholesale customers and resellers through permitted Instagram and public-web discovery.
+
+Research:
+- Jewellery boutiques.
+- Retail jewellery sellers.
+- Reseller accounts.
+- Fashion accessories retailers.
+- Businesses offering similar jewellery.
+- Public buying requests.
+- Relevant business profiles.
+
+Analyze:
+- Product similarity.
+- Publicly advertised prices.
+- Potential resale opportunities.
+- Likely business fit.
+- Evidence of wholesale demand.
+- Account credibility.
+- Relevance of our catalogue.
+
+Compare discoveries with SPLCART.
+
+If a genuinely comparable jewellery item is more expensive elsewhere, calculate the verified price difference.
+
+Do not claim a price advantage merely because products look similar. Consider materials, quantity, quality and delivery costs.
+
+Score and rank leads.
+
+Provide:
+- Instagram profile link.
+- Business name.
+- Relevant product evidence.
+- Matching SPLCART products.
+- Price comparison.
+- Confidence level.
+- Lead priority.
+- Suggested personalized introduction.
+- Reason for recommendation.
+
+**Critical rule: Do not send unsolicited Instagram DMs automatically.**
+
+The owner personally opens the recommended profile and sends the message.
+
+Browser access must not be used to bypass Instagram's collection, automation or messaging restrictions.
+
+### Agent 15: Google & Web Wholesale Lead Discovery Agent
+
+Use authorized Google Search services, public business websites and browser-based research.
+
+Find:
+- Jewellery retailers.
+- Fashion boutiques.
+- Artificial jewellery shops.
+- One-gram gold jewellery sellers.
+- Wholesale resellers.
+- Accessories retailers.
+- Potential distribution partners.
+
+Research markets such as:
+- Visakhapatnam.
+- Vizianagaram.
+- Hyderabad.
+- Vijayawada.
+- Bengaluru.
+- Other relevant Indian commercial locations.
+
+Extract only information whose collection and use are permitted.
+
+Identify:
+- Business name.
+- Location.
+- Official website.
+- Public business enquiry channel.
+- Relevant product categories.
+- Publicly advertised product prices.
+- Business fit.
+- Available evidence of purchasing intent.
+
+Deduplicate prospects and verify sources.
+
+Do not build a mass-scraping system for Google Maps or circumvent access restrictions.
+
+### Agent 16: AI Wholesale Phone Calling Agent
+
+Provide a multilingual AI voice agent supporting:
+- Telugu.
+- Hindi.
+- English.
+
+Connect to an authorized telephony and voice AI provider.
+
+The system must:
+1. Receive qualified Google/Web leads.
+2. Verify that the contact is legally eligible to receive the proposed type of business call.
+3. Check consent, calling restrictions, suppression lists and permitted calling hours.
+4. Place authorized calls.
+5. Clearly disclose that the caller is an AI assistant representing Prasanth Jewellers.
+6. Introduce the jewellery supply business.
+7. Discuss approved product categories and wholesale opportunities.
+8. Determine whether the retailer is interested.
+9. Collect relevant requirements and callback preferences.
+10. Generate a call summary.
+11. Transfer promising prospects to the owner.
+
+Track call outcomes and usage costs.
+
+Do not implement unrestricted cold-call robocalling.
+
+Finding a public number does not establish permission to call. A real browser or human-like voice does not bypass Indian promotional-calling requirements.
+
+Start with opted-in leads, requested callbacks and other legally verified contacts.
+
+---
+
+# 4. SHARED LEAD INTELLIGENCE SYSTEM
+
+All sales agents must share one structured lead database.
+
+The system should remember:
+- Business identity.
+- Lead origin.
+- Original source URL.
+- Discovery timestamp.
+- Relevant products.
+- Evidence.
+- Price comparisons.
+- Contact eligibility.
+- Interaction history.
+- Lead score.
+- Current stage.
+- Follow-up status.
+- Interested product categories.
+- Conversion outcomes.
+
+### Lead scoring
+
+Initial suggested model:
+
+- Wholesale purchasing potential: 30 points.
+- Verified pricing advantage: 30 points.
+- Product similarity and demand: 20 points.
+- Business credibility: 10 points.
+- Legitimate contact channel: 10 points.
+
+Total: 100 points.
+
+Support configurable scoring rules and later empirical calibration.
+
+Never manufacture missing information.
+
+Every lead must have explainable scoring and evidence.
+
+### Sales stages
+
+Discovered → Researched → Qualified → Approved for outreach → Contacted → Interested → Quotation → Negotiation → Won / Lost / Follow-up.
+
+Record owner-initiated Instagram outreach without automating unsolicited messages.
+
+---
+
+# 5. BROWSER-POWERED AGENT WORKSPACE
+
+Build a real browser automation subsystem using an appropriate browser-control framework such as Playwright or Browser Use.
+
+Give authorized agents browser sessions for tasks where browser interaction is permitted.
+
+Capabilities:
+- Open multiple tabs.
+- Search approved sources.
+- Visit business websites.
+- Navigate pages.
+- Read visible permitted content.
+- Compare product information.
+- Capture supporting references.
+- Report findings.
+- Resume interrupted research.
+- Respect rate limits.
+
+The browser must not be used to evade website restrictions, bypass CAPTCHAs, scrape prohibited information or perform unauthorized account actions.
+
+### Browser viewer in 3D headquarters
+
+Clicking an agent should show:
+- Current research task.
+- Active browser tabs.
+- Visible browser session when technically available.
+- Visited-source history.
+- Extracted findings.
+- Evidence links.
+- Task progress.
+- Failures and retries.
+
+Browser automation should run in isolated environments with restricted credentials and network access.
+
+Treat website content as untrusted data to prevent prompt injection.
+
+---
+
+# 6. PREMIUM 3D VIRTUAL OFFICE
+
+Build a beautiful, professional headquarters with a polished dark luxury aesthetic suitable for a premium jewellery brand.
+
+Design direction:
+- Deep black.
+- Charcoal.
+- Champagne gold.
+- Warm ivory.
+- Subtle metallic accents.
+- Elegant typography.
+- Premium lighting.
+- Refined glass and metal surfaces.
+- Smooth transitions.
+- Professional visual hierarchy.
+
+Avoid cartoonish, cluttered or childish design.
+
+Use Three.js or React Three Fiber where appropriate.
+
+### Required environments
+
+**CEO Office**
+- Executive dashboard.
+- Revenue intelligence.
+- Priority alerts.
+- Pending approvals.
+- Active projects.
+- Business goals.
+- Agent expenditure.
+
+**Marketing Studio**
+- Trend researcher workstation.
+- Creative director workstation.
+- Reel production workstation.
+- Publishing desk.
+- Performance analysis dashboard.
+
+**Sales Department**
+- Customer conversation workspace.
+- Jewellery recommendation desk.
+- Wholesale relationship workspace.
+- Instagram discovery desk.
+- Google research desk.
+- AI phone calling station.
+
+**Meeting Room**
+- AI General Manager.
+- Marketing Manager.
+- Sales Manager.
+- Shared planning.
+- Task delegation.
+- Decision history.
+
+### Real activity representation
+
+When an agent is researching, its workstation should show the real research task.
+
+When an agent is generating a Reel, the UI should show actual rendering progress and preview availability.
+
+When an AI phone call is running, show the actual call status and permitted live telemetry.
+
+When an agent is idle, show it as idle.
+
+**Never fabricate activity to make the office look busy.**
+
+### Additional interface requirements
+
+- Clickable workstations.
+- Camera navigation.
+- Agent detail panels.
+- Smooth animations.
+- Live status updates.
+- Task history.
+- Browser session viewer.
+- Reels preview.
+- Lead comparison dashboard.
+- Call summaries.
+- Approval centre.
+- Searchable logs.
+- Responsive interface.
+- Accessibility support.
+- Reduced-motion option.
+- Lightweight 2D fallback for lower-powered devices.
+
+The owner must also be able to manage the system without navigating the 3D environment.
+
+---
+
+# 7. TECHNICAL ARCHITECTURE
+
+Propose the architecture after inspecting the existing environment.
+
+A suitable baseline:
+
+**Frontend**
+- Next.js.
+- TypeScript.
+- React.
+- React Three Fiber / Three.js.
+- Accessible UI components.
+- Real-time status updates.
+
+**Backend**
+- NestJS or compatible service-oriented backend.
+- PostgreSQL.
+- Prisma.
+- Redis-backed queue.
+- Job scheduling.
+- Event-driven workflows.
+- Secure REST and WebSocket interfaces.
+
+**Agent orchestration**
+- Hierarchical manager/specialist coordination.
+- Structured tool invocation.
+- Task dependency graphs.
+- Controlled parallel execution.
+- Durable jobs.
+- Retry policies.
+- Checkpoints.
+- Human approval gates.
+- Idempotency and cancellation.
+
+**AI**
+- Configurable LLM providers.
+- Cost-aware model routing.
+- Structured outputs.
+- Tool-permission enforcement.
+- Vision-capable product comparison.
+- Speech processing.
+- Text-to-speech.
+- Voice AI provider adapter.
+
+**Creative production**
+- Programmatic animation engine.
+- FFmpeg rendering pipeline.
+- Optional generative video providers.
+- Asset storage.
+- Preview and approval services.
+
+**Integrations**
+- SPLCART.
+- Instagram professional account APIs.
+- WhatsApp Business Platform.
+- Authorized web search.
+- Browser automation.
+- Telephony.
+- Notifications.
+
+Do not require 16 continuously running premium models.
+
+Implement role-specific agents using shared model infrastructure and independent execution contexts.
+
+Use cheaper models for routine classification and extraction, stronger models when genuine reasoning or creative quality requires them.
+
+---
+
+# 8. REVENUE OPTIMIZATION ENGINE
+
+Implement a system that measures actual incremental commercial results.
+
+Track:
+- Qualified leads.
+- Owner-approved outreach.
+- Contact attempts.
+- Response rates.
+- Interested prospects.
+- Wholesale quotations.
+- First orders.
+- Repeat orders.
+- Average order value.
+- Retail and wholesale sales.
+- Reel-attributed visits.
+- Completed purchases.
+- Agent expenses.
+- Cost per qualified lead.
+- Cost per acquired customer.
+- Incremental contribution.
+
+### Revenue scenarios
+
+Build an editable owner dashboard that supports conservative, base and aggressive business forecasts.
+
+Use configurable inputs:
+- Retail order volume.
+- Retail average order value.
+- Retail contribution margin.
+- Wholesale order volume.
+- Wholesale average order value.
+- Wholesale contribution margin.
+- AI operating expense.
+- Customer acquisition cost.
+- Repeat-order frequency.
+
+Do not present projected revenue as guaranteed.
+
+Separate:
+- Revenue.
+- Contribution.
+- Operating cost.
+- Profit estimates.
+- Verified actual results.
+
+Avoid double-counting existing offline purchases transferred to online channels.
+
+The system should prioritize profitable, repeatable growth rather than vanity metrics.
+
+---
+
+# 9. AUTONOMY AND APPROVAL POLICY
+
+Create an explicit permission system.
+
+### Automatically permitted
+
+Subject to source policies and configuration:
+- Internal planning.
+- Trend analysis.
+- Approved public research.
+- Lead scoring.
+- Internal content drafting.
+- Reel rendering.
+- Summarizing.
+- Data validation.
+- Internal reporting.
+
+### Requires owner authorization or configured approval
+
+- Public content publishing.
+- Promotional campaigns.
+- Customer communication outside preapproved workflows.
+- Wholesale quotations.
+- Discounts.
+- New paid subscriptions.
+- External commitments.
+- AI calling campaigns.
+- Access to sensitive integrations.
+
+### Never automatically permitted
+
+- Unauthorized Instagram cold DMs.
+- Unlawful promotional calls.
+- Purchasing or committing funds without authorization.
+- Inventing jewellery prices.
+- Fabricating sales or leads.
+- Unauthorized scraping.
+- Circumventing site security or platform restrictions.
+- Exposing customer personal information.
+
+Provide audit logs and an emergency stop for all agents.
+
+---
+
+# 10. SECURITY AND RELIABILITY
+
+Implement:
+- Role-based access control.
+- Secure authentication.
+- Encrypted credentials.
+- Protected API secrets.
+- Tool-specific permissions.
+- Tenant and workspace isolation where relevant.
+- Network and browser sandboxing.
+- Prompt-injection protections.
+- Customer-data minimization.
+- Retention and deletion controls.
+- Idempotent external actions.
+- Rate limits.
+- Circuit breakers.
+- Retry and recovery mechanisms.
+- Monitoring.
+- Backups.
+- Cost limits.
+- Security audit logs.
+
+External actions must be attributable to the responsible agent, initiating task and authorization.
+
+An agent's generated text must never be mistaken for evidence that an external action succeeded.
+
+---
+
+# 11. OPERATING COST TARGET
+
+Design for a cost-efficient initial deployment.
+
+Preferred initial monthly budget:
+**₹10,000–₹15,000**, subject to actual usage and vendor pricing.
+
+Target:
+- 16 coordinated AI roles.
+- 60–90 mainly code-generated Reels per month.
+- Qualified Google and Instagram research.
+- Approved customer conversations.
+- Limited compliant AI phone calling.
+- Shared backend and infrastructure.
+- Operational reporting.
+
+Build a cost dashboard showing:
+- Cost by agent.
+- Cost by AI provider.
+- Cost per Reel.
+- Cost per lead.
+- Cost per completed phone call.
+- Daily spend.
+- Monthly spend.
+- Estimated month-end spend.
+
+Provide configurable hard spending limits.
+
+If projected costs exceed budget, queue low-priority work or request approval rather than silently spending more.
+
+---
+
+# 12. DEVELOPMENT STRATEGY
+
+Do not attempt an uncontrolled big-bang release.
+
+### Phase 0: Audit and design
+
+- Inspect existing projects and infrastructure.
+- Identify real SPLCART interfaces.
+- Review available credentials without exposing secrets.
+- Evaluate open-source 3D headquarters options.
+- Evaluate browser, voice and video providers.
+- Produce architecture and feasibility reports.
+- Document platform limitations.
+- Establish acceptance tests.
+
+### Phase 1: Core headquarters
+
+- Build the premium 3D frontend.
+- Implement authentication.
+- Create the owner dashboard.
+- Implement General Manager and department managers.
+- Create task orchestration and database.
+- Implement agent activity telemetry.
+- Add approval controls.
+
+### Phase 2: Customer acquisition
+
+- Google/Web Lead Hunter.
+- Instagram Lead Hunter.
+- Browser research subsystem.
+- SPLCART product matching.
+- Lead scoring.
+- Wholesale opportunity dashboard.
+- Manual Instagram outreach workflow.
+
+### Phase 3: Marketing production
+
+- Trend Research.
+- Creative Director.
+- Programmatic Reel Generator.
+- Video previews.
+- Approval workflow.
+- Social publishing.
+- Performance measurement.
+
+### Phase 4: Sales automation
+
+- Customer Conversation Agent.
+- Jewellery Recommendation Agent.
+- Follow-up Agent.
+- Wholesale Relationship Agent.
+- Customer Retention Agent.
+- Compliant AI Calling Agent.
+
+### Phase 5: Continuous optimization
+
+- Conversion tracking.
+- Revenue intelligence.
+- Repeat-order workflows.
+- Cost optimization.
+- Agent evaluation.
+- Controlled experiments.
+- Performance and security hardening.
+
+Each phase must produce working, testable functionality.
+
+---
+
+# 13. DEVELOPER DELIVERABLES
