@@ -24,7 +24,7 @@ export async function GET() {
         status: r.status, errorCode: r.errorCode, startedAt: r.startedAt.toISOString(), finishedAt: r.finishedAt?.toISOString() || null,
         evidence: r.evidenceJson })),
       agents: getAgentRecords(runs),
-      integrations: { splcart: "CONTRACT_NOT_VERIFIED", browser: "MANUAL_BROWSER_RESEARCH", outreach: "MANUAL_ONLY", revenue: "OWNER_REPORTED_UNTIL_RECONCILED" },
+      integrations: { splcart: "EXTERNAL_SHOPPING_REFERENCE_ONLY", browser: "MANUAL_BROWSER_RESEARCH", outreach: "MANUAL_ONLY", quotations: "OWNER_APPROVED_MANUAL_SHARING", revenue: "OWNER_REPORTED_UNVERIFIED" },
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) { return apiError(e); }
 }
