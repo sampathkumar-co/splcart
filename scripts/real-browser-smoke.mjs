@@ -2,10 +2,10 @@
  * IANA example.com is a neutral connectivity fixture; NEVER a real wholesale lead.
  */
 import assert from "node:assert/strict";
-const base=process.env.HQ_E2E_URL||"http://127.0.0.1:3000";
-const auth="Basic "+Buffer.from((process.env.OWNER_USERNAME||"ci-owner")+":"+(process.env.OWNER_PASSWORD||"ci-not-a-real-secret")).toString("base64");
+import { authenticateOwner, authHeaders, base } from "./ci-auth.mjs";
+const cookie=await authenticateOwner();
 const response=await fetch(base+"/api/research", {
- method:"POST",headers:{"Content-Type":"application/json",Authorization:auth},
+ method:"POST",headers:authHeaders(cookie,true),
  body:JSON.stringify({url:"https://example.com/",extraUrls:["https://example.com/?tab=2"]}),
 });
 const payload=await response.json();
