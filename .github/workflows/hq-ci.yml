@@ -35,6 +35,9 @@ jobs:
       DATABASE_URL: postgresql://hq:hq@localhost:5432/hq?schema=public
       OWNER_USERNAME: ci-owner
       OWNER_PASSWORD: ci-not-a-real-secret
+      HQ_SESSION_SECRET: ci-only-secret-that-is-long-enough-for-hmac-and-not-for-any-deployment
+      HQ_TEST_MODE: "1"
+      HQ_PUBLIC_ORIGIN: http://127.0.0.1:3000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
