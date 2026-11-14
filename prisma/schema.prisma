@@ -49,6 +49,8 @@ model Prospect {
   businessHost        String?  @unique // canonical host for future rows; nullable for existing records pending backfill
   evidenceSummary     String
   verifiedBusinessAt  DateTime?
+  verificationEvidenceText String?
+  verificationEvidenceUrl String?
   wholesaleIntentNote String?
   wholesaleIntentEvidenceUrl String?
   contactConsentUrl   String?
