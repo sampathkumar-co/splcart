@@ -20,14 +20,17 @@ Requires Node 22+, PostgreSQL 16+, and Chromium dependencies.
 
 ```sh
 cp .env.example .env
+# Provide a DEDICATED HQ PostgreSQL database, a 16+ character owner password
+# and a fresh 32+ character HQ_SESSION_SECRET.
+# For local development only set HQ_PUBLIC_ORIGIN=http://localhost:3000
 npm install
 npm run browser:install
 npm run db:generate
-npm run db:migrate -- --name init
+npm run db:deploy
 npm run dev
 ```
 
-Visit `http://localhost:3000`. The app uses a fail-closed owner username/password (HTTP Basic) for initial development. **Deploy behind HTTPS and replace it with production-grade sessions/identity, CSRF and rate-limiting before exposing publicly.** Set a long random owner password and a private database password. No credentials belong in Git.
+Visit `http://localhost:3000`, then sign in using the **dedicated Headquarters owner login**. Basic authentication has been removed. The signed HttpOnly SameSite=Strict session expires after eight hours. The web app enforces same-origin writes; Postgres rate limits owner login, API actions and browser research. For production, a separate HTTPS `HQ_PUBLIC_ORIGIN`, proper secrets, real egress firewall and backups remain mandatory. **Never reuse SPLCART credentials**.
 
 ```sh
 npm test
@@ -36,6 +39,15 @@ npm run build
 ```
 
 For 3D use, WebGL must be available; the complete 2D view works without it. Research performs **one owner-triggered, up-to-three-tab, same-retailer HTTPS inspection**, not a queue of uncontrolled spiders. Playwright is an optional runtime dependency and will report an explicit failure if Chromium is not installed.
+
+
+## Separate browser worker and deploy posture
+
+The production web service will not start a Chromium browser in the Next.js process. It delegates to `scripts/browser-worker.ts` in the dedicated `hq-browser` container, which never receives DB or SPLCART credentials. The worker enforces exact host allowlists, robots.txt rules, crawl delays and single active research. Owner requests are rate-limited.
+
+The three-service `compose.hq.yml` is a **deployment scaffold, not a deployed site**. It keeps the database on its own internal network and exposes the web app only on the server's loopback port. Production research remains fail-closed without a token-authenticated browser worker and a verified host-level outbound firewall. Read [SECURITY_AND_DEPLOYMENT.md](docs/SECURITY_AND_DEPLOYMENT.md) before any deployment. Never merge the draft PR or use the SPLCART server/database.
+
+Schema changes are now captured in the dedicated HQ `prisma/migrations` directory. Use `npm run db:deploy` after taking a backup; do not apply destructive schema pushes to persistent data.
 
 ## Real open-source office reuse and quality gates
 
