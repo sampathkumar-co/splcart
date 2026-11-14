@@ -41,8 +41,11 @@ try {
   // captures can incorrectly composite the WebGL canvas as a blank rectangle.
   await page.locator(".office-canvas").scrollIntoViewIfNeeded();
   await page.waitForTimeout(1800);
-  const canvasPng = await page.locator(".office-canvas").screenshot({path:"artifacts/hq-office-canvas.png"});
-  const sample = await page.evaluate(async base64 => {
+  let sample = 0;
+  for (let attempt = 0; attempt < 12; attempt++) {
+    await page.waitForTimeout(650);
+    const canvasPng = await page.locator(".office-canvas").screenshot({path:"artifacts/hq-office-canvas.png"});
+    sample = await page.evaluate(async base64 => {
     const image = new Image();
     image.src = "data:image/png;base64," + base64;
     await image.decode();
@@ -59,6 +62,8 @@ try {
       }
     return unique.size;
   }, canvasPng.toString("base64"));
+    if (sample > 18) break; // WebGL frame can arrive after hydration on virtualized CI GPUs.
+  }
   console.log("WebGL visual pixel diversity",sample);
   assert.ok(sample>18,"3D office must draw visible geometry, not a blank canvas");
   await page.evaluate(() => window.scrollTo(0,0));
