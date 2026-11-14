@@ -74,3 +74,12 @@ A cinematic architectural headquarters rather than a toy office. Dark obsidian t
 - Live SPLCART read-only contract, payment confirmation, full autonomous orchestration, phone calls, Reels and auto-outreach remain NOT BUILT / BLOCKED.
 - **Safety / release gate:** the initial Basic owner authentication is only for a trusted development environment; production must add robust identity, authorization, rate limiting, hardened browser isolation and tests.
 - **No claims of real generated revenue or genuine lead completion until evidence exists.**
+
+### 2026-11-14 — GitHub milestone M0/M1 initial code committed
+- GitHub PR (DRAFT): https://github.com/sampathkumar-co/splcart/pull/1
+- Feature branch: `feature/ai-headquarters-browser-wholesale-v1`
+- Source commit: `3ba9fcc7fd1fbe32b04ad98ce40004a5efb99104` (25 files, includes this canonical handoff in the PR).
+- Unit logic independently verified with six Node-based assertions for conservative scoring and stage permissions: all passed. Full npm/Prisma/Next.js install, typecheck, test runner, interactive browser and database integration could not run here because npm installation timed out. **Production readiness is NOT established.**
+- First functionality lives in `lib/browser.ts`, `app/api/{research,actions,dashboard}`, `lib/domain.ts`, `prisma/schema.prisma`, `components/{office,headquarters}.tsx`. All brand work exists in a separate new app; the actual storefront was not modified.
+- Immediate next engineering gate: make CI green, instantiate PostgreSQL, install Chromium, run real permitted source research, create an independently verified lead using actual website evidence, verify UI navigation and data updates. Auth hardening and DNS/network browser sandboxing required before external production access.
+- GitHub PR is draft and must NOT be merged until the above checks pass.
