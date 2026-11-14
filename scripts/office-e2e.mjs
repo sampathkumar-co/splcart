@@ -81,6 +81,16 @@ try {
   await page.getByRole("button", { name: "Overview" }).click();
   await page.getByRole("button", { name: "Web Discovery" }).first().click();
   await page.getByRole("heading", { name: "Intelligence Discovery" }).waitFor();
+  // Actual browser interaction with the owner's emergency pause on future work.
+  page.once("dialog", dialog => dialog.accept("CI-only owner paused future inspection requests"));
+  await page.getByRole("button", {name:"Pause new research"}).click();
+  await page.getByRole("button", {name:"Resume new research"}).waitFor({timeout:15_000});
+  assert.equal(await page.getByRole("button",{name:"Research paused"}).isDisabled(),true);
+  page.once("dialog", dialog => dialog.accept("CI-only owner re-enabled approved inspection requests"));
+  await page.getByRole("button",{name:"Resume new research"}).click();
+  await page.getByRole("button",{name:"Pause new research"}).waitFor({timeout:15_000});
+  console.log("PASS owner-initiated pause/resume toggles browser research in real accessible UI");
+
   await page.getByRole("button", { name: "Wholesale Pipeline" }).click();
   await page.getByRole("heading", { name: "Wholesale Opportunities" }).waitFor();
   await page.getByRole("heading", { name: "Wholesale quotation desk" }).waitFor();
