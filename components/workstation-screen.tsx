@@ -53,6 +53,7 @@ export function createWorkstationTexture(screen:WorkstationScreenData){
  screenBase(ctx,640,400,accent);
  text(ctx,"PRASANTH  /  AGENT INTELLIGENCE",27,35,16,ATELIER_PALETTE.pearl,true);
  text(ctx,screen.short,29,97,53,ATELIER_PALETTE.ivory,true);
+ text(ctx,screen.name.toUpperCase(),142,59,15,ATELIER_PALETTE.ivory,true,440);
  text(ctx,screen.purpose,142,87,22,accent,true,450);
  text(ctx,screen.statusText,143,119,22,ATELIER_PALETTE.ivory,true,460);
  ctx.fillStyle="rgba(4,11,15,.58)";ctx.fillRect(25,148,590,115);
@@ -90,7 +91,7 @@ function createRoomTexture(input:ReturnType<typeof buildRoomScreen>){
  text(ctx,input.title,32,93,39,ATELIER_PALETTE.ivory,true,690);
  text(ctx,input.subtitle.toUpperCase(),32,133,18,input.accent,true,680);
  const stats=[
-  {name:"REAL ROLE DESKS",value:input.count},
+  {name:input.room==="meeting"?"TOTAL HQ ROLES":"ROLE DESKS",value:input.count},
   {name:"RUNNING NOW",value:input.active},
   {name:"RECENT CHECKS",value:input.reports},
   {name:"NOT CONFIGURED",value:input.blocked},
