@@ -97,6 +97,7 @@ try {
   await page.getByRole("button",{name:"Use signature detail"}).click();
   const beforeHeight=await page.locator(".office-canvas").evaluate(el=>el.clientHeight);
   await page.getByRole("button",{name:"Expand cinematic view"}).click();
+  await page.waitForTimeout(500); // allow the real CSS stage-size transition to finish
   const afterHeight=await page.locator(".office-canvas").evaluate(el=>el.clientHeight);
   assert.ok(afterHeight>beforeHeight+60,
     "cinematic view must physically enlarge the genuine WebGL scene");
