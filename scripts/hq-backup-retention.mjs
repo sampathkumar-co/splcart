@@ -40,9 +40,11 @@ function parseArgs(args){
  if(options.apply&&options.confirm!==CONFIRM)
    throw Error("unsafe deletion: --apply requires typed "+CONFIRM);
  const normalized=path.resolve(options.dir);
- if(normalized==="/"||normalized===path.parse(normalized).root||
-    /(^|[/\\_-])splcart([/\\_-]|$)/i.test(normalized)||
-    !/(^|[/\\_-])(hq|headquarters)([/\\_-]|$)/i.test(normalized))
+ const segments=normalized.toLowerCase().split(path.sep)
+   .flatMap(part=>part.split(/[-_]/)).filter(Boolean);
+ if(normalized===path.parse(normalized).root||
+    normalized.toLowerCase().includes("splcart")||
+    !segments.some(part=>part==="hq"||part==="headquarters"))
    throw Error("directory must be a dedicated HQ path, never root or SPLCART");
  return {...options,days:Number(options.days),dir:normalized};
 }
