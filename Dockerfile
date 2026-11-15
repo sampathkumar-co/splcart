@@ -1,6 +1,6 @@
 # Standalone AI Headquarters ONLY. No SPLCART image, source or database.
 FROM node:22-bookworm-slim AS base
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates ffmpeg fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package*.json ./
@@ -18,9 +18,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-cert
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build --chown=node:node /app /app
+RUN mkdir -p /app/data/hq-media && chown -R node:node /app/data
 USER node
 EXPOSE 3000
 CMD ["sh","-c","npx prisma migrate deploy && npm run start"]
+
+# Dedicated code-render worker. This process NEVER publishes external content.
+FROM hq-web AS hq-creative
+ENV HQ_MEDIA_DIR=/app/data/hq-media
+CMD ["npm","run","creative:worker"]
 
 # The worker does NOT receive a DATABASE_URL, and no port is published publicly.
 # Browser sandbox requires a hardened non-root Docker/seccomp profile on the host.
