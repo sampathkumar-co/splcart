@@ -11,7 +11,9 @@ type Quote = {id:string;productId:string;productTitleSnapshot:string;productUrlS
 type Prospect = {id:string;name:string;city:string;category:string;businessSourceUrl:string;evidenceSummary:string;verificationEvidenceText:string|null;verificationEvidenceUrl:string|null;score:number;qualified:boolean;breakdown:Record<string,number>;warnings:string[];stage:string;decision:string;matches:{id:string;productId:string;title:string;productUrl:string;source:string;priceRupees:number;competitorPriceRupees:number|null; evidenceUrl:string}[];quotes:Quote[];activities:{id:string;event:string;note:string;createdAt:string;evidenceUrl:string|null}[];conversion:{orderReference:string;grossAmountRupees:number;verifiedAt:string|null}|null};
 type Product = {id:string;title:string;category:string;material:string;unitDescription:string;productUrl:string;priceRupees:number;verificationSource:string};
 type Run = {id:string;sourceUrl:string;finalUrl:string|null;pageTitle:string|null;excerpt:string|null;status:string;errorCode:string|null;startedAt:string;evidence?:{headings?:string[];description?:string;businessLinks?:{title:string;url:string}[];tabs?:{sourceUrl:string;status:string;evidence?:{title:string;finalUrl:string;excerpt:string};errorCode?:string}[];completed?:number;failed?:number}};
-type Dashboard = {stats:{researched:number;qualified:number;awaitingReview:number;approved:number;interested:number;ownerReportedOrders:number;verifiedRevenueRupees:number};prospects:Prospect[];products:Product[];runs:Run[];agents:AgentRecord[];control:{researchPaused:boolean;reason:string;updatedAt:string|null;audit:{id:string;event:string;reason:string;createdAt:string}[]};integrations:Record<string,string>};
+type AgentTask = {id:string;roleId:string;status:string;errorCode:string|null;createdAt:string;
+  modelCostPaise:number;result:{summary?:string;items?:{label:string;details:string;sourceUrl?:string}[];computeCost?:string}|null};
+type Dashboard = {stats:{researched:number;qualified:number;awaitingReview:number;approved:number;interested:number;ownerReportedOrders:number;verifiedRevenueRupees:number};prospects:Prospect[];products:Product[];runs:Run[];agents:AgentRecord[];agentTasks:AgentTask[];control:{researchPaused:boolean;reason:string;updatedAt:string|null;audit:{id:string;event:string;reason:string;createdAt:string}[]};integrations:Record<string,string>};
 const fmt = (v:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(v);
 const steps = ["DISCOVERED","RESEARCHED","QUALIFIED","APPROVED","CONTACTED","INTERESTED","QUOTATION","NEGOTIATION"];
 const emptyStats = ["researched","qualified","awaitingReview","verifiedRevenueRupees"] as const;
@@ -24,11 +26,23 @@ export function Headquarters(){
  const refresh=useCallback(async()=>{try {const r=await fetch("/api/dashboard",{cache:"no-store"});const j=await r.json();if(!r.ok)throw new Error(j.error||"Unable to load dashboard");setData(j);setError("")}catch(e){setError((e as Error).message)}},[]);
  useEffect(()=>{refresh();const interval=setInterval(refresh,15000);return ()=>clearInterval(interval)},[refresh]);
  const act=async(payload:Record<string,unknown>)=>{setBusy(true);setError("");setNotice("");try{const r=await fetch("/api/actions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});const j=await r.json();if(!r.ok)throw new Error((j.error||"Action failed")+(j.details?": "+j.details.join(", "):""));setNotice("Saved with audit evidence. No external message was sent.");await refresh();return true;}catch(e){setError((e as Error).message);return false;}finally{setBusy(false)}};
+ const runAgent=async(roleId:string)=>{
+   setBusy(true);setError("");setNotice("");
+   try{
+    const response=await fetch("/api/agents/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({roleId})});
+    const outcome=await response.json();
+    if(!response.ok)throw new Error(outcome.error||"Local report failed");
+    setNotice(outcome.message||"Local role task recorded, no external action.");
+    await refresh();
+   }catch(e){setError(e instanceof Error?e.message:"Agent task failed");}
+   finally{setBusy(false);}
+ };
  const submit=(action:string)=>async(e:React.FormEvent<HTMLFormElement>)=>{e.preventDefault();const form=e.currentTarget;const val=Object.fromEntries(new FormData(form));const body:Record<string,unknown>={action,...val};if(action==="add_match"){body.equivalentMaterials=val.equivalentMaterials==="on";body.equivalentUnits=val.equivalentUnits==="on";for(const key of ["competitorMaterial","competitorUnitDescription","competitorPriceRupees","competitorEvidenceUrl"]){if(body[key]==="")delete body[key];}}if(await act(body)){form.reset();}};
  const research=async(e:React.FormEvent<HTMLFormElement>)=>{e.preventDefault();const form=e.currentTarget;const formData=new FormData(form);const url=String(formData.get("url")||"");const extraUrls=["url2","url3"].map(name=>String(formData.get(name)||"").trim()).filter(Boolean);setBusy(true);setNotice("");setError("");try{const r=await fetch("/api/research",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url,extraUrls})});const j=await r.json();if(!r.ok)throw new Error(j.error||"Browser inspection failed");setNotice(`Real Chromium session captured ${j.finding.completed} successful tab(s) and ${j.finding.failed} failure(s). Register the lead when evidence is sufficient.`);await refresh();}catch(e){setError((e as Error).message);await refresh()}finally{setBusy(false)}};
  const prospect=data?.prospects.find(p=>p.id===leadId)||data?.prospects[0];
  const copyQuote=async(q:Quote)=>{const message=quoteShareText(q);if(!message){setError("Only current owner-approved quotes can be copied");return;}try{await navigator.clipboard.writeText(message);setNotice("Owner-approved quote copied. Nothing was sent automatically.");}catch{setError("Clipboard unavailable. Use an HTTPS browser or a supported device.");}};
  const focusedAgent=data?.agents.find(a=>a.id===selectedAgentId);
+ const focusedTask=data?.agentTasks?.find(t=>t.roleId===selectedAgentId);
  return <div className="app-shell">
   <aside className={`sidebar ${mobileOpen?"sidebar-open":""}`}>
    <div className="brand"><div className="brand-mark"><Gem size={25}/></div><div><strong>PRASANTH</strong><small>INTELLIGENCE HQ</small></div></div>
@@ -57,9 +71,21 @@ export function Headquarters(){
           <span className="station-chip-code">{agent.short}</span><span className="station-chip-name">{agent.name}</span><Badge value={agent.status}/>
          </button>)}
         </div>
-        {focusedAgent&&<div className="station-details" role="status"><strong>{focusedAgent.name}</strong><Badge value={focusedAgent.status}/><span>{focusedAgent.description}</span>{focusedAgent.evidenceCount>0&&<small>{focusedAgent.evidenceCount} completed real browser inspections</small>}</div>}
+        {focusedAgent&&<>
+          <div className="station-details" role="status"><strong>{focusedAgent.name}</strong><Badge value={focusedAgent.status}/><span>{focusedAgent.description}</span>
+            {focusedAgent.evidenceCount>0&&<small>{focusedAgent.evidenceCount} actual completed reports/inspections</small>}
+            {focusedAgent.status==="ON_DEMAND"&&<button type="button" className="agent-run-button" disabled={busy} onClick={()=>runAgent(focusedAgent.id)}>{busy?"Evaluating HQ evidence…":"Run local evidence task"}</button>}
+          </div>
+          {focusedTask&&<div className="agent-real-report" aria-label="Actual persisted agent outcome">
+            <div className="agent-report-head"><strong>Latest real task</strong><Badge value={focusedTask.status}/><small>{new Date(focusedTask.createdAt).toLocaleString("en-IN")}</small></div>
+            <p>{focusedTask.result?.summary||focusedTask.errorCode||"No task report recorded"}</p>
+            {(focusedTask.result?.items||[]).map((item,index)=><div key={index} className="agent-report-item"><strong>{item.label}</strong><span>{item.details}</span>
+              {item.sourceUrl&&<a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">Source <ExternalLink size={11}/></a>}</div>)}
+            <small>Paid model charges: ₹{(focusedTask.modelCostPaise/100).toFixed(2)}; local computing/electricity not metered.</small>
+          </div>}
+        </>}
        </div>
-       <div className="room-inspector"><div className="room-inspector-heading"><span className="eyebrow">SELECTED WORKSTATION</span><h3>{selected==="ceo"?"Executive Suite":selected==="sales"?"Sales Intelligence":selected==="marketing"?"Creative Studio":"Strategy Room"}</h3></div><p>{selected==="sales"?`${data?.runs.filter(r=>r.status==="COMPLETED").length||0} completed browser inspections. Research, matching, approval and outreach are owner-controlled.`:selected==="ceo"?`${data?.stats.awaitingReview||0} leads awaiting review. Verified revenue is strictly payment-reconciled.`:selected==="marketing"?"Reel rendering and publishing are not configured. No simulated creative activity.":"Plan reviews, audit trail and bounded agent work. No background agents run without authorization."}</p><button onClick={()=>setTab(selected==="sales"?"research":selected==="ceo"?"leads":"overview")}>Open workspace <ArrowUpRight size={16}/></button></div>
+       <div className="room-inspector"><div className="room-inspector-heading"><span className="eyebrow">SELECTED WORKSTATION</span><h3>{selected==="ceo"?"Executive Suite":selected==="sales"?"Sales Intelligence":selected==="marketing"?"Creative Studio":"Strategy Room"}</h3></div><p>{selected==="sales"?`${data?.runs.filter(r=>r.status==="COMPLETED").length||0} completed browser inspections. Research, matching, approval and outreach are owner-controlled.`:selected==="ceo"?`${data?.stats.awaitingReview||0} leads awaiting review. Verified revenue is strictly payment-reconciled.`:selected==="marketing"?"Real local FFmpeg code-rendered Reels, opt-in daily scheduling, owner-approved manual publishing only.":"Plan reviews, audit trail and bounded agent work. No background agents run without authorization."}</p><button onClick={()=>setTab(selected==="sales"?"research":selected==="ceo"?"leads":selected==="marketing"?"creative":"overview")}>Open workspace <ArrowUpRight size={16}/></button></div>
      </section>
      <div className="split-grid"><Panel title="Recent Research" eyebrow="EXECUTION EVIDENCE" actions={<button className="text-button" onClick={()=>setTab("research")}>View all <ArrowUpRight size={15}/></button>}><ResearchList runs={data?.runs.slice(0,4)||[]}/></Panel><Panel title="Agent Operations" eyebrow="REAL STATUS ONLY"><div className="agent-list">{(data?.agents||[]).map(a=><div key={a.name} className="agent-row"><span className="agent-icon"><Activity size={17}/></span><span>{a.name}</span><Badge value={a.status}/></div>)}</div></Panel></div>
     </>}
