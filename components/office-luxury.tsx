@@ -39,7 +39,7 @@ function Line({from,to,color="#b99b6c",r=.018}:{
  const midpoint=start.add(end).multiplyScalar(.5);
  const q=new THREE.Quaternion().setFromUnitVectors(
   new THREE.Vector3(0,1,0),direction.clone().normalize());
- return <mesh geometry={UNIT_CYLINDER} position={midpoint.toArray() as Vec3}
+ return <mesh dispose={null} geometry={UNIT_CYLINDER} position={midpoint.toArray() as Vec3}
     quaternion={q} scale={[r,direction.length(),r]}>
   <meshStandardMaterial color={color} metalness={.86} roughness={.21}/>
  </mesh>;
