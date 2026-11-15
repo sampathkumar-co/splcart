@@ -267,3 +267,45 @@
 .office-desk-tour{display:flex;align-items:center;gap:12px;padding-top:3px}
 .office-desk-tour button{background:#374036;border:1px solid #816d50;border-radius:4px;color:#eed0a0;padding:8px 10px;font:700 9px Manrope,Arial,sans-serif}
 .office-desk-tour button:hover,.office-desk-tour button:focus-visible{background:#584633;color:#fff4d9;outline-offset:2px}
+
+
+/* Living architecture, not pretend workers. Palette: champagne, emerald,
+   sapphire and amethyst on deep obsidian with warm ivory typography. */
+.luxury-office{background:
+ radial-gradient(ellipse at 19% 68%,rgba(41,107,92,.25),transparent 43%),
+ radial-gradient(ellipse at 76% 27%,rgba(119,76,124,.17),transparent 51%),
+ radial-gradient(ellipse at 52% 3%,rgba(222,180,105,.12),transparent 57%),
+ #0b1015}
+.luxury-office::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+ background:radial-gradient(ellipse at 32% 60%,rgba(108,171,148,.075),transparent 44%),
+ radial-gradient(ellipse at 80% 35%,rgba(220,175,110,.063),transparent 45%);
+ animation:atelier-reflection-breathe 16s ease-in-out infinite alternate}
+@keyframes atelier-reflection-breathe{
+ from{opacity:.36;transform:translate3d(0,0,0)}
+ to{opacity:.92;transform:translate3d(-.6%,.7%,0)}
+}
+.office-cinema-titling strong{color:#f3e9d7;text-shadow:0 2px 13px #0008}
+.luxury-office .office-room-navigation button:nth-child(1){border-bottom:2px solid #d4b06a}
+.luxury-office .office-room-navigation button:nth-child(2){border-bottom:2px solid #33ba99}
+.luxury-office .office-room-navigation button:nth-child(3){border-bottom:2px solid #b18dd4}
+.luxury-office .office-room-navigation button:nth-child(4){border-bottom:2px solid #6db4e8}
+.luxury-office .office-room-navigation button[aria-pressed=true]{
+ color:#f3e9d7;background:linear-gradient(135deg,rgba(89,72,45,.96),rgba(16,25,28,.94));
+ box-shadow:0 0 26px rgba(212,176,106,.16),0 3px 20px #0006
+}
+.office-desk-context{border-color:#d4b06a;background:
+ linear-gradient(140deg,rgba(12,20,24,.97),rgba(28,39,41,.96));
+ box-shadow:0 20px 60px #000a,0 0 25px #d4b06a12}
+.office-desk-activity{border:1px solid rgba(212,176,106,.32);
+ background:linear-gradient(110deg,#172426df,#242527db);border-radius:5px;
+ padding:12px 11px;display:flex;flex-direction:column;gap:7px}
+.office-desk-activity strong{font:700 10px Manrope,Arial,sans-serif;letter-spacing:.10em;
+ color:#d4b06a}
+.office-desk-activity span{font:700 10px Manrope,Arial,sans-serif;letter-spacing:.06em;
+ color:#f3e9d7}
+.office-desk-activity small{font:500 10px Manrope,Arial,sans-serif;
+ color:#c8d2cd;line-height:1.45;overflow-wrap:anywhere}
+.office-visual-controls button:focus-visible,.luxury-office button:focus-visible{
+ outline:2px solid #f3e9d7;outline-offset:2px}
+@media(max-width:700px){.office-desk-activity{padding:9px;gap:4px}.office-desk-activity small{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.luxury-office::after{animation:none;opacity:.55}}
