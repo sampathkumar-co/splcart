@@ -106,6 +106,28 @@ try {
     "Manual share text must retain approval, source and price from persisted CI quote");
   await page.screenshot({path:"artifacts/hq-quote-workflow.png",fullPage:true});
   console.log("PASS actual persisted quote UI and explicit manual-only clipboard copy");
+  await page.getByRole("button",{name:"Creative Studio"}).click();
+  await page.getByRole("heading",{name:"20-second jewellery Reels, rendered locally."}).waitFor();
+  await page.locator(".studio-job").first().waitFor({timeout:20000});
+  assert.ok((await page.locator(".studio-job").first().innerText()).includes("APPROVED"),
+    "Creative Studio must show genuine owner-approved MP4 after CI render");
+  const clip=page.locator(".studio-video").first();
+  assert.equal(await clip.count(),1,"Studio should show playable HTML5 video from actual local renderer");
+  const metadata=await clip.evaluate(async video=>{
+    await new Promise((resolve,reject)=>{
+      if(video.readyState>=1){resolve();return;}
+      video.addEventListener("loadedmetadata",resolve,{once:true});
+      video.addEventListener("error",()=>reject(new Error("No actual video metadata")),{once:true});
+    });
+    return {width:video.videoWidth,height:video.videoHeight,duration:video.duration};
+  });
+  assert.equal(metadata.width,720);
+  assert.equal(metadata.height,1280);
+  assert.ok(metadata.duration>=19.5&&metadata.duration<=20.5);
+  await page.screenshot({path:"artifacts/hq-code-reel-studio.png",fullPage:true});
+  console.log("PASS real 720x1280 20-second playable MP4 in owner-only Creative Studio; no social posting");
+  await page.getByRole("button",{name:"Wholesale Pipeline"}).click();
+
 
   console.log("PASS camera overview control and business navigation");
 
