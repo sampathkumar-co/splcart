@@ -139,3 +139,16 @@
 .agent-report-item a{display:flex;align-items:center;gap:4px;color:#d8ba80;font-size:10px}
 .agent-real-report>small{font-size:9px;color:#94a6a1;display:block;margin-top:10px}
 .status-blocked{background:#51382e;color:#f2c7b9;border-color:#9b7666}
+
+
+/* Owner-entered social publication history. No platform verification implied. */
+.studio-publish-form,.studio-metric-form{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.studio-publish-form .field:last-of-type{grid-column:1/-1}
+.studio-publish-form button{justify-self:start;grid-column:1/-1}
+.studio-metric-form{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.studio-metric-form .field:last-of-type{grid-column:1/-1}
+.studio-metric-form button{grid-column:1/-1;justify-self:start}
+.studio-card input[type=url],.studio-card input[type=number]{width:100%;background:#141c1e;border:1px solid #52605e;color:#e9dcc6;padding:10px 12px;border-radius:6px;font-size:11px}
+.studio-card .studio-job p a{color:#deb97d}
+.studio-card .studio-disclaimer{font-size:10px;line-height:1.8;color:#9facaa;border-top:1px solid #3b4543;margin-top:17px;padding-top:12px}
+@media(max-width:650px){.studio-publish-form,.studio-metric-form{grid-template-columns:1fr}}
