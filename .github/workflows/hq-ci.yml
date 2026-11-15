@@ -38,6 +38,7 @@ jobs:
       HQ_SESSION_SECRET: ci-only-secret-that-is-long-enough-for-hmac-and-not-for-any-deployment
       HQ_TEST_MODE: "1"
       HQ_PUBLIC_ORIGIN: http://127.0.0.1:3000
+      HQ_MEDIA_DIR: /tmp/hq-ci-media
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -87,6 +88,17 @@ jobs:
 
       - name: Verify independent HQ backup and restore against disposable PostgreSQL
         run: bash scripts/ci-backup-restore.sh
+      - name: Install local FFmpeg and open-licensed system font for original Reels
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - name: Render and verify genuine 20-second HQ-only video, approval and MP4
+        run: node scripts/creative-smoke.mjs
+      - name: Archive CI-only synthetic-source Reel MP4
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hq-ci-only-synthetic-creative-test
+          path: artifacts/hq-ci-creative-20s.mp4
+          if-no-files-found: ignore
       - name: Install Chromium and Linux dependencies for visual acceptance
         run: npx playwright install --with-deps chromium
       - name: Verify real browser UI and save desktop/mobile screenshots
