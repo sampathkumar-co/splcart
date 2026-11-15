@@ -152,3 +152,15 @@
 .studio-card .studio-job p a{color:#deb97d}
 .studio-card .studio-disclaimer{font-size:10px;line-height:1.8;color:#9facaa;border-top:1px solid #3b4543;margin-top:17px;padding-top:12px}
 @media(max-width:650px){.studio-publish-form,.studio-metric-form{grid-template-columns:1fr}}
+
+/* 2026-11-15 cinematic HQ visual refinement. No fake worker activity. */
+.hq-visual{background:linear-gradient(155deg,#1b292d,#10191e 70%);border-color:#5b5140;box-shadow:0 18px 48px #0005}
+.office-canvas{background:radial-gradient(ellipse at 45% 30%,#233039 0%,#111a21 75%);border-color:#786646}
+.office-canvas::after{content:"";pointer-events:none;position:absolute;inset:0;box-shadow:inset 0 0 95px #0004;z-index:1}
+.office-overlay{z-index:2;color:#ead9bb;text-shadow:0 1px 5px #000a}
+.office-reset-camera{z-index:4;border-color:#aa9269;background:#161d22e8}
+.station-console{background:linear-gradient(135deg,#192326,#111a1c);border-top-color:#68563b}
+.station-chip{background:linear-gradient(115deg,#242e2e,#1b2426);border-color:#46504d}
+.station-chip:hover,.station-chip:focus-visible{border-color:#d9b57b;box-shadow:0 0 0 1px #a48a5d55}
+@media(max-width:600px){.office-canvas{height:390px;min-height:390px}.office-overlay{left:13px;right:13px;bottom:13px;font-size:8px}.office-reset-camera{top:12px;right:11px}}
+@media(prefers-reduced-motion:reduce){.station-chip{transition:none}}

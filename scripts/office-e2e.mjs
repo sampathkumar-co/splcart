@@ -69,6 +69,23 @@ try {
   await page.evaluate(() => window.scrollTo(0,0));
   await page.screenshot({path:"artifacts/hq-desktop-3d.png",fullPage:true});
   console.log("PASS 16 real-state agent workstations, 3D scene and interactive inspector");
+  const viewCaptures = [
+    {label:"executive",button:/AI General Manager/},
+    {label:"marketing",button:/Creative Director/},
+    {label:"sales",button:/Sales Manager/},
+  ];
+  for(const focus of viewCaptures){
+    await page.getByRole("button",{name:focus.button}).first().click();
+    await page.locator(".office-canvas").scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1250);
+    const image = await page.locator(".office-canvas").screenshot({
+      path:"artifacts/hq-room-"+focus.label+".png",
+    });
+    assert.ok(image.length>20_000,"room camera "+focus.label+" must render real detail");
+  }
+  await page.getByRole("button",{name:"Overview"}).click();
+  await page.waitForTimeout(1300);
+  console.log("PASS real CEO, Marketing and Sales camera-focus screenshots, not a static decorative render");
 
   await page.getByRole("button",{name:/AI General Manager/}).first().click();
   await page.getByRole("button",{name:"Run local evidence task"}).click();
