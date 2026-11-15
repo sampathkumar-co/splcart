@@ -92,7 +92,7 @@ function createRoomTexture(input:ReturnType<typeof buildRoomScreen>){
  const stats:[
   {name:"REAL ROLE DESKS",value:input.count},
   {name:"RUNNING NOW",value:input.active},
-  {name:"CHECKS RECORDED",value:input.reports},
+  {name:"RECENT CHECKS",value:input.reports},
   {name:"NOT CONFIGURED",value:input.blocked},
  ];
  stats.forEach((s,i)=>{
