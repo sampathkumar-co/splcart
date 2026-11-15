@@ -170,6 +170,12 @@ A cinematic architectural headquarters rather than a toy office. Dark obsidian t
 - **Next:** independently secure/deploy HQ with dedicated secrets/egress firewall, confirm source-permitted real retailer research and authentic owner assets, then verify local generated Reels and manual social engagement reporting against actual owner activity. No live external publishing or revenue claim.
 
 
+### 2026-11-15 — Social owner-reporting API payload validation regression fixed
+- **Detected from real GitHub Actions CI** [run 43687703324](https://github.com/sampathkumar-co/splcart/actions/runs/43687703324): the manual metrics HTTP smoke returned `INVALID_OWNER_METRICS` (400) for an otherwise valid owner-reported publication snapshot. The helper accidentally validated every `Object.values` entry, including `publicationId`/`evidenceUrl` strings; this escaped unit tests which passed only bare metric fields.
+- **Fixed:** `lib/social-reporting.ts` now checks only `views`, `likes` and `enquiries`; `tests/social-reporting.test.ts` adds a realistic request-shaped payload regression. No platform calls, posts, assumed verified impressions or real customers were created.
+- **Evidence:** that same CI run passed concurrent 2/day creative scheduling, real 20-second H.264 output, original 3D/mobile Chromium UI, authorised research smoke and database/backup checks, then failed specifically in owner-reporting HTTP smoke. This patch requires a NEW completed CI run before the entire latest branch may be declared green. PR remains draft/unmerged; live SPLCART untouched.
+
+
 ## Original owner specification (archived for completeness)
 The complete original mission supplied by the owner follows verbatim. It is retained so future chats have *all* original requirements in this one file. **The latest decisions and security gates above supersede older proposed implementation methods below**. Do not treat an aspirational capability in this appendix as implemented or authorized.
 

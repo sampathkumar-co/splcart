@@ -14,6 +14,9 @@ describe("independent social reporting without platform API access",()=>{
  it("does not invent metrics or accept negative/unsafe numbers",()=>{
   expect(validateMetricCounts({views:0,likes:null,enquiries:null})).toBe(true);
   expect(validateMetricCounts({views:1234,likes:45,enquiries:3})).toBe(true);
+  // Real validated API payload includes metadata. Only count fields should be checked.
+  const routePayload={publicationId:"ci-id",evidenceUrl:"https://instagram.com/reel/CIfixture001/",views:1234,likes:51,enquiries:3};
+  expect(validateMetricCounts(routePayload)).toBe(true);
   expect(()=>validateMetricCounts({})).toThrow("INVALID_OWNER_METRICS");
   expect(()=>validateMetricCounts({likes:-1})).toThrow("INVALID_OWNER_METRICS");
   expect(()=>validateMetricCounts({views:1_000_000_001})).toThrow("INVALID_OWNER_METRICS");

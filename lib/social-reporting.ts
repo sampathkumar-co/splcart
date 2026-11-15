@@ -25,7 +25,7 @@ export function normalizeSocialPost(platform:SocialPlatform,raw:string):string{
   return url.toString();
 }
 export function validateMetricCounts(values:{views?:number|null;likes?:number|null;enquiries?:number|null}){
-  const present=Object.values(values).filter((n):n is number=>n!==null&&n!==undefined);
+  const present=[values.views,values.likes,values.enquiries].filter((n):n is number=>n!==null&&n!==undefined);
   if(!present.length||present.some(n=>!Number.isSafeInteger(n)||n<0||n>1_000_000_000))
     throw new Error("INVALID_OWNER_METRICS");
   return true;
