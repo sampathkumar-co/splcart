@@ -106,7 +106,7 @@ export async function renderProductReel(input: {
     draw(3,921,29,seconds-4,seconds),
     draw(4,1135,15,0,seconds),
     "format=yuv420p[out]",
-  ].join(",");
+  ].join(",").replace("[photo],[0:v][photo]","[photo];[0:v][photo]");
   const args=[
     "-hide_banner","-nostdin","-loglevel","error","-y",
     "-f","lavfi","-i",`color=c=0x11191d:s=${REEL_WIDTH}x${REEL_HEIGHT}:r=24:d=${seconds}`,
