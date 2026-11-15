@@ -94,3 +94,25 @@ The separate HQ **Customer Inbox** records only actual customer-initiated messag
 ### Customer privacy controls (HQ only)
 
 The Customer Inbox now supports explicitly confirmed live-record erasure and an owner-triggered, closed-only retention purge for enquiries last updated over 30/90/180 days ago (max 100 per action). Open/unclosed replied enquiries survive bulk purge. Private nicknames in old Customer Conversation task reports and copied closure notes are redacted. **Previously created encrypted backups require a separate expiry process** and are not implicitly erased. No automatic data purge or connected social inbox is operating. Detailed instructions: [No API Keys Operations](docs/NO_API_KEYS_OPERATIONS.md). Full-project progress: [Completion Scorecard](docs/PROJECT_COMPLETION_SCORECARD.md).
+
+
+### Intelligence Atelier · real interactive 3D architecture
+
+The four-room office is an actual React Three Fiber/Three.js scene, not a background
+image or simulated employee animation. The code-native visual layer features
+procedurally veined marble, an open brass/stone architectural pavilion, jeweller's
+sculptures and showcases, upholstered desks/chairs and distinct CEO, Sales,
+Marketing and Strategy interiors. Every workstation continues to display the
+authenticated HQ agent state rather than invented activity. Owners can click desks,
+orbit freely, focus all four rooms, and use the accessible 2D fallback.
+
+The scene also offers **Cinema** (physically larger WebGL viewport), **After hours**
+(real lighting changes) and **Performance** (less decorative detail and capped lower
+DPR) controls, plus reduced-motion camera transitions. No commercial 3D assets,
+generative-video service or paid model keys were added. Exact implementation,
+visual acceptance procedure and honest performance limitations are documented in
+[The Intelligence Atelier · 3D design](docs/3D_CINEMATIC_DESIGN.md).
+
+These visual improvements are not evidence of real 16-agent autonomy or measured
+60fps on the owner's GPU; independent host deployment and physical-device
+performance tests remain required.
