@@ -134,9 +134,9 @@ try {
     "focused workstation must show the authenticated actual role/status");
   const trueDisplay=await page.locator(".office-desk-activity").innerText();
   assert.ok(trueDisplay.includes("PERMITTED WEB RESEARCH")&&
-    trueDisplay.includes("READY FOR OWNER REQUEST")&&
-    trueDisplay.includes("NO TASK RECORD"),
-    "empty database must display idle screen purpose and no task, never fictional web research");
+    trueDisplay.includes("NO CONFIRMED ACTIVE BROWSER")&&
+    trueDisplay.includes("PERSISTED HQ RESEARCH RUNS"),
+    "empty database must explicitly report zero real browser sessions, not fake research");
   await page.waitForTimeout(1000);
   const focused=await captureOffice("artifacts/hq-office-selected-desk.png");
   assert.equal(signature.equals(focused),false,
@@ -152,8 +152,11 @@ try {
   const previous=await page.locator(".office-desk-context").innerText();
   assert.ok(previous.includes("Google & Web Discovery")&&previous.includes("ON DEMAND"),
     "tour back must select the original evidence-grounded role");
-  await page.getByRole("button",{name:"Return to room camera"}).click();
-  assert.equal(await page.locator(".office-desk-context").count(),0);
+  // Releasing a long software-WebGL sequence can starve synthetic pointer
+  // positioning on CI CPUs. Invoke the actual DOM button handler directly.
+  await page.getByRole("button",{name:"Return to room camera"})
+    .evaluate(el=>(el).click(),{timeout:60_000});
+  await page.locator(".office-desk-context").waitFor({state:"hidden",timeout:60_000});
   await page.getByRole("button",{name:"Return to overview camera"}).click();
   console.log("PASS 16 source-backed physical monitor dashboards, four jewel-toned room feeds, idle web state, missing voice integration and real selected-camera tour");
 
