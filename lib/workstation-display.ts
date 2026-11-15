@@ -10,6 +10,16 @@ export type ScreenTask={
  result?:{summary?:string;items?:{label:string;details:string;sourceUrl?:string}[]}|null;
 };
 export type ScreenRoom="ceo"|"sales"|"marketing"|"meeting";
+export type WorkstationSignals={
+ reels:{
+  queued:number;rendering:number;rendered:number;approved:number;failed:number;
+  scope:"LATEST_100_HQ_JOBS";
+ };
+ openInquiries:number;
+ ownerRecordedPosts:number;
+ leads:{awaitingReview:number;approved:number};
+ research:{running:number;completed:number;blocked:number;scope:"LATEST_30_HQ_RUNS"};
+};
 export type WorkstationScreenData={
  roleId:string;short:string;name:string;purpose:string;room:ScreenRoom;
  status:AgentStatus;statusText:string;mainNumber:string;numberLabel:string;
@@ -69,6 +79,7 @@ export function buildWorkstationScreen(
  roleId:string,
  agents:readonly AgentRecord[],
  tasks:readonly ScreenTask[],
+ signals:WorkstationSignals|null=null,
 ):WorkstationScreenData|null {
  const role=ROLE_SPECS.find(r=>r.id===roleId);
  if(!role)return null;
@@ -114,11 +125,66 @@ export function buildWorkstationScreen(
     "This role is not configured to execute";
   provenance="NO TASK RECORD";
  }
+ // Higher-value role telemetry comes from the SAME authenticated HQ database,
+ // never from decorative motion or a fabricated external integration.
+ let mainNumber=String(count);
+ let numberLabel="RECORDED EVIDENCE";
+ let sourceTime=last?.createdAt??null;
+ if(signals&&!forcedOffline){
+  if(roleId==="reel-generation"){
+   const r=signals.reels;
+   mainNumber=String(r.rendering);
+   numberLabel="REELS RENDERING";
+   headline=r.rendering>0?"FFMPEG RENDER JOB ACTIVE":
+    r.queued>0?"LOCAL RENDER QUEUE PENDING":"NO ACTIVE LOCAL RENDERS";
+   detail="Queued: "+r.queued+" | Rendered: "+r.rendered+
+    " | Approved: "+r.approved+" (recent 100)";
+   provenance="PERSISTED HQ REEL JOBS";sourceTime=null;
+  }else if(roleId==="customer-conversation"){
+   mainNumber=String(signals.openInquiries);
+   numberLabel="OPEN INQUIRIES";
+   headline=signals.openInquiries>0?"OWNER INPUT REQUIRES REVIEW":"NO OPEN OWNER-RECORDED INQUIRIES";
+   detail="Owner-transcribed inbound only; no connected account";
+   provenance="OWNER-RECORDED HQ INQUIRIES";sourceTime=null;
+  }else if(roleId==="social-publishing"){
+   mainNumber=String(signals.ownerRecordedPosts);
+   numberLabel="OWNER-REPORTED POSTS";
+   headline="MANUAL PUBLISHING HANDOFF";
+   detail="No automatic Instagram / YouTube posting";
+   provenance="OWNER-REPORTED HQ PUBLICATIONS";sourceTime=null;
+  }else if(roleId==="marketing-performance"){
+   mainNumber=String(signals.ownerRecordedPosts);
+   numberLabel="OWNER-REPORTED POSTS";
+   headline="NO CONNECTED ANALYTICS API";
+   detail="Any social measurements are owner-recorded";
+   provenance="OWNER-REPORTED HQ PUBLICATIONS";sourceTime=null;
+  }else if(roleId==="general-manager"){
+   mainNumber=String(signals.leads.awaitingReview);
+   numberLabel="OWNER REVIEWS";
+   headline=signals.leads.awaitingReview>0?"PROSPECTS AWAITING APPROVAL":"NO PENDING PROSPECT REVIEWS";
+   detail="Real HQ prospects; no payment-verified revenue claim";
+   provenance="PERSISTED HQ PROSPECTS";sourceTime=null;
+  }else if(roleId==="sales-manager"){
+   mainNumber=String(signals.leads.approved);
+   numberLabel="APPROVED PROSPECTS";
+   headline="OWNER-APPROVED WHOLESALE PIPELINE";
+   detail="Approval is not evidence of an order or payment";
+   provenance="PERSISTED HQ PROSPECTS";sourceTime=null;
+  }else if(roleId==="web-discovery"){
+   const r=signals.research;
+   mainNumber=String(r.running);
+   numberLabel="BROWSER RUNS ACTIVE";
+   headline=r.running>0&&status==="RUNNING"?
+    "RECORDED BROWSER INSPECTION ACTIVE":"NO CONFIRMED ACTIVE BROWSER";
+   detail="Completed: "+r.completed+" | Blocked / failed: "+r.blocked+" (recent 30)";
+   provenance="PERSISTED HQ RESEARCH RUNS";sourceTime=null;
+  }
+ }
  return {
   roleId,short:role.short,name:role.name,purpose:PURPOSE[roleId]||"SOURCE EVIDENCE",
   room:role.room,status,statusText:STATUS_LABEL[status],
-  mainNumber:String(count),numberLabel:"RECORDED EVIDENCE",
-  headline,detail,provenance,lastRecordedAt:last?.createdAt??null,
+  mainNumber,numberLabel,
+  headline,detail,provenance,lastRecordedAt:sourceTime,
   recentTaskStatuses:forcedOffline?[]:roleTasks.slice(0,6).map(t=>t.status),
   accent:forcedOffline?ATELIER_PALETTE.ruby:roleId==="web-discovery"?
    ATELIER_PALETTE.sapphire:ACCENTS[role.room],
