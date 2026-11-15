@@ -5,12 +5,13 @@ import { getAgentRecords } from "@/lib/agent-roster";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {
-    const [prospects, products, runs, control, controlAudit] = await Promise.all([
+    const [prospects, products, runs, control, controlAudit, agentTasks] = await Promise.all([
       db.prospect.findMany({ ...fullProspect, orderBy: { updatedAt: "desc" }, take: 100 }),
       db.product.findMany({ orderBy: { createdAt: "desc" }, take: 100 }),
       db.researchRun.findMany({ orderBy: { startedAt: "desc" }, take: 30 }),
       db.systemControl.findUnique({ where: { id:"hq" } }),
       db.systemAudit.findMany({ orderBy: { createdAt:"desc" }, take:10 }),
+      db.agentTask.findMany({ orderBy: { createdAt:"desc" }, take:60 }),
     ]);
     const verifiedRevenue = prospects.filter(p => p.conversion?.verifiedAt).reduce((sum, p) => sum + (p.conversion?.grossAmountPaise || 0), 0);
     return Response.json({
@@ -31,7 +32,13 @@ export async function GET() {
         updatedAt: control?.updatedAt?.toISOString() || null,
         audit: controlAudit.map(a=>({id:a.id,event:a.event,reason:a.reason,createdAt:a.createdAt.toISOString()})),
       },
-      agents: getAgentRecords(runs),
+      agents: getAgentRecords(runs,new Date(),agentTasks),
+      agentTasks: agentTasks.slice(0,25).map(t=>({
+        id:t.id,roleId:t.roleId,status:t.status,errorCode:t.errorCode,
+        createdAt:t.createdAt.toISOString(),
+        result:t.resultJson,
+        modelCostPaise:t.modelCostPaise,
+      })),
       integrations: { splcart: "EXTERNAL_SHOPPING_REFERENCE_ONLY", browser: "MANUAL_BROWSER_RESEARCH", outreach: "MANUAL_ONLY", quotations: "OWNER_APPROVED_MANUAL_SHARING", revenue: "OWNER_REPORTED_UNVERIFIED" },
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) { return apiError(e); }
