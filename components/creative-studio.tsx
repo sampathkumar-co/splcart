@@ -42,7 +42,7 @@ export function CreativeStudio({products}:{products:Product[]}) {
   useEffect(()=>{void refresh();const interval=setInterval(()=>void refresh(),8000);return()=>clearInterval(interval);},[refresh]);
   useEffect(()=>{if(!selectedProduct && products[0])setSelectedProduct(products[0].id);},[products,selectedProduct]);
   const photos=useMemo(()=>data.assets.filter(a=>a.productId===selectedProduct),[data.assets,selectedProduct]);
-  useEffect(()=>{setAssetId(photos[0]?.id||"");},[selectedProduct,photos]);
+  useEffect(()=>{setAssetId(current=>photos.some(p=>p.id===current)?current:photos[0]?.id||"");},[photos]);
   const call=async(path:string,payload:Record<string,unknown>)=>{
     setBusy(true);setError("");setNotice("");
     try{
