@@ -242,6 +242,14 @@ model ReelJob {
   @@unique([assetId, scheduleDate])
 }
 
+/** Explicit owner opt-in for 08:30 India-local, DB-only evidence reports. */
+model AgentSchedule {
+  id          String @id
+  enabled     Boolean @default(false)
+  lastRunDate String?
+  updatedAt   DateTime @updatedAt
+}
+
 /** Opt-in unattended LOCAL rendering only. Publishing is always owner-controlled. */
 model CreativeSchedule {
   id            String   @id

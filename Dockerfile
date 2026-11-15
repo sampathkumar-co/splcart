@@ -28,6 +28,10 @@ FROM hq-web AS hq-creative
 ENV HQ_MEDIA_DIR=/app/data/hq-media
 CMD ["npm","run","creative:worker"]
 
+# Local 16-role evidence worker: no browser, creative, social or phone credentials.
+FROM hq-web AS hq-agents
+CMD ["npm","run","agents:worker"]
+
 # The worker does NOT receive a DATABASE_URL, and no port is published publicly.
 # Browser sandbox requires a hardened non-root Docker/seccomp profile on the host.
 FROM mcr.microsoft.com/playwright:v1.56.1-noble AS hq-browser

@@ -29,6 +29,8 @@ services:
         condition: service_started
       hq-creative:
         condition: service_started
+      hq-agents:
+        condition: service_started
     environment:
       NODE_ENV: production
       DATABASE_URL: "postgresql://hq:${HQ_DB_PASSWORD:?}@hq-db:5432/hq?schema=public"
@@ -71,6 +73,25 @@ services:
     cap_drop: [ALL]
     pids_limit: 120
     mem_limit: 2g
+    tmpfs: [/tmp]
+
+  hq-agents:
+    build:
+      context: .
+      target: hq-agents
+    restart: unless-stopped
+    depends_on:
+      hq-db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://hq:${HQ_DB_PASSWORD:?}@hq-db:5432/hq?schema=public"
+    networks: [hq_db_only]
+    # NO external network, social/voice keys or public port.
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    pids_limit: 96
+    mem_limit: 512m
     tmpfs: [/tmp]
 
   hq-browser:
