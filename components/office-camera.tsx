@@ -26,7 +26,7 @@ type Pose = {
 
 /** All positions are in the locally authored jewellery HQ scene coordinate system. */
 export const OFFICE_CAMERA_POSES: Record<OfficeView, Pose> = {
-  overview: { position: [13.5, 13.5, 16.5], target: [0, 0.4, 0] },
+  overview: { position: [11.7, 12.2, 14.5], target: [0, 0.4, 0] },
   ceo: { position: [3.4, 7.7, 4.1], target: [-4.1, 0.6, -2.6] },
   sales: { position: [11.2, 7.7, 3.8], target: [3.6, 0.6, -2.6] },
   marketing: { position: [4.1, 8.2, 12.1], target: [-4.1, 0.6, 3.05] },
