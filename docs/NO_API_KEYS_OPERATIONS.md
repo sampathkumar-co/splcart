@@ -19,6 +19,31 @@ This guide is for **the separate Prasanth Jewellers AI Headquarters**. The owner
 
 Use `tests/customer-inquiry.test.ts`, `scripts/inbox-smoke.mjs` and `scripts/office-e2e.mjs` for CI-only local tests. CI customer messages are synthetic fixtures, not real customers.
 
+
+### Customer data erasure and manual retention
+
+The owner can explicitly erase any one Customer Inbox record by typing
+`ERASE`. A separate, **OFF by default**, manual purge accepts a typed
+`PURGE` confirmation and targets **only CLOSED enquiries** whose last update
+was over **30, 90 or 180 days** ago (maximum 100 per operation; rerun if more
+remain). Open and owner-replied-but-unclosed enquiries are never included in
+a bulk purge. The current private inbox shows the number eligible for each
+retention window before an owner requests erasure.
+
+A successful live-database erase also replaces prior
+`customer-conversation` AgentTask details with a redacted summary, and
+sanitizes legacy customer closure audit notes containing that record ID.
+New role reports store aggregate counts instead of copying customer aliases
+or message text. An audit event records that the owner requested deletion,
+**without** reproducing the original customer message.
+
+**Limit:** previous standalone encrypted database backups may still contain
+erased records until the operator's backup-expiry/offsite-deletion process
+removes those copies. Database erasure does not delete messages in the
+customer's WhatsApp/Instagram account, nor establish regulatory compliance.
+No automatic retention job, platform sync or external communication exists.
+This privacy feature and its tests run only inside independent Headquarters.
+
 ## Daily jewellery video workflow
 
 1. Open **Product Intelligence** and register a genuine owner-stated jewellery title, material, quantity, owner SKU, and a public HTTPS product reference. This does **not** fetch from or write to the SPLCART store.

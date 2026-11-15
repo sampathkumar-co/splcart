@@ -61,7 +61,8 @@ The owner-only `CustomerInquiry` table stores short, **owner-attested** customer
 
 - Keep this dedicated HQ PostgreSQL private and covered by its encrypted independent backup/restore contract; never replicate customer messages into a public asset directory or a storefront database.
 - Only enter minimum necessary, non-sensitive messages and nicknames. Do not enter payment data, authentication tokens, phone/address details, or full private message histories.
-- The current version supports OPEN, REPLIED_REPORTED and CLOSED owner-controlled statuses. **It does not yet provide automated account sync, a message-deletion/retention interface or independently verified platform delivery.** These are outstanding release/privacy tasks, not capabilities to invent.
+- Owner-only Customer Inbox now supports `OPEN`, `REPLIED_REPORTED`, `CLOSED`, explicit **single-record erasure** and an opt-in **manual closed-case retention purge** (30/90/180 days, at most 100 per operation, based on `updatedAt`). Single erasure requires typed `ERASE`; bulk purge requires typed `PURGE`. The API rejects missing confirmations, leaves open and unclosed replied enquiries intact during bulk purging, scrubs historical customer-role AgentTask details and legacy closure audit notes. New Customer Conversation reports retain only aggregate counts, not individual customer aliases. See `scripts/inbox-smoke.mjs` and `scripts/office-e2e.mjs` for real isolated PostgreSQL and Chromium verification.
+- **Still missing:** automated retention scheduling, separate encrypted **off-site backup expiry/deletion** proof, broader privacy/legal review, real account sync, verified platform delivery and production host testing. A live database deletion does not purge previous encrypted backup copies or external customer devices.
 - Original, owner-recorded transcripts are not independently verified or evidence of general marketing consent.
 
 ## Browser research policy

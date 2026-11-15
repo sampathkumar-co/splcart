@@ -66,9 +66,7 @@ they are estimates, not owner-signed acceptance numbers.
 5. Meaningful bounded multi-step autonomous decisions/actions with durable
    checkpoints for each genuinely operational role, rather than only daily
    evidence snapshots and deterministic summaries.
-6. Owner-requested privacy erasure and closed-case retention controls, backup
-   expiry/offsite deletion procedure, plus legal/privacy review before using
-   real customer records.
+6. **Owner-triggered live-record erasure and closed-case retention are now implemented and CI-tested.** Still outstanding: encrypted off-site backup expiry/deletion procedure, wider legal/privacy review, and confirmed production operations before real customer data.
 
 Do not raise the percentage merely because a unit test was added or a role
 name was displayed. Raise it for tested improvements in actual business
