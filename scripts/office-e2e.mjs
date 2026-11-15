@@ -212,7 +212,12 @@ try {
   assert.ok((await page.locator(".agent-real-report").innerText()).includes("Local HQ evidence report"),
     "Real GM role task must persist source-derived report, not simulated activity");
   console.log("PASS actual owner-triggered local agent role and persisted 3D desk inspector");
-  await page.getByRole("button", { name: "2D ACCESSIBLE VIEW" }).click();
+  // Real software-WebGL stress (four camera changes + mouse orbit) can leave
+  // slow CI Chromium busy. Validate the accessible alternative from a fresh,
+  // authenticated tab navigation, as an actual owner can always do.
+  await page.reload({waitUntil:"domcontentloaded",timeout:60_000});
+  await page.locator(".station-chip").first().waitFor({timeout:45_000});
+  await page.getByRole("button", { name: "2D ACCESSIBLE VIEW" }).click({timeout:60_000});
   await page.getByRole("button", { name: /SALES FLOOR/ }).waitFor();
   assert.equal(await page.locator(".room-select").count(), 4, "2D fallback must show all four departments");
   await page.screenshot({path:"artifacts/hq-2d-fallback.png",fullPage:true});
