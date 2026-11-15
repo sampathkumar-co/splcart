@@ -116,3 +116,25 @@ visual acceptance procedure and honest performance limitations are documented in
 These visual improvements are not evidence of real 16-agent autonomy or measured
 60fps on the owner's GPU; independent host deployment and physical-device
 performance tests remain required.
+
+
+### New in the Intelligence Atelier: actual workstation camera tour
+
+The real 3D office now supports a physically targeted **Inspect selected desk**
+camera, direct clicking on its 16 real workstations, and **Previous / Next**
+role navigation. Selected panels display the authenticated role status
+(`RUNNING`, `ON_DEMAND`, `NOT_CONFIGURED`) and its recorded evidence,
+not simulated agents. The source-of-truth layout is
+[`lib/office-layout.ts`](lib/office-layout.ts) with 16 unique camera positions,
+and the actual Chromium screenshots verify an unobstructed station perspective.
+No paid AI APIs or unlicensed 3D models are involved.
+
+### Operator-only local encrypted-backup expiry
+
+[`scripts/hq-backup-retention.mjs`](scripts/hq-backup-retention.mjs)
+is a manual local retention utility for **dedicated HQ `.age` archives only**.
+It is read-only by default, requires exact explicit confirmation to apply
+and preserves the newest two. It never touches SPLCART, unknown files or
+an offsite provider. Review [the operating and safety contract](docs/SECURITY_AND_DEPLOYMENT.md)
+before use. No real backup deletion or offsite retention is scheduled,
+authorized or claimed by the test suite.
