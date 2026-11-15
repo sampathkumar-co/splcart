@@ -129,7 +129,7 @@ export function RoomStatusWall({room,agents,tasks}:{
   <mesh dispose={null} geometry={PLANE} scale={[3.62,1.26,1]}>
    <meshStandardMaterial color="#232B31" metalness={.67} roughness={.21}/>
   </mesh>
-  <mesh dispose={null} geometry={PLANE} scale={[3.52,1.41,1]} position={[0,0,.018]}>
+  <mesh dispose={null} geometry={PLANE} scale={[3.52,1.17,1]} position={[0,0,.018]}>
    {map?<meshBasicMaterial map={map} toneMapped={false} side={THREE.DoubleSide}/>:
     <meshBasicMaterial color="#162028"/>}
   </mesh>
