@@ -174,3 +174,11 @@
 .readiness-summary span{color:#ffc6a7;font-size:12px}
 .readiness-summary small{color:#aebbb3;font-size:10px}
 @media(max-width:740px){.station-console-head{align-items:flex-start;flex-direction:column}.station-console-utilities{justify-content:flex-start}.station-console-utilities .agent-run-button{width:100%}}
+
+/* Owner-operable real 3D room camera controls; keyboard, touch and reduced motion. */
+.office-room-navigation{position:absolute;z-index:4;left:16px;top:15px;display:flex;gap:5px;max-width:calc(100% - 132px);overflow-x:auto;padding:2px;scrollbar-width:thin}
+.office-room-navigation button{background:#111b22e8;color:#d5cbb7;border:1px solid #5f5c50;border-radius:5px;padding:9px 11px;display:inline-flex;align-items:center;gap:7px;font-size:9px;font-weight:800;letter-spacing:.075em;white-space:nowrap;cursor:pointer;backdrop-filter:blur(9px)}
+.office-room-navigation button:hover,.office-room-navigation button:focus-visible,.office-room-navigation button[aria-pressed=true]{color:#fff0d2;border-color:#ddba80;background:#383328f2;outline-offset:2px}
+.office-room-nav-dot{width:6px;height:6px;flex-shrink:0;border-radius:50%;border:1px solid #b79867}
+.office-room-navigation button[aria-pressed=true] .office-room-nav-dot{background:#f4d29d;box-shadow:0 0 6px #ffe6b4}
+@media(max-width:650px){.office-room-navigation{top:12px;left:10px;max-width:calc(100% - 99px)}.office-room-navigation button{padding:8px 10px;font-size:8px}}

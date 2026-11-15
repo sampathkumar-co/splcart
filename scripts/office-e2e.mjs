@@ -83,9 +83,15 @@ try {
     });
     assert.ok(image.length>20_000,"room camera "+focus.label+" must render real detail");
   }
+  const strategy=page.getByRole("button",{name:"Focus strategy room"});
+  await strategy.click();
+  assert.equal(await strategy.getAttribute("aria-pressed"),"true","strategy room camera must have accessible selected state");
+  await page.waitForTimeout(1350);
+  const meetingImage=await page.locator(".office-canvas").screenshot({path:"artifacts/hq-room-strategy.png"});
+  assert.ok(meetingImage.length>20_000,"meeting room camera must render real geometry");
   await page.getByRole("button",{name:"Overview"}).click();
   await page.waitForTimeout(1300);
-  console.log("PASS real CEO, Marketing and Sales camera-focus screenshots, not a static decorative render");
+  console.log("PASS real CEO, Marketing, Sales and Strategy 3D camera screenshots and accessible navigation");
 
   await page.getByRole("button",{name:/AI General Manager/}).first().click();
   await page.getByRole("button",{name:"Run local evidence task"}).click();

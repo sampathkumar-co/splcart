@@ -213,6 +213,14 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
     <Suspense fallback={null}><Building selected={selected} selectedAgentId={selectedAgentId} agents={agents} onChooseAgent={chooseAgent} onChooseRoom={chooseRoom}/></Suspense>
     <OfficeCamera view={view}/>
    </Canvas>
+   <div className="office-room-navigation" role="group" aria-label="Navigate the four 3D office rooms">
+     {rooms.map(room=><button type="button" key={room.value}
+       aria-label={"Focus "+room.name.toLowerCase()}
+       aria-pressed={view===room.value}
+       onClick={()=>chooseRoom(room.value)}>
+       <span className="office-room-nav-dot" aria-hidden="true"/>{room.name}
+     </button>)}
+   </div>
    <button type="button" className="office-reset-camera" onClick={()=>setView("overview")} aria-label="Return to overview camera">Overview</button>
    <div className="office-overlay"><span className="light-dot"/> LIVE-SOURCE STATUS ONLY <span className="overlay-tip">Select a workstation · Drag to orbit · Scroll to zoom</span></div>
  </div>;
