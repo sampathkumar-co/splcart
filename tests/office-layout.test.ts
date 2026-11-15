@@ -21,6 +21,9 @@ describe("code-native office workstation camera geometry",()=>{
      expect(Math.abs(x)).toBeLessThan(8.5);
      expect(Math.abs(z)).toBeLessThan(6.7);
      expect(y).toBeCloseTo(.82,3);
+     expect(pose.position[1]).toBeGreaterThan(4.8);
+     expect(pose.position[2]-z).toBeLessThanOrEqual(1.6);
+     expect(pose.position[2]-z).toBeGreaterThan(1.4);
      const distance=Math.hypot(...pose.position.map((v,i)=>v-pose.target[i]));
      expect(distance).toBeGreaterThan(4);
      expect(distance).toBeLessThan(6);
