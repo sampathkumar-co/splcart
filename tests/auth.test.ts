@@ -32,8 +32,9 @@ describe("private owner HMAC session",()=>{
    expect(validateSession(cookie,now+1000)).toBe(true);
    expect(validateSession(cookie,now+8*3600000+1)).toBe(false);
    const [body,mac]=cookie.split(".");
-   const alteredLast = mac.endsWith("a") ? "b" : "a";
-   expect(validateSession(body+"."+mac.slice(0,-1)+alteredLast,now)).toBe(false);
+   // Mutate the first base64url character. Last-character changes can touch only unused padding bits.
+   const alteredFirst = mac.startsWith("a") ? "b" : "a";
+   expect(validateSession(body+"."+alteredFirst+mac.slice(1),now)).toBe(false);
    mutableEnv.OWNER_USERNAME="a-different-account";
    expect(validateSession(cookie,now)).toBe(false);
  });
