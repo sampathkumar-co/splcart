@@ -155,7 +155,7 @@ try {
   // Releasing a long software-WebGL sequence can starve synthetic pointer
   // positioning on CI CPUs. Invoke the actual DOM button handler directly.
   await page.getByRole("button",{name:"Return to room camera"})
-    .evaluate(el=>(el).click(),{timeout:60_000});
+    .evaluate(el=>el.click(),undefined,{timeout:60_000});
   await page.locator(".office-desk-context").waitFor({state:"hidden",timeout:60_000});
   await page.getByRole("button",{name:"Return to overview camera"}).click();
   console.log("PASS 16 source-backed physical monitor dashboards, four jewel-toned room feeds, idle web state, missing voice integration and real selected-camera tour");
