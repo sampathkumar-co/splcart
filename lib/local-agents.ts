@@ -15,7 +15,7 @@ export type LocalLead={
 export type LocalProduct={id:string;title:string;category:string;material:string;productUrl:string};
 export type LocalReel={id:string;status:string;productId:string;titleSnapshot:string};
 export type LocalPhoto={id:string;productId:string};
-export type LocalBrowserRun={id:string;sourceUrl:string;status:string;pageTitle:string|null};
+export type LocalBrowserRun={id:string;sourceUrl:string;status:string;provider:string;pageTitle:string|null};
 export type LocalContext={
   leads:LocalLead[];products:LocalProduct[];reels:LocalReel[];photos:LocalPhoto[];
   research:LocalBrowserRun[];now:Date;
@@ -64,7 +64,7 @@ export function evaluateLocalRole(roleId:string,context:LocalContext):LocalAgent
  const permissioned=approved.filter(p=>consent(p,now));
  const rendered=reels.filter(r=>["RENDERED","APPROVED"].includes(r.status));
  const approvedVideos=reels.filter(r=>r.status==="APPROVED");
- const completedRuns=research.filter(r=>r.status==="COMPLETED");
+ const completedRuns=research.filter(r=>r.status==="COMPLETED"&&r.provider==="PLAYWRIGHT");
 
  switch(roleId){
  case "general-manager":{
