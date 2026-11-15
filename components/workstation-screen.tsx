@@ -1,6 +1,6 @@
 "use client";
 /**
- * Twenty genuinely code-rendered display surfaces (16 role micro-panels and
+ * Genuinely code-rendered display surfaces (16 role micro-panels and
  * four information walls). Data comes from authenticated HQ agent/task records.
  * No synthetic data waves, activity bars, external textures or model calls.
  *
