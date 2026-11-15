@@ -42,13 +42,20 @@ the current room into a close-up of the *actual* selected role's workstation,
 using a single shared room/desk spatial layout in
 `lib/office-layout.ts`. Clicking any rendered desk also sets its true role
 inspector and requests its corresponding 3D camera. This is reversible with
-**Return to room** or **Overview**, and keyboard-accessible.
+**Return to room** or **Overview**, and keyboard-accessible. A
+genuine **Previous workstation / Next workstation** tour cycles across
+the actual sixteen-role roster, including explicitly blocked roles
+like Wholesale AI Phone Calling. Touring never executes or schedules
+a task.
 
 The highlighted workstation panel displays the authenticated role name,
 persisted status (`ON_DEMAND`, `RUNNING`, etc.) and recorded completions.
 It cannot invent AI work because no status or evidence metric is manufactured
 by the scene. All 16 camera targets are verified against real desk positions
 with `tests/office-layout.test.ts`. Unknown roles receive no camera target.
+The first camera lens was physically obscured by a foreground wall banner;
+actual screenshot inspection led to a higher, shallower overhead station
+pose (the layout tests now check that sightline).
 The independent Chromium test captures a **genuine focused WebGL screenshot**
 and compares the rendered pixels to the overview frame.
 
