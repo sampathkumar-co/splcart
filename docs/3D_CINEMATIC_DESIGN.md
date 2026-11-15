@@ -74,6 +74,16 @@ visitors, fake phone calls or made-up trends. Phone and Instagram remain
 unconfigured even if an unrelated/stale task row appears. Last report
 summaries are sanitized for whitespace and visually truncated.
 
+The same authenticated dashboard additionally exposes **aggregate, data-minimized
+operational signals**: fresh local FFmpeg render jobs (with stalled/queued
+distinction), recently completed actual browser inspections, owner-recorded
+open inquiries, owner-approved/prospect-review counts and manually logged
+publications. These are taken from independent HQ PostgreSQL tables, never
+SPLCART or external Instagram/WhatsApp/Google account APIs. Current rendering
+and browser sessions are time-bounded, so an old unfinished row cannot
+advertise a worker as permanently RUNNING. Small monitor text always labels
+whether an observation covers recent 100 jobs or recent 30 browser runs.
+
 The materialized display textures are generated at runtime by
 `components/workstation-screen.tsx` using local Canvas 2D + Three.js
 CanvasTexture. This is an **actual screen surface in WebGL**, not an
