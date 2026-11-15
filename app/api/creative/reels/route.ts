@@ -11,7 +11,7 @@ export async function GET() {
     const [jobs,assets,schedule]=await Promise.all([
       db.reelJob.findMany({orderBy:{createdAt:"desc"},take:50,
         select:{id:true,productId:true,assetId:true,status:true,outputFilename:true,
-          durationSeconds:true,titleSnapshot:true,materialSnapshot:true,linkSnapshot:true,
+          durationSeconds:true,scheduleDate:true,titleSnapshot:true,materialSnapshot:true,linkSnapshot:true,
           errorCode:true,approvedAt:true,createdAt:true,finishedAt:true}}),
       db.creativeAsset.findMany({orderBy:{createdAt:"desc"},take:80,
         select:{id:true,productId:true,width:true,height:true,createdAt:true,product:{select:{title:true}}}}),
