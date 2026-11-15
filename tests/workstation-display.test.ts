@@ -37,7 +37,8 @@ describe("truthful code-native workstation screens",()=>{
   expect(web.detail).toContain("website inspected");
   expect(web.recentTaskStatuses).toEqual(["COMPLETED","BLOCKED"]);
   const reel=buildWorkstationScreen("reel-generation",agents,tasks)!;
-  expect(reel.headline).toBe("RECORDED TASK IN PROGRESS");
+  expect(reel.headline).toBe("LAST TASK NOT CONFIRMED ACTIVE");
+  expect(reel.detail).toContain("No current task confirmed");
   expect(reel.mainNumber).toBe("0");
   expect(reel.detail).toMatch(/no result recorded/i);
   expect(buildRoomScreen("sales",agents,tasks).reports).toBe(1);
