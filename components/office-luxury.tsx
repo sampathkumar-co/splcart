@@ -269,7 +269,27 @@ function LoungeArt({room}:{room:LuxuryRoom}){
 export function LuxuryRoomDetails({room,night=false,detail=true}:{
  room:LuxuryRoom;night?:boolean;detail?:boolean;
 }){
+ const accent=room==="ceo"?"#d4b06a":room==="sales"?"#33ba99":
+  room==="marketing"?"#b18dd4":"#6db4e8";
  return <group>
+  {/* Architectural theatre: distinct jewellery-showroom lighting zones.
+      Static mood lighting is NOT a signal that a worker or integration is live. */}
+  {detail&&<group>
+    {[-2.97,2.97].map(x=><group key={x}>
+      <Cuboid pos={[x,1.27,-2.29]} size={[.065,2.28,.055]}
+        color={accent} emissive={accent} glow={night?0.35:0.18}/>
+      <Cuboid pos={[x,1.27,-2.26]} size={[.21,2.30,.028]}
+        color={accent} opacity={.12}/>
+    </group>)}
+    <Cuboid pos={[0,2.44,-2.32]} size={[5.35,.022,.04]}
+      color={accent} emissive={accent} glow={night?0.56:0.23}/>
+    {[-2.52,2.52].map(x=><group key={x}>
+      <Cuboid pos={[x,.22,1.68]} size={[.20,.07,.70]}
+       color={accent} metalness={.78} roughness={.23}/>
+      <Cuboid pos={[x,.255,1.68]} size={[.08,.008,.58]}
+       color="#fff0d7" emissive={accent} glow={.14}/>
+    </group>)}
+  </group>}
   {/* Slim architectural perimeter and fluted wall panels. */}
   {[-3.35,3.35].map(x=><group key={x}>
     <Cuboid pos={[x,1.39,-2.39]} size={[.093,2.73,.10]} color="#bdaa84" metalness={.75}/>

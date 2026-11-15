@@ -132,6 +132,11 @@ try {
   const deskStatus=await page.locator(".office-desk-context").innerText();
   assert.ok(deskStatus.includes("Google & Web Discovery")&&deskStatus.includes("ON DEMAND"),
     "focused workstation must show the authenticated actual role/status");
+  const trueDisplay=await page.locator(".office-desk-activity").innerText();
+  assert.ok(trueDisplay.includes("PERMITTED WEB RESEARCH")&&
+    trueDisplay.includes("READY FOR OWNER REQUEST")&&
+    trueDisplay.includes("NO TASK RECORD"),
+    "empty database must display idle screen purpose and no task, never fictional web research");
   await page.waitForTimeout(1000);
   const focused=await captureOffice("artifacts/hq-office-selected-desk.png");
   assert.equal(signature.equals(focused),false,
@@ -140,8 +145,9 @@ try {
   // calling; none of the 16 names is treated as a completed autonomous job.
   await page.getByRole("button",{name:"Next workstation"}).click();
   const blocked=await page.locator(".office-desk-context").innerText();
-  assert.ok(blocked.includes("Wholesale AI Phone Calling")&&blocked.includes("NOT CONFIGURED"),
-    "phone workstation tour must show its real blocked status, never claim a call");
+  assert.ok(blocked.includes("Wholesale AI Phone Calling")&&blocked.includes("NOT CONFIGURED")&&
+    blocked.includes("INTEGRATION UNAVAILABLE")&&blocked.includes("No compliant dialer"),
+    "the physical phone workstation must truthfully state that no voice calling exists");
   await page.getByRole("button",{name:"Previous workstation"}).click();
   const previous=await page.locator(".office-desk-context").innerText();
   assert.ok(previous.includes("Google & Web Discovery")&&previous.includes("ON DEMAND"),
@@ -149,7 +155,7 @@ try {
   await page.getByRole("button",{name:"Return to room camera"}).click();
   assert.equal(await page.locator(".office-desk-context").count(),0);
   await page.getByRole("button",{name:"Return to overview camera"}).click();
-  console.log("PASS selected real workstation cinematic close-up, truthful role status and reversible room navigation");
+  console.log("PASS 16 source-backed physical monitor dashboards, four jewel-toned room feeds, idle web state, missing voice integration and real selected-camera tour");
 
   // Explicit owner-only lightweight 2D entry: ordinary business workflows
   // must not compete with a previous heavy software-WebGL frame capture.
