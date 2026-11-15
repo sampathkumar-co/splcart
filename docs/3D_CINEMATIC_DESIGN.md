@@ -59,6 +59,69 @@ pose (the layout tests now check that sightline).
 The independent Chromium test captures a **genuine focused WebGL screenshot**
 and compares the rendered pixels to the overview frame.
 
+## The Evidence-Lit Atelier: screen truth and jewel-tone atmosphere (2026-11-15)
+
+**The office monitors are no longer status stickers.** The owner authenticated
+`/api/dashboard` returns persisted `agents` and `agentTasks`; the
+Headquarters passes both unmodified to the real Three.js scene. The new
+`lib/workstation-display.ts` maps precisely the 16 authorized roles to
+**actual source-grounded micro-screen models**. Each small monitor shows its
+role title, specific capability, actual RUNNING / ON DEMAND / NOT CONFIGURED
+status, persisted evidence count, last recorded report outcome and the
+most recent **actual** task-history strip. An empty database shows
+**NO RECORDED TASK HISTORY** and **NO TASK RECORD**, not fake bars, progress,
+visitors, fake phone calls or made-up trends. Phone and Instagram remain
+unconfigured even if an unrelated/stale task row appears. Last report
+summaries are sanitized for whitespace and visually truncated.
+
+The materialized display textures are generated at runtime by
+`components/workstation-screen.tsx` using local Canvas 2D + Three.js
+CanvasTexture. This is an **actual screen surface in WebGL**, not an
+external video, baked image, or static marketing mockup. Textures are
+disposed on update/unmount and geometry is shared. They update whenever
+the existing 15-second source-only dashboard polling delivers changes.
+No additional API keys or extra server/data/third-party model calls.
+
+Each of the **four** rooms additionally has an integrated, legible,
+brass-framed **authenticated evidence wall** showing room-specific total
+roles, current running count, recent successful task records and unconfigured
+roles; the strategy room's scope explicitly says **all HQ roles**.
+These counts are computed solely from authenticated current role and recent
+agent-task snapshots, not historical claims. The selected workstation inspector
+also mirrors its current screen purpose/outcome, making tiny screen contents
+accessible with keyboard and screen readers.
+
+The new showroom palette is intentionally richer while retaining dark premium
+materials, e.g.:
+
+| Surface | Color | Hex | Role |
+|---|---|---|---|
+| Architecture | Obsidian | `#0B0F12` | Anchoring contrast |
+| Glass, smoked metal | Graphite | `#121922` | Depth |
+| Metal inlays | Champagne gold | `#D4B06A` | Jewellery luxury |
+| Readable UI | Pearl ivory | `#F3E9D7` | Warm legibility |
+| Executive | Champagne gold | `#D4B06A` | Leadership |
+| Sales intelligence | Emerald | `#33BA99` | Evidence and wholesale |
+| Marketing studio | Plum | `#B18DD4` | Creative distinction |
+| Strategy room | Sapphire | `#6DB4E8` | Research and decisions |
+| Not configured | Soft ruby | `#DE7B7D` | Truthful unavailability |
+
+Original code-native wall illumination, warm brass-finished monitor frames,
+recessed room edge lights and slow decorative ambient reflections add depth.
+Decorative lighting **never** switches a status to RUNNING. No repetitive
+fake worker avatars, fake progress bars or phantom activities. Reduced-motion
+users get static ambience; the original zero-idle-animation WebGL demand
+frame loop stays intact. The independent low-power `/2d` entry is unaffected.
+
+**Acceptance:** `tests/workstation-display.test.ts` covers all sixteen
+unique roles, real saved task evidence, empty-task states, unconfigured
+provider safeguards and room-specific accents. `scripts/office-e2e.mjs`
+asserts actual source-only web-desk screen text and disabled phone-screen
+information in a real signed-in Chromium session, with PNG visual evidence
+in GitHub Actions artifacts. CI-only inputs are fake fixtures, **not real
+retailer demand or revenue**. Actual Windows GPU frame pacing and final
+art-director visual approval remain to be measured.
+
 ## Visual quality acceptance
 
 - `scripts/office-e2e.mjs` uses real Chromium and actual WebGL canvas pixel
