@@ -263,3 +263,7 @@
 .office-desk-context button{align-self:flex-start;background:transparent;border:0;padding:5px 0;color:#f0c995;font:700 10px Manrope,Arial,sans-serif}
 .office-desk-context button:hover,.office-desk-context button:focus-visible{text-decoration:underline;outline-offset:3px}
 @media(max-width:700px){.office-desk-camera{right:10px;bottom:47px;font-size:8px;padding:8px 9px}.office-desk-context{left:10px;right:10px;bottom:86px;max-width:260px;padding:12px 13px}.office-desk-context strong{font-size:13px}}
+
+.office-desk-tour{display:flex;align-items:center;gap:12px;padding-top:3px}
+.office-desk-tour button{background:#374036;border:1px solid #816d50;border-radius:4px;color:#eed0a0;padding:8px 10px;font:700 9px Manrope,Arial,sans-serif}
+.office-desk-tour button:hover,.office-desk-tour button:focus-visible{background:#584633;color:#fff4d9;outline-offset:2px}

@@ -244,6 +244,14 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
    if(!role)return;
    setView(role.room as RoomKey);setFocusId(selectedAgentId);onSelect(role.room as RoomKey);
  };
+ const tourTo=(offset:number)=>{
+   const index=ROLE_SPECS.findIndex(role=>role.id===focusId);
+   if(index<0)return;
+   const next=ROLE_SPECS[(index+offset+ROLE_SPECS.length)%ROLE_SPECS.length];
+   if(!getStationCameraPose(next.id))return; // No imaginary desk.
+   onAgentSelect?.(next.id);
+   setView(next.room as RoomKey);setFocusId(next.id);onSelect(next.room as RoomKey);
+ };
  return <div className={"office-canvas luxury-office"+(cinema?" office-canvas-cinema":"")} role="group" aria-label="Interactive 3D Prasanth Jewellery Headquarters. Sixteen agents have evidence-based statuses.">
    <Canvas shadows frameloop="demand" camera={{position:[10.2,10.8,12.1],fov:40,near:.1,far:90}} dpr={[1,detail?1.5:1.2]} gl={{alpha:false,antialias:true,powerPreference:"high-performance"}}>
     <color attach="background" args={["#111d23"]}/>
@@ -282,6 +290,10 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
      <small>{focusedAgent?
        focusedAgent.status.replaceAll("_"," ")+" · "+focusedAgent.evidenceCount+" recorded completions":
        "Awaiting authenticated status"}</small>
+     <div className="office-desk-tour" role="group" aria-label="Visit real agent workstations">
+       <button type="button" onClick={()=>tourTo(-1)} aria-label="Previous workstation">← Previous</button>
+       <button type="button" onClick={()=>tourTo(1)} aria-label="Next workstation">Next →</button>
+     </div>
      <button type="button" onClick={()=>{setFocusId(null);setView(view)}}
       aria-label="Return to room camera">Return to room</button>
    </div>}

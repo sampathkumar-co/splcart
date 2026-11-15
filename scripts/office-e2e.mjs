@@ -136,6 +136,16 @@ try {
   const focused=await captureOffice("artifacts/hq-office-selected-desk.png");
   assert.equal(signature.equals(focused),false,
     "moving to the selected station must change the real 3D camera pixels");
+  // Guided tour moves to the next *actual* desk, including explicitly blocked
+  // calling; none of the 16 names is treated as a completed autonomous job.
+  await page.getByRole("button",{name:"Next workstation"}).click();
+  const blocked=await page.locator(".office-desk-context").innerText();
+  assert.ok(blocked.includes("Wholesale AI Phone Calling")&&blocked.includes("NOT CONFIGURED"),
+    "phone workstation tour must show its real blocked status, never claim a call");
+  await page.getByRole("button",{name:"Previous workstation"}).click();
+  const previous=await page.locator(".office-desk-context").innerText();
+  assert.ok(previous.includes("Google & Web Discovery")&&previous.includes("ON DEMAND"),
+    "tour back must select the original evidence-grounded role");
   await page.getByRole("button",{name:"Return to room camera"}).click();
   assert.equal(await page.locator(".office-desk-context").count(),0);
   await page.getByRole("button",{name:"Return to overview camera"}).click();
