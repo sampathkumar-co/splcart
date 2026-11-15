@@ -151,16 +151,6 @@ try {
   await page.getByRole("button",{name:"Return to overview camera"}).click();
   console.log("PASS selected real workstation cinematic close-up, truthful role status and reversible room navigation");
 
-  // Owner controls real daily internal evidence, not unauthorized social/voice automation.
-  const dailyOn=page.getByRole("button",{name:"Enable daily briefing"});
-  await dailyOn.click();
-  const dailyOff=page.getByRole("button",{name:"Disable daily briefing"});
-  await dailyOff.waitFor({timeout:15_000});
-  assert.equal(await dailyOff.getAttribute("aria-pressed"),"true");
-  await dailyOff.click();
-  await page.getByRole("button",{name:"Enable daily briefing"}).waitFor({timeout:15_000});
-  assert.equal(await page.getByRole("button",{name:"Enable daily briefing"}).getAttribute("aria-pressed"),"false");
-  console.log("PASS real owner opt-in/out daily source-only 16-role reporting controls in browser");
   // Explicit owner-only lightweight 2D entry: ordinary business workflows
   // must not compete with a previous heavy software-WebGL frame capture.
   await page.close();
@@ -173,6 +163,17 @@ try {
   assert.equal(await page.locator(".office-canvas canvas").count(),0,
     "lightweight 2D direct entry must not mount any WebGL scene");
   console.log("PASS private standalone /2d HQ route, accessible workstations with zero WebGL canvases");
+  // Owner controls real daily internal evidence, not unauthorized social/voice automation.
+  const dailyOn=page.getByRole("button",{name:"Enable daily briefing"});
+  await dailyOn.click();
+  const dailyOff=page.getByRole("button",{name:"Disable daily briefing"});
+  await dailyOff.waitFor({timeout:15_000});
+  assert.equal(await dailyOff.getAttribute("aria-pressed"),"true");
+  await dailyOff.click();
+  await page.getByRole("button",{name:"Enable daily briefing"}).waitFor({timeout:15_000});
+  assert.equal(await page.getByRole("button",{name:"Enable daily briefing"}).getAttribute("aria-pressed"),"false");
+  console.log("PASS real owner opt-in/out daily source-only 16-role reporting controls in browser");
+
   // A real owner-only user journey, using CI-only invented message content.
   await page.getByRole("button",{name:"Customer Inbox",exact:true}).click();
   await page.getByRole("heading",{name:"Record a real enquiry"}).waitFor();
