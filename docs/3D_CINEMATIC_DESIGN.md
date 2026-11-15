@@ -56,6 +56,23 @@ MIT-licensed Hermes3D; the retained notice is
   laptop GPU or photorealism on every display. Inspect artifact images on
   the current successful Actions run; never invent screenshots.
 
+## Direct low-power Headquarters entry
+
+The owner can open **`/2d`** on the independent protected Headquarters
+domain, or use the visible **Low-power HQ** link beside the 3D mode button.
+Unlike a 3D toggle after the main page already loaded, this route
+server-renders `<Headquarters initialVisual={false}/>`, so **no WebGL Canvas
+is mounted at all** until the owner deliberately chooses **3D OFFICE VIEW**.
+The existing signed session proxy protects `/2d` exactly like `/`.
+It does not bypass business permissions, load fake data or touch SPLCART.
+
+Browser acceptance tests exercise premium 3D in one authenticated browser
+tab, then run genuine customer enquiry/owner approval/business workflows in
+fresh protected `/2d` tabs, preventing a software-GPU stress sequence from
+blocking ordinary controls. Three.js static architecture also shares unit-box
+and unit-cylinder GPU buffers (`dispose={null}` prevents premature cleanup
+of shared geometry on mode changes) rather than allocating redundant buffers.
+
 ## Known limits
 
 This is still a *procedurally built, architectural 3D interface*, not a
