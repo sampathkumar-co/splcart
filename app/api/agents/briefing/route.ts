@@ -16,7 +16,7 @@ export const dynamic="force-dynamic";
  */
 export async function POST(){
  try{
-  const limit=await consumeRateLimit("owner-16-role-readiness",6,86400_000);
+  const limit=await consumeRateLimit("owner-role-readiness",6,86400_000);
   if(!limit.allowed)return throttled(limit.retryAfterSeconds);
   const context=await loadLocalContext();
   const reports=ROLE_SPECS.map(role=>evaluateLocalRole(role.id,context));
