@@ -10,7 +10,7 @@ const lead:LocalLead={
 };
 const base:LocalContext={now,leads:[lead],
  products:[{id:"product-one",title:"CZ necklace",category:"CZ",material:"Owner-stated alloy",productUrl:"https://product.example.com/cz-necklace"}],
- reels:[],photos:[],research:[]};
+ reels:[],photos:[],research:[],socialPosts:[]};
 describe("truthful no-key role task execution",()=>{
  it("gives executive factual counts, no invented paid revenue or calls",()=>{
    const r=evaluateLocalRole("general-manager",base);
@@ -43,6 +43,18 @@ describe("truthful no-key role task execution",()=>{
    }]});
    expect(allowed.status).toBe("COMPLETED");
    expect(allowed.summary).toContain("no Instagram/YouTube post was sent");
+ });
+ it("reports only owner-entered genuine-form metrics; never independently verified platform numbers",()=>{
+   const noData=evaluateLocalRole("marketing-performance",base);
+   expect(noData.status).toBe("BLOCKED");
+   const data=evaluateLocalRole("marketing-performance",{...base,socialPosts:[{
+     id:"owner-post",platform:"INSTAGRAM",title:"Owner photo Reel",
+     postUrl:"https://www.instagram.com/reel/CIexampleabc/",
+     views:500,likes:15,enquiries:3,metricSource:"OWNER_REPORTED",
+   }]});
+   expect(data.status).toBe("COMPLETED");
+   expect(data.summary).toContain("NOT independently platform-verified");
+   expect(data.items[0].details).toContain("OWNER_REPORTED");
  });
  it("never fabricates influencer/Instagram, telephony or campaign measurements",()=>{
    for(const roleId of ["wholesale-calling","customer-conversation","instagram-discovery","marketing-performance"]){
