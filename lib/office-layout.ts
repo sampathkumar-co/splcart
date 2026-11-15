@@ -36,8 +36,11 @@ export function getStationCameraPose(id:string):CameraPose|null {
   const x=room.x+desk[0],z=room.z+desk[2];
   const sin=Math.sin(HQ_BUILDING_YAW),cos=Math.cos(HQ_BUILDING_YAW);
   const wx=x*cos+z*sin,wz=-x*sin+z*cos;
-  const sign=wx>0?-1:1; // Aim inwards, keeping outer walls outside the lens.
+  // High near-overhead lens: keep all outer/front interior signs and light
+  // rails BELOW the sightline, so the desk itself is visible on close-up.
+  // We tested the original low-angle shot and it was obscured by signage.
+  const sign=wx>0?-1:1;
   const target:Vector3=[wx,.82,wz];
-  const position:Vector3=[wx+sign*2.15,3.65,wz+3.25];
+  const position:Vector3=[wx+sign*1.55,5.0,wz+1.55];
   return {position,target};
 }
