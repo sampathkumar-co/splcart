@@ -287,7 +287,7 @@ export function Office({selected,onSelect,agents=[],tasks=[],selectedAgentId=nul
       onClick={focusSelected}>Inspect selected desk</button>}
    {focusId&&<div className="office-desk-context" aria-live="polite" aria-label="Focused workstation information">
      <span>WORKSTATION / SOURCE-GROUNDED</span>
-     <strong>{focusedAgent?.name||focusRole?.name||"Unknown role"}</strong>
+     <strong>{focusScreen?.name||focusRole?.name||"Unknown role"}</strong>
      <small>{focusScreen?
        focusScreen.statusText+" · "+focusScreen.mainNumber+" recorded evidence":
        "Awaiting authenticated status"}</small>
