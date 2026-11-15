@@ -55,6 +55,15 @@ hq.example.com {
 
 This is an example, not a claim a domain was registered or deployed.
 
+## Private, manually imported customer enquiries
+
+The owner-only `CustomerInquiry` table stores short, **owner-attested** customer-initiated enquiries and manually reported replies, and the associated `SystemAudit` entries record event type and id without publishing message text. This is not a connected WhatsApp or Instagram channel; HQ makes **zero** external reads or sends. The owner has to attest actual inbound initiation and personally performed manual replies. Mere receipt of an inquiry does not authorize cold promotions or bulk recontact.
+
+- Keep this dedicated HQ PostgreSQL private and covered by its encrypted independent backup/restore contract; never replicate customer messages into a public asset directory or a storefront database.
+- Only enter minimum necessary, non-sensitive messages and nicknames. Do not enter payment data, authentication tokens, phone/address details, or full private message histories.
+- The current version supports OPEN, REPLIED_REPORTED and CLOSED owner-controlled statuses. **It does not yet provide automated account sync, a message-deletion/retention interface or independently verified platform delivery.** These are outstanding release/privacy tasks, not capabilities to invent.
+- Original, owner-recorded transcripts are not independently verified or evidence of general marketing consent.
+
 ## Browser research policy
 
 - The owner chooses a website and up to three explicit permitted same-site HTTPS URLs; no Google/Instagram automated scraping.

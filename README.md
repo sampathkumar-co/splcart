@@ -62,7 +62,7 @@ A dedicated **HQ-only** backup script is available at `scripts/hq-backup.sh`. Gi
 
 **Optional daily local 16-role briefing.** The owner may explicitly enable a single source-based readiness sweep each day at **08:30 Asia/Kolkata**. The dedicated `hq-agents` container accesses only the HQ database through an internal Docker network and persists role outcomes with a transaction-guarded once-per-day marker, even if several workers race. Unsupported social, voice and inbound-conversation roles remain `BLOCKED`. The owner can disable future runs in the workstation console. No external AI or messaging APIs are called and no actual customers/revenue are implied. This is not a fully autonomous 16-agent company.
 
-**16 roles, without fake autonomous staff.** The 3D scene and accessible roster expose sixteen named jobs. Thirteen have real **owner-triggered local deterministic reporting/evidence tools** that persist outcomes and cost labels in `AgentTask`. Tasks needing records can explicitly return `BLOCKED`. Calling, inbound message automation, and Instagram cold lead discovery remain unconfigured without compliant external connections, permissions or platform access. No 16 always-on AI models are running.
+**16 roles, without fake autonomous staff.** The 3D scene and accessible roster expose sixteen named jobs. Fourteen have real **owner-triggered local deterministic reporting/evidence tools** that persist outcomes and cost labels in `AgentTask`. Tasks needing records can explicitly return `BLOCKED`. Outbound calling, connected inbound message automation, and Instagram cold lead discovery remain unconfigured without compliant external connections, permissions or platform access. The new Customer Inbox supports ONLY owner-transcribed, customer-initiated enquiries and manual reply logging, never automatic WhatsApp/Instagram reading or sending. No 16 always-on AI models are running.
 
 **Computing is not free.** The implemented local model API charge is zero, but electricity, CPU/GPU time, VPS, storage, manual work and production monitoring are **not metered**. Do not confuse `modelCostPaise=0` with total business operating cost ₹0.
 
@@ -86,3 +86,7 @@ The authoritative walkthrough is [NO_API_KEYS_OPERATIONS.md](docs/NO_API_KEYS_OP
 - The initial app demonstrates a verifiable operator-assisted pipeline, **not** an already-running autonomous 16-agent business.
 
 See [AGENTS.md](AGENTS.md) for the design, completion standard and next milestone.
+
+## Customer Conversation (manual owner-recorded inbox)
+
+The separate HQ **Customer Inbox** records only actual customer-initiated messages the owner personally transcribes. Each record is `OWNER_RECORDED` (not platform-verified), includes the original channel, nickname, category, limited text and status. No contact details are required. A local category-matched product reference may generate an **editable** draft, but current price, stock, delivery and specifications are NOT verified. The owner must personally send through the original channel and explicitly confirm that manual act before it can be recorded; repeated replies are rejected. This feature does **not** connect to social accounts or provide automatic inbound support. No unsolicited marketing consent is inferred. All data belongs to HQ, not SPLCART.

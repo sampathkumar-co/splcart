@@ -9,6 +9,16 @@ This guide is for **the separate Prasanth Jewellers AI Headquarters**. The owner
 - FFmpeg, Sharp, PostgreSQL, Playwright, Next.js and TypeScript run on your own compute; that still consumes hardware time, electricity, storage, memory and any applicable VPS charges. **Model API charges of ₹0 do not mean total operating cost ₹0.** The database records `modelCostPaise=0` and correctly marks compute cost as `NOT_METERED`.
 - No live Instagram/YouTube/WhatsApp login, posting, mass private-messaging, compliant public telephone caller, or proprietary photorealistic human-wearing-jewellery generator exists just because source code can open a browser. Such integrations require separate permissions, real authenticated sessions/services and compliance checks. We do not pretend they are working.
 
+## Real owner-recorded inbound customer enquiry workflow
+
+1. Open **Customer Inbox**. Transcribe **only** a genuine customer-initiated enquiry you personally received. Mark its actual channel and a non-sensitive nickname; avoid addresses, phone numbers, passwords, card details and unnecessary PII. Explicitly confirm it was initiated by the customer. An unsolicited scraped business number is not an incoming customer enquiry.
+2. The record is stored in the **separate private Headquarters database** with `sourceLabel=OWNER_RECORDED`. The software neither verifies your Instagram/WhatsApp login nor reads messages or permissions from any platform. No incoming messages appear without manual entry.
+3. View a strictly category-matched **owner-entered** product reference if one exists. Copy or edit the deterministic reply draft. It promises to *check* actual product availability, specifications, price and delivery, never claims verified stock or a promotion.
+4. Send the reply **personally** in the customer’s original channel. Afterwards check the explicit "I personally sent" confirmation to log an `REPLIED_REPORTED` action with audit history. An attempted second reply record is rejected. Mark the enquiry `CLOSED` only with your reason.
+5. The 3D office **Customer Conversation** role can now evaluate the owner-recorded inquiry history on demand and as part of owner-opted-in daily 16-role evidence reporting. This is not a platform-connected bot and does not infer permission to send future promotions.
+
+Use `tests/customer-inquiry.test.ts`, `scripts/inbox-smoke.mjs` and `scripts/office-e2e.mjs` for CI-only local tests. CI customer messages are synthetic fixtures, not real customers.
+
 ## Daily jewellery video workflow
 
 1. Open **Product Intelligence** and register a genuine owner-stated jewellery title, material, quantity, owner SKU, and a public HTTPS product reference. This does **not** fetch from or write to the SPLCART store.
@@ -29,11 +39,11 @@ This guide is for **the separate Prasanth Jewellers AI Headquarters**. The owner
 
 ## Real 16-workstation HQ
 
-The office shows sixteen **named roles**, but does not invent sixteen always-on paid models. Thirteen roles have implemented owner-triggered **local evidence/report tools**, which read real HQ database records and create auditable `AgentTask` rows. An on-demand task can finish with a truthful **BLOCKED** result if its required owner-supplied evidence does not exist.
+The office shows sixteen **named roles**, but does not invent sixteen always-on paid models. Fourteen roles have implemented owner-triggered **local evidence/report tools**, which read real HQ database records and create auditable `AgentTask` rows. An on-demand task can finish with a truthful **BLOCKED** result if its required owner-supplied evidence does not exist.
 
 The implemented local actions: executive evidence report, marketing workload, browser-source research archive, real-photo creative briefs, real render status, owner-approved manual social handoff, owner-reported marketing metrics, sales lead review, category-only jewellery matching, eligible/manual follow-up list, permissioned wholesale relationships, owner-reported retention candidates and existing manual Playwright web research.
 
-Three platform-dependent roles remain **NOT_CONFIGURED**: customer conversation (no opted-in incoming account), Instagram lead discovery (owner manually researches; no platform scraping/unsolicited DMs) and AI wholesale calling (no compliant authorized calling service). Website public contact details are not permission to call.
+Two platform-dependent roles remain **NOT_CONFIGURED**: Instagram lead discovery (owner manually researches; no platform scraping/unsolicited DMs) and AI wholesale calling (no compliant authorized calling service). Customer Conversation now has a LOCAL owner-entered inquiry recorder, but an external inbound WhatsApp/Instagram/website account connector is still not configured. Website public contact details are not permission to call.
 
 ### Optional daily local 16-role evidence reports
 
