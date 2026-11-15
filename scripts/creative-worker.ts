@@ -5,6 +5,7 @@
 import { randomUUID } from "node:crypto";
 import { db } from "../lib/prisma";
 import { renderProductReel } from "../lib/creative";
+import { scheduleToday } from "../lib/creative-schedule";
 
 if(!process.env.DATABASE_URL || !process.env.HQ_MEDIA_DIR)
   throw new Error("CREATIVE_HQ_DATABASE_AND_MEDIA_VOLUME_REQUIRED");
@@ -56,13 +57,27 @@ async function renderNext():Promise<boolean>{
 }
 async function runWorker(){
  try{
+  if(process.argv.includes("--schedule-only")){
+    const result=await scheduleToday();
+    console.log("CREATIVE_SCHEDULE",JSON.stringify(result));
+    return;
+  }
   const once=process.argv.includes("--once");
   if(once){
     const didWork=await renderNext();
     if(!didWork)console.log("CREATIVE_QUEUE_EMPTY");
   }else{
-    // Persistent job queue, no unattended posting, no generation without owner upload.
+    // Only local owner-approved photos are ever scheduled; videos await approval.
+    // Five-minute poll checks the India-local date without API keys or cron vendor.
+    let lastScheduleCheck=0;
     for(;;){
+      if(Date.now()-lastScheduleCheck>300_000){
+        lastScheduleCheck=Date.now();
+        try{
+          const result=await scheduleToday();
+          if(result.created>0)console.log("CREATIVE_SCHEDULE",JSON.stringify(result));
+        }catch(e){console.error("CREATIVE_SCHEDULE_FAILED",e instanceof Error?e.message:"unknown");}
+      }
       const didWork=await renderNext();
       if(!didWork)await new Promise(resolve=>setTimeout(resolve,3000));
     }
