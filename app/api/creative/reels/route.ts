@@ -8,18 +8,19 @@ const createInput=z.object({assetId:z.uuid()}).strict();
 
 export async function GET() {
   try {
-    const [jobs,assets]=await Promise.all([
+    const [jobs,assets,schedule]=await Promise.all([
       db.reelJob.findMany({orderBy:{createdAt:"desc"},take:50,
         select:{id:true,productId:true,assetId:true,status:true,outputFilename:true,
           durationSeconds:true,titleSnapshot:true,materialSnapshot:true,linkSnapshot:true,
           errorCode:true,approvedAt:true,createdAt:true,finishedAt:true}}),
       db.creativeAsset.findMany({orderBy:{createdAt:"desc"},take:80,
         select:{id:true,productId:true,width:true,height:true,createdAt:true,product:{select:{title:true}}}}),
+      db.creativeSchedule.findUnique({where:{id:"hq"}}),
     ]);
     const reels=jobs.map(j=>({...j,
       previewUrl:j.outputFilename && ["RENDERED","APPROVED"].includes(j.status)
         ? "/api/creative/reels/"+j.id+"/video":null}));
-    return Response.json({reels,assets},{headers:{"Cache-Control":"no-store"}});
+    return Response.json({reels,assets,schedule:{enabled:schedule?.enabled??false,dailyTarget:schedule?.dailyTarget??2}},{headers:{"Cache-Control":"no-store"}});
   }catch(e){return apiError(e);}
 }
 
