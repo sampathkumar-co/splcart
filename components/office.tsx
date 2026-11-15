@@ -229,7 +229,6 @@ export function Office({selected,onSelect,agents=[],tasks=[],selectedAgentId=nul
  const [cinema,setCinema]=useState(false);
  const [focusId,setFocusId]=useState<string|null>(null);
  const focusPose=useMemo(()=>focusId?getStationCameraPose(focusId):null,[focusId]);
- const focusedAgent=agents.find(a=>a.id===focusId);
  const focusRole=ROLE_SPECS.find(a=>a.id===focusId);
  const focusScreen=useMemo(()=>focusId?
    buildWorkstationScreen(focusId,agents,tasks):null,[focusId,agents,tasks]);
