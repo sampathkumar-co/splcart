@@ -164,3 +164,13 @@
 .station-chip:hover,.station-chip:focus-visible{border-color:#d9b57b;box-shadow:0 0 0 1px #a48a5d55}
 @media(max-width:600px){.office-canvas{height:390px;min-height:390px}.office-overlay{left:13px;right:13px;bottom:13px;font-size:8px}.office-reset-camera{top:12px;right:11px}}
 @media(prefers-reduced-motion:reduce){.station-chip{transition:none}}
+
+/* Truthful owner-triggered 16-role readiness review, not fake autonomous work. */
+.station-console-utilities{display:flex;align-items:center;justify-content:flex-end;gap:16px;flex-wrap:wrap}
+.station-console-utilities small{font-size:10px;color:#9eaca8}
+.station-console-utilities .agent-run-button{min-height:37px;white-space:nowrap}
+.readiness-summary{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid #65543d;background:linear-gradient(105deg,#2d3029,#1b2628);padding:13px 16px;margin:0 0 14px;border-radius:7px}
+.readiness-summary strong{color:#e9d7b4;font-size:12px}
+.readiness-summary span{color:#ffc6a7;font-size:12px}
+.readiness-summary small{color:#aebbb3;font-size:10px}
+@media(max-width:740px){.station-console-head{align-items:flex-start;flex-direction:column}.station-console-utilities{justify-content:flex-start}.station-console-utilities .agent-run-button{width:100%}}

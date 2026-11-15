@@ -27,6 +27,24 @@ assert.equal(phone.status,"BLOCKED");
 assert.equal(phone.report.errorCode,"NO_COMPLIANT_PHONE_CHANNEL");
 const instagram=await runRole("instagram-discovery");
 assert.equal(instagram.status,"BLOCKED");
+const briefingResponse=await fetch(base+"/api/agents/briefing",{
+ method:"POST",headers:authHeaders(cookie,true),body:"{}",
+});
+const briefing=await briefingResponse.json();
+assert.equal(briefingResponse.status,200,JSON.stringify(briefing));
+assert.equal(briefing.total,16);
+assert.equal(briefing.reports.length,16);
+assert.equal(briefing.completed+briefing.blocked,16);
+assert.ok(briefing.blocked>=3,"three missing external connectors cannot become operational");
+assert.equal(briefing.externalActionsPerformed,0);
+assert.equal(briefing.paidModelCostPaise,0);
+assert.equal(briefing.computeCost,"NOT_METERED");
+assert.equal(briefing.reports.find(x=>x.roleId==="wholesale-calling").status,"BLOCKED");
+assert.equal(briefing.reports.find(x=>x.roleId==="instagram-discovery").status,"BLOCKED");
+const batchAudit=(await fetch(base+"/api/dashboard",{headers:authHeaders(cookie)}));
+const batchDashboard=await batchAudit.json();
+assert.equal(batchDashboard.agentTasks.filter(t=>t.status==="BLOCKED").length>=3,true);
+console.log("PASS one-click 16-role persisted readiness batch, real blockers, no network or paid model activity.");
 const data=await fetch(base+"/api/dashboard",{headers:authHeaders(cookie)});
 assert.equal(data.status,200);
 const dashboard=await data.json();

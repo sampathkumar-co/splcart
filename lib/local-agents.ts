@@ -30,7 +30,7 @@ export type LocalAgentReport={
 
 export const NO_KEY_TASK_ROLES = new Set([
   "general-manager","marketing-manager","trend-research","creative-director",
-  "reel-generation","social-publishing","sales-manager",
+  "reel-generation","social-publishing","marketing-performance","sales-manager",
   "jewellery-recommendation","lead-follow-up","wholesale-relationship",
   "customer-retention","web-discovery",
 ]);

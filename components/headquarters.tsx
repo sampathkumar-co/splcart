@@ -22,7 +22,7 @@ function Field({name,label,placeholder,type="text",required=true,defaultValue}: 
 function Panel({title,eyebrow,children,actions}:{title:string;eyebrow?:string;children:React.ReactNode;actions?:React.ReactNode}) {return <section className="panel"><div className="panel-heading"><div><div className="eyebrow">{eyebrow||"WORKSTATION"}</div><h2>{title}</h2></div>{actions}</div>{children}</section>}
 function Badge({value}:{value:string}) {return <span className={`status status-${value.toLowerCase().replace(/[^a-z]+/g,"-")}`}>{value.replaceAll("_"," ")}</span>}
 export function Headquarters(){
- const [data,setData]=useState<Dashboard|null>(null);const [selected,setSelected]=useState<RoomKey>("sales");const [selectedAgentId,setSelectedAgentId]=useState<string|null>("web-discovery");const [tab,setTab]=useState<"overview"|"leads"|"research"|"products"|"creative">("overview");const [visual,setVisual]=useState(true);const [leadId,setLeadId]=useState("");const [busy,setBusy]=useState(false);const [error,setError]=useState("");const [notice,setNotice]=useState("");const [mobileOpen,setMobileOpen]=useState(false);
+ const [data,setData]=useState<Dashboard|null>(null);const [selected,setSelected]=useState<RoomKey>("sales");const [selectedAgentId,setSelectedAgentId]=useState<string|null>("web-discovery");const [tab,setTab]=useState<"overview"|"leads"|"research"|"products"|"creative">("overview");const [visual,setVisual]=useState(true);const [leadId,setLeadId]=useState("");const [busy,setBusy]=useState(false);const [error,setError]=useState("");const [notice,setNotice]=useState("");const [mobileOpen,setMobileOpen]=useState(false);const [readiness,setReadiness]=useState<{completed:number;blocked:number;batchId:string}|null>(null);
  const refresh=useCallback(async()=>{try {const r=await fetch("/api/dashboard",{cache:"no-store"});const j=await r.json();if(!r.ok)throw new Error(j.error||"Unable to load dashboard");setData(j);setError("")}catch(e){setError((e as Error).message)}},[]);
  useEffect(()=>{refresh();const interval=setInterval(refresh,15000);return ()=>clearInterval(interval)},[refresh]);
  const act=async(payload:Record<string,unknown>)=>{setBusy(true);setError("");setNotice("");try{const r=await fetch("/api/actions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});const j=await r.json();if(!r.ok)throw new Error((j.error||"Action failed")+(j.details?": "+j.details.join(", "):""));setNotice("Saved with audit evidence. No external message was sent.");await refresh();return true;}catch(e){setError((e as Error).message);return false;}finally{setBusy(false)}};
@@ -35,6 +35,18 @@ export function Headquarters(){
     setNotice(outcome.message||"Local role task recorded, no external action.");
     await refresh();
    }catch(e){setError(e instanceof Error?e.message:"Agent task failed");}
+   finally{setBusy(false);}
+ };
+ const runReadiness=async()=>{
+   setBusy(true);setError("");setNotice("");
+   try{
+    const response=await fetch("/api/agents/briefing",{method:"POST",headers:{"Content-Type":"application/json"},body:"{}"});
+    const outcome=await response.json();
+    if(!response.ok)throw new Error(outcome.error||"Readiness check failed");
+    setReadiness({completed:outcome.completed,blocked:outcome.blocked,batchId:outcome.batchId});
+    setNotice("Recorded all sixteen role assessments. "+outcome.blocked+" are blocked by missing evidence or external permissions. No message, post, call or paid AI request.");
+    await refresh();
+   }catch(e){setError(e instanceof Error?e.message:"Readiness check failed");}
    finally{setBusy(false);}
  };
  const submit=(action:string)=>async(e:React.FormEvent<HTMLFormElement>)=>{e.preventDefault();const form=e.currentTarget;const val=Object.fromEntries(new FormData(form));const body:Record<string,unknown>={action,...val};if(action==="add_match"){body.equivalentMaterials=val.equivalentMaterials==="on";body.equivalentUnits=val.equivalentUnits==="on";for(const key of ["competitorMaterial","competitorUnitDescription","competitorPriceRupees","competitorEvidenceUrl"]){if(body[key]==="")delete body[key];}}if(await act(body)){form.reset();}};
@@ -65,7 +77,8 @@ export function Headquarters(){
      <section className="hq-visual"><div className="visual-top"><div><div className="eyebrow">THE VIRTUAL WORKSPACE</div><h2>Your AI headquarters</h2><p>Click any workstation to inspect its purpose and current operational state.</p></div><div className="visual-actions"><button className="tiny-button" onClick={()=>setVisual(v=>!v)}>{visual?"2D ACCESSIBLE VIEW":"3D OFFICE VIEW"}</button></div></div>
        {visual?<Suspense fallback={<div className="canvas-loading">Preparing 3D office...</div>}><Office selected={selected} onSelect={setSelected} agents={data?.agents||[]} selectedAgentId={selectedAgentId} onAgentSelect={setSelectedAgentId}/></Suspense>:<div className="room-grid">{([ ["ceo","CEO OFFICE","Owner approvals and revenue"],["sales","SALES FLOOR","Real research and evidence"],["marketing","MARKETING STUDIO","Not configured yet"],["meeting","MEETING ROOM","Strategy and reviews"]] as const).map(([room,title,desc])=><button key={room} onClick={()=>setSelected(room)} className={selected===room?"room-select selected":"room-select"}><Building2 size={25}/><strong>{title}</strong><span>{desc}</span></button>)}</div>}
        <div className="station-console" aria-label="All sixteen configured organizational roles">
-        <div className="station-console-head"><span>THE 16 AGENT WORKSTATIONS</span><small>Only persisted operations are reported as running. No simulated agents.</small></div>
+        <div className="station-console-head"><span>THE 16 AGENT WORKSTATIONS</span><div className="station-console-utilities"><small>Real source-backed outcomes only. Blocked roles are not operational.</small><button type="button" className="agent-run-button" disabled={busy||!data} onClick={runReadiness}>{busy?"Checking…":"Assess all 16 roles"}</button></div></div>
+        {readiness&&<div className="readiness-summary" role="status"><strong>{readiness.completed} locally completed</strong><span>{readiness.blocked} blocked</span><small>Owner-triggered readiness batch. No external AI, calls, messages or posts. Batch {readiness.batchId.slice(0,8)}.</small></div>
         <div className="station-console-grid">
          {(data?.agents||[]).map(agent=><button type="button" key={agent.id} className={selectedAgentId===agent.id?"station-chip selected":"station-chip"} onClick={()=>{setSelectedAgentId(agent.id);setSelected(agent.room)}} aria-pressed={selectedAgentId===agent.id}>
           <span className="station-chip-code">{agent.short}</span><span className="station-chip-name">{agent.name}</span><Badge value={agent.status}/>
