@@ -16,9 +16,10 @@ export type LocalProduct={id:string;title:string;category:string;material:string
 export type LocalReel={id:string;status:string;productId:string;titleSnapshot:string};
 export type LocalPhoto={id:string;productId:string};
 export type LocalBrowserRun={id:string;sourceUrl:string;status:string;provider:string;pageTitle:string|null};
+export type LocalSocialPost={id:string;platform:"INSTAGRAM"|"YOUTUBE";title:string;postUrl:string;views:number|null;likes:number|null;enquiries:number|null;metricSource:string|null};
 export type LocalContext={
   leads:LocalLead[];products:LocalProduct[];reels:LocalReel[];photos:LocalPhoto[];
-  research:LocalBrowserRun[];now:Date;
+  research:LocalBrowserRun[];socialPosts:LocalSocialPost[];now:Date;
 };
 export type LocalAgentReport={
   status:"COMPLETED"|"BLOCKED";roleId:string;summary:string;
@@ -58,7 +59,7 @@ function list(leads:LocalLead[]){
 
 export function evaluateLocalRole(roleId:string,context:LocalContext):LocalAgentReport {
  if(!ROLE_SPECS.some(r=>r.id===roleId))return blocked(roleId,"UNKNOWN_AGENT_ROLE","Role not in the authorized headquarters roster.");
- const {leads,products,reels,photos,research,now}=context;
+ const {leads,products,reels,photos,research,socialPosts,now}=context;
  const approved=leads.filter(p=>p.decision==="APPROVED");
  const verified=leads.filter(p=>!!p.verifiedBusinessAt);
  const permissioned=approved.filter(p=>consent(p,now));
@@ -133,8 +134,19 @@ export function evaluateLocalRole(roleId:string,context:LocalContext):LocalAgent
      completedRuns.slice(0,12).map(r=>({label:r.pageTitle||"Inspected site",
        details:"Successfully captured owner-requested browser source; not proof of legal identity",sourceUrl:r.sourceUrl}))):
      blocked(roleId,"NO_COMPLETED_BROWSER_RUNS","No completed real browser sessions yet. Use Web Discovery manually.");
- case "marketing-performance":
-   return blocked(roleId,"NO_PLATFORM_MEASUREMENT_CONNECTOR","No authentic social-platform analytics or verified campaign attribution. Do not invent metrics.");
+ case "marketing-performance":{
+   const measured=socialPosts.filter(p=>p.metricSource==="OWNER_REPORTED" &&
+     (p.views!==null||p.likes!==null||p.enquiries!==null));
+   if(!measured.length)return blocked(roleId,"NO_OWNER_REPORTED_METRICS",
+     "No owner-observed Instagram/YouTube post metrics recorded. Platform analytics API and verification are NOT connected.");
+   return report(roleId,"Owner-entered post snapshots only. NOT independently platform-verified, not confirmed revenue.",
+     measured.slice(0,15).map(p=>({
+       label:p.platform+" · "+p.title,
+       details:(p.views??"Unknown")+" reported views · "+(p.likes??"Unknown")+
+         " reported likes · "+(p.enquiries??"Unknown")+" reported enquiries. Source: OWNER_REPORTED.",
+       sourceUrl:p.postUrl,
+     })));
+ }
  case "customer-conversation":
    return blocked(roleId,"NO_OPTED_IN_INBOUND_CHANNEL","No consent-aware inbound Instagram/WhatsApp/website account connection is configured.");
  case "instagram-discovery":
