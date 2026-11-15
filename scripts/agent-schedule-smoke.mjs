@@ -5,12 +5,12 @@
 import assert from "node:assert/strict";
 import {promisify} from "node:util";
 import {execFile} from "node:child_process";
-import {authenticateOwner,authHeaders,base} from "./ci-auth.mjs";
+import {authHeaders,base} from "./ci-auth.mjs";
 if(process.env.HQ_TEST_MODE!=="1"||
  process.env.DATABASE_URL!=="postgresql://hq:hq@localhost:5432/hq?schema=public")
  throw new Error("CI_ONLY_LOCAL_AGENTS_TEST");
 const exec=promisify(execFile);
-const cookie=await authenticateOwner();
+export async function runAgentScheduleSmoke(cookie){
 async function request(path,body){
  const response=await fetch(base+path,{
   ...(body?{method:"POST",headers:authHeaders(cookie,true),body:JSON.stringify(body)}:
@@ -51,3 +51,5 @@ const final=await request("/api/dashboard");
 assert.equal(final.data.agentSchedule.enabled,false);
 assert.ok(final.data.agentSchedule.lastRunDate);
 console.log("PASS opt-in 16-role daily internal evidence, three concurrent DB workers, idempotence, verified blockers and owner disable. No paid models or external actions.");
+
+}

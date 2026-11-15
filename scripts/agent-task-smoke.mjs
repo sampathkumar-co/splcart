@@ -1,6 +1,7 @@
 /** Real HQ-only PostgreSQL + HTTP task acceptance. Never external API calls. */
 import assert from "node:assert/strict";
 import {authenticateOwner,authHeaders,base} from "./ci-auth.mjs";
+import {runAgentScheduleSmoke} from "./agent-schedule-smoke.mjs";
 if(process.env.HQ_TEST_MODE!=="1")throw new Error("AGENT_TEST_ONLY_ISOLATED_CI");
 const cookie=await authenticateOwner();
 async function runRole(roleId){
@@ -54,3 +55,6 @@ assert.ok(dashboard.agents.find(a=>a.id==="general-manager").evidenceCount>=1);
 assert.equal(dashboard.agents.filter(a=>a.status==="RUNNING").length,0);
 assert.equal(dashboard.stats.verifiedRevenueRupees,0);
 console.log("PASS genuine owner-triggered persistent agent tasks, product sources, approved Reel handoff, explicit phone/Instagram blockers, zero verified revenue and zero paid model calls.");
+
+// Reuse the authenticated CI session so the real 8-attempt owner-login limit stays intact.
+await runAgentScheduleSmoke(cookie);
