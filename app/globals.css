@@ -219,3 +219,36 @@
 .inbox-danger-button:hover,.inbox-danger-button:focus-visible{background:#543333;border-color:#e59e82}
 .inbox-danger-button:disabled{opacity:.47;cursor:not-allowed}
 .inbox-erase{display:block;margin-top:12px;font-size:10px}
+
+/* The Intelligence Atelier: authored real WebGL architecture, not an image/mockup. */
+.luxury-office{height:min(72vh,720px);min-height:520px;background:radial-gradient(ellipse at 50% 25%,#21303a,#071016 85%);isolation:isolate;transition:height .36s ease}
+.luxury-office.office-canvas-cinema{height:min(85vh,860px);min-height:650px}
+.luxury-office:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+ background:linear-gradient(90deg,rgba(5,10,14,.21),transparent 25%,transparent 72%,rgba(5,10,14,.23)),
+ linear-gradient(180deg,rgba(6,12,16,.12),transparent 26%,transparent 77%,rgba(3,10,12,.42))}
+.office-cinema-titling{position:absolute;left:28px;top:74px;z-index:3;display:flex;flex-direction:column;pointer-events:none;max-width:260px;gap:4px;text-shadow:0 2px 12px #071114}
+.office-cinema-titling span{font:700 9px Manrope,Arial,sans-serif;letter-spacing:.24em;color:#cebd99}
+.office-cinema-titling strong{font:italic 500 27px Georgia,serif;letter-spacing:-.025em;color:#f9e7ca;line-height:1.12}
+.office-cinema-titling small{font:500 10px Manrope,Arial,sans-serif;color:#aebdb8;letter-spacing:.04em}
+.office-visual-controls{position:absolute;z-index:5;top:71px;right:18px;display:flex;align-items:center;gap:5px;max-width:54%;flex-wrap:wrap;justify-content:flex-end}
+.office-visual-controls button{border:1px solid rgba(185,159,111,.56);background:rgba(12,20,23,.88);color:#ebd6ae;padding:8px 11px;border-radius:5px;font:700 9px Manrope,Arial,sans-serif;letter-spacing:.075em;backdrop-filter:blur(12px)}
+.office-visual-controls button:hover,.office-visual-controls button:focus-visible,.office-visual-controls button[aria-pressed=true]{background:#46382c;color:#fff2d2;border-color:#ebc78a;outline-offset:2px}
+.luxury-office .office-room-navigation{z-index:5}
+.luxury-office .office-room-navigation button{border-color:#8b7859;background:rgba(13,20,23,.92);box-shadow:0 4px 12px rgba(0,0,0,.20)}
+.luxury-office .office-room-nav-dot{border-color:#d9b986}
+.luxury-office .office-reset-camera{z-index:6;border-color:#c9a470;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.luxury-office .office-overlay{z-index:4;color:#e6d3b5;text-shadow:0 1px 7px #0c1518}
+@media(max-width:1000px){.office-cinema-titling strong{font-size:21px}.office-cinema-titling{top:88px}.office-visual-controls{top:78px}}
+@media(max-width:700px){
+ .luxury-office{min-height:410px;height:57vh}
+ .luxury-office.office-canvas-cinema{height:74vh;min-height:510px}
+ .office-cinema-titling{top:auto;bottom:67px;left:13px;max-width:200px}
+ .office-cinema-titling strong{font-size:20px}
+ .office-cinema-titling small{display:none}
+ .office-cinema-titling span{font-size:7px}
+ .office-visual-controls{top:66px;right:9px;left:9px;max-width:none;justify-content:flex-end}
+ .office-visual-controls button{padding:7px 8px;font-size:8px}
+ .luxury-office .office-overlay{left:13px;right:13px;bottom:13px;font-size:7px}
+ .luxury-office .overlay-tip{display:none}
+}
+@media(prefers-reduced-motion:reduce){.luxury-office{transition:none}}
