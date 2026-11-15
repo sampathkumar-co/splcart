@@ -66,5 +66,45 @@ export async function runInboxSmoke(cookie){
  const final=await request("/api/customer-inquiries");
  assert.ok(final.result.inquiries.find(q=>q.id===id&&q.status==="CLOSED"));
  assert.equal(final.result.externalChannelsConnected,false);
+ const fresh=await request("/api/customer-inquiries",{
+  action:"record_inbound",channel:"WEBSITE",customerAlias:"CI-fresh-case",
+  category:"CZ jewellery",message:"CI fixture asking about earrings",
+  customerInitiated:true,
+ });
+ assert.equal(fresh.status,201);
+ const db=new PrismaClient();
+ try{
+  await db.customerInquiry.update({where:{id},data:{
+   updatedAt:new Date(Date.now()-100*86_400_000),
+  }});
+  const old=await request("/api/customer-inquiries");
+  assert.equal(old.result.retention.mode,"OWNER_TRIGGERED_ONLY");
+  assert.ok(old.result.retention.eligibleByDays["90"]>=1);
+  const noConfirmation=await request("/api/customer-inquiries",{
+   action:"purge_closed",days:90,confirm:"CANCEL",
+  });
+  assert.equal(noConfirmation.status,400);
+  const purged=await request("/api/customer-inquiries",{
+   action:"purge_closed",days:90,confirm:"PURGE",
+  });
+  assert.equal(purged.status,200,JSON.stringify(purged.result));
+  assert.ok(purged.result.deleted>=1);
+  assert.equal(await db.customerInquiry.count({where:{id}}),0);
+  assert.equal(await db.customerInquiry.count({where:{id:fresh.result.inquiry.id}}),1);
+  const wrong=await request("/api/customer-inquiries",{
+   action:"erase",inquiryId:fresh.result.inquiry.id,confirm:"CANCEL",
+  });
+  assert.equal(wrong.status,400);
+  const erased=await request("/api/customer-inquiries",{
+   action:"erase",inquiryId:fresh.result.inquiry.id,confirm:"ERASE",
+  });
+  assert.equal(erased.status,200,JSON.stringify(erased.result));
+  assert.equal(erased.result.deleted,1);
+  const repeat=await request("/api/customer-inquiries",{
+   action:"erase",inquiryId:fresh.result.inquiry.id,confirm:"ERASE",
+  });
+  assert.equal(repeat.status,409);
+ }finally{await db.$disconnect();}
+ console.log("PASS owner-triggered retention: exact confirmation, closed-only older records, open record preserved and verified individual erasure.");
  console.log("PASS owner-only incoming customer workflow: manual source label, explicit initiation/sent confirmations, honest reply/closure, duplicate rejection; no platform login or send.");
 }
