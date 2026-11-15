@@ -182,3 +182,12 @@
 .office-room-nav-dot{width:6px;height:6px;flex-shrink:0;border-radius:50%;border:1px solid #b79867}
 .office-room-navigation button[aria-pressed=true] .office-room-nav-dot{background:#f4d29d;box-shadow:0 0 6px #ffe6b4}
 @media(max-width:650px){.office-room-navigation{top:12px;left:10px;max-width:calc(100% - 99px)}.office-room-navigation button{padding:8px 10px;font-size:8px}}
+
+/* The owner can opt into DB-only daily role reports, with no implied external activity. */
+.agent-daily-opt-in{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px;margin-bottom:14px;border:1px solid #686047;border-radius:9px;background:linear-gradient(120deg,#25312e,#1a2628)}
+.agent-daily-opt-in strong{color:#f0d8af;font-size:12px}
+.agent-daily-opt-in p{max-width:680px;color:#b6c3bd;font-size:10px;line-height:1.7;margin:7px 0}
+.agent-daily-opt-in small{color:#9eaca5;font-size:10px}
+.agent-daily-opt-in button{flex-shrink:0;min-height:40px}
+.agent-daily-opt-in button[aria-pressed=true]{border:1px solid #b69670;background:#4b3e32;color:#ffe1c1}
+@media(max-width:740px){.agent-daily-opt-in{flex-direction:column;align-items:stretch}.agent-daily-opt-in button{width:100%}}

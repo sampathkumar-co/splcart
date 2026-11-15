@@ -13,7 +13,7 @@ type Product = {id:string;title:string;category:string;material:string;unitDescr
 type Run = {id:string;sourceUrl:string;finalUrl:string|null;pageTitle:string|null;excerpt:string|null;status:string;errorCode:string|null;startedAt:string;evidence?:{headings?:string[];description?:string;businessLinks?:{title:string;url:string}[];tabs?:{sourceUrl:string;status:string;evidence?:{title:string;finalUrl:string;excerpt:string};errorCode?:string}[];completed?:number;failed?:number}};
 type AgentTask = {id:string;roleId:string;status:string;errorCode:string|null;createdAt:string;
   modelCostPaise:number;result:{summary?:string;items?:{label:string;details:string;sourceUrl?:string}[];computeCost?:string}|null};
-type Dashboard = {stats:{researched:number;qualified:number;awaitingReview:number;approved:number;interested:number;ownerReportedOrders:number;verifiedRevenueRupees:number};prospects:Prospect[];products:Product[];runs:Run[];agents:AgentRecord[];agentTasks:AgentTask[];control:{researchPaused:boolean;reason:string;updatedAt:string|null;audit:{id:string;event:string;reason:string;createdAt:string}[]};integrations:Record<string,string>};
+type Dashboard = {stats:{researched:number;qualified:number;awaitingReview:number;approved:number;interested:number;ownerReportedOrders:number;verifiedRevenueRupees:number};prospects:Prospect[];products:Product[];runs:Run[];agents:AgentRecord[];agentTasks:AgentTask[];agentSchedule:{enabled:boolean;lastRunDate:string|null;localTime:string;timeZone:string};control:{researchPaused:boolean;reason:string;updatedAt:string|null;audit:{id:string;event:string;reason:string;createdAt:string}[]};integrations:Record<string,string>};
 const fmt = (v:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(v);
 const steps = ["DISCOVERED","RESEARCHED","QUALIFIED","APPROVED","CONTACTED","INTERESTED","QUOTATION","NEGOTIATION"];
 const emptyStats = ["researched","qualified","awaitingReview","verifiedRevenueRupees"] as const;
@@ -49,6 +49,21 @@ export function Headquarters(){
    }catch(e){setError(e instanceof Error?e.message:"Readiness check failed");}
    finally{setBusy(false);}
  };
+ const toggleDailyAgentBriefing=async()=>{
+   if(!data||busy)return;
+   setBusy(true);setError("");setNotice("");
+   try{
+     const response=await fetch("/api/agents/schedule",{
+       method:"POST",headers:{"Content-Type":"application/json"},
+       body:JSON.stringify({enabled:!data.agentSchedule.enabled}),
+     });
+     const result=await response.json();
+     if(!response.ok)throw new Error(result.error||"Unable to update briefing schedule");
+     setNotice(result.message||"Internal role schedule saved.");
+     await refresh();
+   }catch(error){setError(error instanceof Error?error.message:"Schedule update failed");}
+   finally{setBusy(false);}
+ };
  const submit=(action:string)=>async(e:React.FormEvent<HTMLFormElement>)=>{e.preventDefault();const form=e.currentTarget;const val=Object.fromEntries(new FormData(form));const body:Record<string,unknown>={action,...val};if(action==="add_match"){body.equivalentMaterials=val.equivalentMaterials==="on";body.equivalentUnits=val.equivalentUnits==="on";for(const key of ["competitorMaterial","competitorUnitDescription","competitorPriceRupees","competitorEvidenceUrl"]){if(body[key]==="")delete body[key];}}if(await act(body)){form.reset();}};
  const research=async(e:React.FormEvent<HTMLFormElement>)=>{e.preventDefault();const form=e.currentTarget;const formData=new FormData(form);const url=String(formData.get("url")||"");const extraUrls=["url2","url3"].map(name=>String(formData.get(name)||"").trim()).filter(Boolean);setBusy(true);setNotice("");setError("");try{const r=await fetch("/api/research",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url,extraUrls})});const j=await r.json();if(!r.ok)throw new Error(j.error||"Browser inspection failed");setNotice(`Real Chromium session captured ${j.finding.completed} successful tab(s) and ${j.finding.failed} failure(s). Register the lead when evidence is sufficient.`);await refresh();}catch(e){setError((e as Error).message);await refresh()}finally{setBusy(false)}};
  const prospect=data?.prospects.find(p=>p.id===leadId)||data?.prospects[0];
@@ -78,6 +93,20 @@ export function Headquarters(){
        {visual?<Suspense fallback={<div className="canvas-loading">Preparing 3D office...</div>}><Office selected={selected} onSelect={setSelected} agents={data?.agents||[]} selectedAgentId={selectedAgentId} onAgentSelect={setSelectedAgentId}/></Suspense>:<div className="room-grid">{([ ["ceo","CEO OFFICE","Owner approvals and revenue"],["sales","SALES FLOOR","Real research and evidence"],["marketing","MARKETING STUDIO","Not configured yet"],["meeting","MEETING ROOM","Strategy and reviews"]] as const).map(([room,title,desc])=><button key={room} onClick={()=>setSelected(room)} className={selected===room?"room-select selected":"room-select"}><Building2 size={25}/><strong>{title}</strong><span>{desc}</span></button>)}</div>}
        <div className="station-console" aria-label="All sixteen configured organizational roles">
         <div className="station-console-head"><span>THE 16 AGENT WORKSTATIONS</span><div className="station-console-utilities"><small>Real source-backed outcomes only. Blocked roles are not operational.</small><button type="button" className="agent-run-button" disabled={busy||!data} onClick={runReadiness}>{busy?"Checking…":"Assess all 16 roles"}</button></div></div>
+        <div className="agent-daily-opt-in" role="group" aria-label="Daily local agent evidence report">
+          <div><strong>Daily local evidence briefing</strong>
+            <p>08:30 India time. All 16 role checks use saved HQ evidence; unsupported
+             calls, DMs and external integrations stay blocked. No paid model calls.</p>
+            <small>{data?.agentSchedule.lastRunDate?
+              "Last completed India-local date: "+data.agentSchedule.lastRunDate:
+              "No scheduled briefing completed yet"}</small>
+          </div>
+          <button className="agent-run-button" type="button"
+            aria-pressed={data?.agentSchedule.enabled??false}
+            disabled={busy||!data} onClick={toggleDailyAgentBriefing}>
+            {data?.agentSchedule.enabled?"Disable daily briefing":"Enable daily briefing"}
+          </button>
+        </div>
         {readiness&&<div className="readiness-summary" role="status"><strong>{readiness.completed} locally completed</strong><span>{readiness.blocked} blocked</span><small>Owner-triggered readiness batch. No external AI, calls, messages or posts. Batch {readiness.batchId.slice(0,8)}.</small></div>}
         <div className="station-console-grid">
          {(data?.agents||[]).map(agent=><button type="button" key={agent.id} className={selectedAgentId===agent.id?"station-chip selected":"station-chip"} onClick={()=>{setSelectedAgentId(agent.id);setSelected(agent.room)}} aria-pressed={selectedAgentId===agent.id}>

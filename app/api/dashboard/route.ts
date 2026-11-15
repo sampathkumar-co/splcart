@@ -5,13 +5,14 @@ import { getAgentRecords } from "@/lib/agent-roster";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {
-    const [prospects, products, runs, control, controlAudit, agentTasks] = await Promise.all([
+    const [prospects, products, runs, control, controlAudit, agentTasks, agentSchedule] = await Promise.all([
       db.prospect.findMany({ ...fullProspect, orderBy: { updatedAt: "desc" }, take: 100 }),
       db.product.findMany({ orderBy: { createdAt: "desc" }, take: 100 }),
       db.researchRun.findMany({ orderBy: { startedAt: "desc" }, take: 30 }),
       db.systemControl.findUnique({ where: { id:"hq" } }),
       db.systemAudit.findMany({ orderBy: { createdAt:"desc" }, take:10 }),
       db.agentTask.findMany({ orderBy: { createdAt:"desc" }, take:60 }),
+      db.agentSchedule.findUnique({where:{id:"hq-local-readiness"}}),
     ]);
     const verifiedRevenue = prospects.filter(p => p.conversion?.verifiedAt).reduce((sum, p) => sum + (p.conversion?.grossAmountPaise || 0), 0);
     return Response.json({
@@ -39,6 +40,10 @@ export async function GET() {
         result:t.resultJson,
         modelCostPaise:t.modelCostPaise,
       })),
+      agentSchedule: {
+        enabled:agentSchedule?.enabled??false,lastRunDate:agentSchedule?.lastRunDate??null,
+        localTime:"08:30",timeZone:"Asia/Kolkata",
+      },
       integrations: { splcart: "EXTERNAL_SHOPPING_REFERENCE_ONLY", browser: "MANUAL_BROWSER_RESEARCH", outreach: "MANUAL_ONLY", quotations: "OWNER_APPROVED_MANUAL_SHARING", revenue: "OWNER_REPORTED_UNVERIFIED" },
     }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) { return apiError(e); }

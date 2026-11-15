@@ -115,6 +115,8 @@ jobs:
         run: node scripts/social-reporting-smoke.mjs
       - name: Run real source-grounded no-key role tasks and verify permission blockers
         run: node scripts/agent-task-smoke.mjs
+      - name: Verify concurrent owner-opted-in daily internal agent briefing
+        run: node scripts/agent-schedule-smoke.mjs
       - name: Test separate Chromium worker over authenticated internal HTTP
         run: |
           env -u DATABASE_URL -u OWNER_PASSWORD \
