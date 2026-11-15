@@ -35,6 +35,33 @@ The implemented local actions: executive evidence report, marketing workload, br
 
 Three platform-dependent roles remain **NOT_CONFIGURED**: customer conversation (no opted-in incoming account), Instagram lead discovery (owner manually researches; no platform scraping/unsolicited DMs) and AI wholesale calling (no compliant authorized calling service). Website public contact details are not permission to call.
 
+### Optional daily local 16-role evidence reports
+
+The **Headquarters** workstation console now offers **Enable daily briefing** and
+**Disable daily briefing**. This is disabled by default, owned and audited by the
+HQ owner, and checks the HQ-only database at **08:30 Asia/Kolkata** on each
+India-local calendar day. The separate `hq-agents` service has **only the isolated
+HQ database network**: no outbound internet, public listening port, browser,
+phone number, messaging adapter, paid model key or social account credentials.
+
+A daily run records sixteen distinct `AgentTask` results, not sixteen paid
+AI conversations or simulated employees. Each role evaluates *real saved HQ
+evidence* using the existing deterministic local reporter; if an external
+service, evidence, or permission is missing its result is **BLOCKED**.
+The CEO can inspect historical results using the same 16-workstation panel.
+A PostgreSQL advisory lock, a once-per-local-day marker and a single transaction
+prevent multiple workers from duplicating a scheduled batch.
+
+The owner can still run the **Assess all 16 roles** button independently.
+Turning off the daily schedule prevents future scheduled batches but does not
+delete audit history, interfere with owner-triggered reports, or cancel existing
+videos. Worker start alone does not enable it.
+
+**This is scheduled local evidence reporting, not full autonomous social sales,
+customer messaging, Google/Instagram acquisition, legal voice calling, or
+an independent 16-model LLM workforce.** Local compute/electricity remains
+`NOT_METERED`; paid model API usage stays zero.
+
 ### No fabricated proof
 
 - A captured website is not a legally verified retailer; business evidence requires owner source review.
@@ -45,13 +72,14 @@ Three platform-dependent roles remain **NOT_CONFIGURED**: customer conversation 
 
 ## How to run locally
 
-Run a **standalone** Node 22+/PostgreSQL 17 HQ with dedicated secrets and HQ-only data. Read [SECURITY_AND_DEPLOYMENT.md](SECURITY_AND_DEPLOYMENT.md) before using any server. The repository ships a dedicated four-service `compose.hq.yml`: Postgres, owner web app, isolated Playwright worker and isolated FFmpeg creative worker. The creative worker has **no outbound social network and no API keys**; browser egress policy is separate and must be audited on the host.
+Run a **standalone** Node 22+/PostgreSQL 17 HQ with dedicated secrets and HQ-only data. Read [SECURITY_AND_DEPLOYMENT.md](SECURITY_AND_DEPLOYMENT.md) before using any server. The repository ships a dedicated five-service `compose.hq.yml`: Postgres, owner web app, isolated Playwright worker, isolated FFmpeg creative worker and an internal-DB-only daily role worker. The creative worker has **no outbound social network and no API keys**; browser egress policy is separate and must be audited on the host.
 
 Important verification files:
 - `scripts/creative-smoke.mjs`: upload a synthetic **CI-ONLY** image, render a real 20-second H.264 MP4, ffprobe duration, read protected video and require owner approval.
 - `scripts/creative-schedule-smoke.mjs`: opt-in 2/day, use the one available test photo, deduplicate and disable.
 - `scripts/social-reporting-smoke.mjs`: record a **FAKE CI-ONLY** social URL for database testing, not an actual post; save owner-labeled metric sample and confirm the Marketing Performance task uses source-labeled values.
 - `scripts/agent-task-smoke.mjs`: run actual local no-key evidence tasks, refuse missing external calling/Instagram capability, never count verified revenue.
+- `scripts/agent-schedule-smoke.mjs`: exercise real owner opt-in/disable, three competing isolated role workers, one source-labeled 16-role batch, truthful platform blockers, and daily deduplication.
 - `scripts/office-e2e.mjs`: inspect 3D, source-based GM task, 2D fallback, approved real MP4/quote, owner pause and mobile UI using actual Chromium.
 
 All CI sample customers/photos/links are disposable **fixtures**, never business results. A successful CI pass establishes tested code paths, not a secure external deployment or automatic customer acquisition.
