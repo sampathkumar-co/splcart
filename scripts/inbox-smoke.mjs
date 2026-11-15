@@ -84,12 +84,27 @@ export async function runInboxSmoke(cookie){
    action:"purge_closed",days:90,confirm:"CANCEL",
   });
   assert.equal(noConfirmation.status,400);
+  const report=await db.agentTask.create({data:{
+   roleId:"customer-conversation",action:"CI_OLD_REPORT_WITH_ALIAS",
+   status:"COMPLETED",
+   resultJson:{summary:"Historical report",items:[{label:"CI_OLD_CUSTOMER_ALIAS"}]},
+   finishedAt:new Date(),
+  }});
+  await db.systemAudit.create({data:{
+   actor:"OWNER",event:"INQUIRY_CLOSED_BY_OWNER",
+   reason:"Owner closed inquiry "+id+". Reason: CI_OLD_PRIVATE_NOTE",
+  }});
   const purged=await request("/api/customer-inquiries",{
    action:"purge_closed",days:90,confirm:"PURGE",
   });
   assert.equal(purged.status,200,JSON.stringify(purged.result));
   assert.ok(purged.result.deleted>=1);
   assert.equal(await db.customerInquiry.count({where:{id}}),0);
+  const historical=await db.agentTask.findUnique({where:{id:report.id}});
+  assert.equal(JSON.stringify(historical?.resultJson).includes("CI_OLD_CUSTOMER_ALIAS"),false);
+  const olderLogs=await db.systemAudit.findMany({where:{event:"INQUIRY_CLOSED_BY_OWNER"}});
+  assert.equal(olderLogs.some(x=>x.reason.includes("CI_OLD_PRIVATE_NOTE")),false);
+
   assert.equal(await db.customerInquiry.count({where:{id:fresh.result.inquiry.id}}),1);
   const wrong=await request("/api/customer-inquiries",{
    action:"erase",inquiryId:fresh.result.inquiry.id,confirm:"CANCEL",
