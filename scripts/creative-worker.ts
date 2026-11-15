@@ -54,7 +54,8 @@ async function renderNext():Promise<boolean>{
   }
   return true;
 }
-try{
+async function runWorker(){
+ try{
   const once=process.argv.includes("--once");
   if(once){
     const didWork=await renderNext();
@@ -67,3 +68,5 @@ try{
     }
   }
 }finally {await db.$disconnect();}
+}
+void runWorker().catch(error=>{console.error("CREATIVE_WORKER_FATAL",error instanceof Error?error.message:"unknown");process.exitCode=1;});
