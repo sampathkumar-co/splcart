@@ -14,6 +14,7 @@ import { RoundedBox, Text } from "@react-three/drei";
 import { Suspense, useState, useEffect, useRef } from "react";
 import { ROLE_SPECS, type AgentRecord, type AgentRole } from "@/lib/agent-roster";
 import { OfficeCamera, type OfficeView } from "./office-camera";
+import {PavilionArchitecture,StoneFloor,LuxuryRoomDetails} from "./office-luxury";
 
 const gold = "#c7a772";
 const charcoal = "#16191b";
@@ -144,16 +145,15 @@ function MeetingRoom({choose}:{choose:(room:RoomKey)=>void}){
   <Text position={[0,1.45,-2.105]} fontSize={.13} color="#909b98" letterSpacing={.07}>REVIEW · APPROVE · TRACK</Text>
  </group>;
 }
-function Room({room,chosen,agents,selectedAgentId,onChooseAgent,onChooseRoom}:{
+function Room({room,chosen,agents,selectedAgentId,onChooseAgent,onChooseRoom,night=false,detail=true}:{
  room:typeof rooms[number];chosen:boolean;agents:AgentRecord[];selectedAgentId:string|null;
  onChooseAgent:(id:string,room:RoomKey)=>void;onChooseRoom:(room:RoomKey)=>void;
+ night?:boolean;detail?:boolean;
 }){
  const members=ROLE_SPECS.filter(role=>role.room===room.value);
- const floor="#293235";
+ // Original code-rendered veined stone in each room, not a flat material.
  return <group position={[room.x,0,room.z]}>
-  <mesh position={[0,.007,0]} receiveShadow onClick={e=>{e.stopPropagation();onChooseRoom(room.value);}}>
-   <boxGeometry args={[6.9,.065,4.86]}/><meshStandardMaterial color={chosen?"#45504b":floor} roughness={.32} metalness={.19}/>
-  </mesh>
+  <StoneFloor selected={chosen} room={room.value} onSelect={()=>onChooseRoom(room.value)}/>
   <Block at={[0,.07,-2.32]} size={[6.55,.022,.055]} color={gold} metalness={.88}/>
   <Block at={[0,.065,2.32]} size={[6.55,.022,.055]} color={gold} metalness={.88}/>
   <Block at={[3.25,.055,0]} size={[.04,.013,4.60]} color="#a18b67" metalness={.85}/>
@@ -181,20 +181,23 @@ function Room({room,chosen,agents,selectedAgentId,onChooseAgent,onChooseRoom}:{
   <Block at={[3.08,1.28,-2.30]} size={[.040,2.55,.065]} color="#c8ab7c" metalness={.68}/>
   <Block at={[0,.085,2.16]} size={[5.85,.014,.025]} color="#c9a775" metalness={.78}/>
   <Planter x={2.92} z={1.86}/>
-  <spotLight position={[1.8,4.9,2.2]} angle={.92} penumbra={.9} intensity={1.55} distance={9} color="#ffe9c8"/>
+  <LuxuryRoomDetails room={room.value} night={night} detail={detail}/>
+  <spotLight position={[1.8,4.9,2.2]} angle={.92} penumbra={.9} intensity={night?1.85:1.25} distance={9} color="#ffe9c8"/>
   <LightRail x={0} z={-2.02} length={4.65}/>
  </group>;
 }
-function Building({selected,selectedAgentId,agents,onChooseAgent,onChooseRoom}:{
+function Building({selected,selectedAgentId,agents,onChooseAgent,onChooseRoom,night=false,detail=true}:{
  selected:RoomKey;selectedAgentId:string|null;agents:AgentRecord[];
  onChooseAgent:(id:string,room:RoomKey)=>void;onChooseRoom:(room:RoomKey)=>void;
+ night?:boolean;detail?:boolean;
 }){
  return <group rotation={[0,-.105,0]}>
    <Walls/>
-   {rooms.map(room=><Room key={room.value} room={room} chosen={selected===room.value} agents={agents} selectedAgentId={selectedAgentId} onChooseAgent={onChooseAgent} onChooseRoom={onChooseRoom}/>)}
-   <ambientLight intensity={1.05}/>
-   <hemisphereLight intensity={1.7} color="#fff7e9" groundColor="#28353a"/>
-   <directionalLight position={[4.5,10,3.5]} intensity={3.25} color="#ffe6c2" castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
+   {detail&&<PavilionArchitecture night={night}/>}
+   {rooms.map(room=><Room key={room.value} room={room} chosen={selected===room.value} agents={agents} selectedAgentId={selectedAgentId} onChooseAgent={onChooseAgent} onChooseRoom={onChooseRoom} night={night} detail={detail}/>)}
+   <ambientLight intensity={night?0.56:0.85}/>
+   <hemisphereLight intensity={night?1.05:1.42} color={night?"#ffe4cc":"#fff7e9"} groundColor="#243238"/>
+   <directionalLight position={[4.5,10,3.5]} intensity={night?2.45:3.1} color={night?"#ffd5a0":"#ffebd2"} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
  </group>;
 }
 export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgentSelect}:{
