@@ -36,7 +36,7 @@ type Vec3 = [number,number,number];
 function Block({at,size,color=charcoal,metalness=.15,roughness=.43,opacity=1,castShadow=false}:{
   at:Vec3;size:Vec3;color?:string;metalness?:number;roughness?:number;opacity?:number;castShadow?:boolean;
 }){
- return <mesh geometry={SHARED_BLOCK_BOX} scale={size} position={at}
+ return <mesh dispose={null} geometry={SHARED_BLOCK_BOX} scale={size} position={at}
    castShadow={castShadow} receiveShadow>
    <meshStandardMaterial color={color} metalness={metalness} roughness={roughness} transparent={opacity<1} opacity={opacity}/>
  </mesh>;
