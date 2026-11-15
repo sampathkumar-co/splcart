@@ -111,7 +111,7 @@ function LightRail({x,z,length=4.25,night=false}:{x:number;z:number;length?:numb
      <boxGeometry args={[length*.93,.014,.09]}/>
      <meshBasicMaterial color={night?"#ffd69a":"#ffecd2"} toneMapped={false}/>
    </mesh>
-   <pointLight position={[0,-.3,.58]} color="#ffe4bb" intensity={night?.80:.38} distance={5.7}/>
+   <pointLight position={[0,-.3,.58]} color="#ffe4bb" intensity={night?0.80:0.38} distance={5.7}/>
  </group>;
 }
 function Planter({x,z}:{x:number;z:number}){
