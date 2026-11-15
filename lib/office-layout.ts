@@ -26,7 +26,7 @@ export const DESK_OFFSETS:Record<DeskRoom,Vector3[]>={
 /** A perspective near a real workstation, not a screenshot or simulated agent. */
 export function getStationCameraPose(id:string):CameraPose|null {
   const role=ROLE_SPECS.find(r=>r.id===id);
-  if(!role||role.room==="meeting")return null;
+  if(!role)return null; // The current 16-role roster has no fictional meeting-room agent.
   const room=OFFICE_ROOMS.find(r=>r.value===role.room);
   if(!room)return null;
   const index=ROLE_SPECS.filter(r=>r.room===role.room).findIndex(r=>r.id===id);
