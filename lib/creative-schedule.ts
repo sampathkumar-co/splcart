@@ -20,6 +20,7 @@ export type EligiblePhoto={
 export function chooseDistinctPhotoProducts(
   photos:readonly EligiblePhoto[],usedAssetIds:ReadonlySet<string>,max:number
 ) {
+  if(max<=0)return [];
   const usedProducts=new Set<string>();
   const output:EligiblePhoto[]=[];
   for(const item of photos){
