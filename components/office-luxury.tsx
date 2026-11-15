@@ -25,7 +25,7 @@ function Cuboid({pos,size,color="#272c2c",metalness=.18,roughness=.38,
  pos:Vec3;size:Vec3;color?:string;metalness?:number;roughness?:number;
  opacity?:number;emissive?:string;glow?:number;cast?:boolean;
 }){
- return <mesh geometry={UNIT_CUBE} position={pos} scale={size} castShadow={cast} receiveShadow>
+ return <mesh dispose={null} geometry={UNIT_CUBE} position={pos} scale={size} castShadow={cast} receiveShadow>
   <meshStandardMaterial color={color} metalness={metalness} roughness={roughness}
    transparent={opacity<1} opacity={opacity} depthWrite={opacity===1}
    emissive={emissive||"#000000"} emissiveIntensity={glow}/>
