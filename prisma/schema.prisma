@@ -83,6 +83,8 @@ model Product {
   createdAt           DateTime @default(now())
   matches             ProductMatch[]
   quotes              Quote[]
+  creativeAssets      CreativeAsset[]
+  reelJobs            ReelJob[]
 }
 
 model ProductMatch {
@@ -189,4 +191,50 @@ model SystemAudit {
   actor     String   @default("OWNER")
   createdAt DateTime @default(now())
   @@index([createdAt])
+}
+
+/** Product photos uploaded by the HQ owner. Never scraped from SPLCART. */
+model CreativeAsset {
+  id           String   @id @default(uuid())
+  productId    String
+  mime         String
+  filename     String   @unique
+  byteSize     Int
+  width        Int
+  height       Int
+  createdAt    DateTime @default(now())
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  reels        ReelJob[]
+  @@index([productId, createdAt])
+}
+
+enum ReelStatus {
+  QUEUED
+  RENDERING
+  RENDERED
+  APPROVED
+  FAILED
+  VOID
+}
+
+model ReelJob {
+  id              String     @id @default(uuid())
+  productId       String
+  assetId         String
+  titleSnapshot   String
+  materialSnapshot String
+  linkSnapshot    String
+  durationSeconds Int        @default(20)
+  status          ReelStatus @default(QUEUED)
+  outputFilename  String?    @unique
+  errorCode       String?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  approvedAt      DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  product         Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+  asset           CreativeAsset @relation(fields: [assetId], references: [id], onDelete: Restrict)
+  @@index([status, createdAt])
+  @@index([productId, createdAt])
 }
