@@ -35,6 +35,23 @@ React Three Fiber, Drei and Three.js. The camera approach derives from
 MIT-licensed Hermes3D; the retained notice is
 `docs/third-party/Hermes3D-LICENSE.txt`. Do not remove it.
 
+## Close-up workstation camera, with truthful data
+
+The owner's **Inspect selected desk** control moves the real orbit camera from
+the current room into a close-up of the *actual* selected role's workstation,
+using a single shared room/desk spatial layout in
+`lib/office-layout.ts`. Clicking any rendered desk also sets its true role
+inspector and requests its corresponding 3D camera. This is reversible with
+**Return to room** or **Overview**, and keyboard-accessible.
+
+The highlighted workstation panel displays the authenticated role name,
+persisted status (`ON_DEMAND`, `RUNNING`, etc.) and recorded completions.
+It cannot invent AI work because no status or evidence metric is manufactured
+by the scene. All 16 camera targets are verified against real desk positions
+with `tests/office-layout.test.ts`. Unknown roles receive no camera target.
+The independent Chromium test captures a **genuine focused WebGL screenshot**
+and compares the rendered pixels to the overview frame.
+
 ## Visual quality acceptance
 
 - `scripts/office-e2e.mjs` uses real Chromium and actual WebGL canvas pixel
