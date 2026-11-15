@@ -70,6 +70,12 @@ try {
   await page.screenshot({path:"artifacts/hq-desktop-3d.png",fullPage:true});
   console.log("PASS 16 real-state agent workstations, 3D scene and interactive inspector");
 
+  await page.getByRole("button",{name:/AI General Manager/}).first().click();
+  await page.getByRole("button",{name:"Run local evidence task"}).click();
+  await page.locator(".agent-real-report").waitFor({timeout:20000});
+  assert.ok((await page.locator(".agent-real-report").innerText()).includes("Local HQ evidence report"),
+    "Real GM role task must persist source-derived report, not simulated activity");
+  console.log("PASS actual owner-triggered local agent role and persisted 3D desk inspector");
   await page.getByRole("button", { name: "2D ACCESSIBLE VIEW" }).click();
   await page.getByRole("button", { name: /SALES FLOOR/ }).waitFor();
   assert.equal(await page.locator(".room-select").count(), 4, "2D fallback must show all four departments");
