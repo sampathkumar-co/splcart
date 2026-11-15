@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Clapperboard, ImagePlus, Play, ShieldCheck, Download, RotateCcw } from "lucide-react";
+import { prepareManualCaption } from "@/lib/creative-caption";
 
 type Product = {id:string;title:string;material:string;productUrl:string};
 type Asset = {id:string;productId:string;width:number;height:number;createdAt:string;product:{title:string}};
@@ -52,6 +53,16 @@ export function CreativeStudio({products}:{products:Product[]}) {
       await refresh();
     }catch(e){setError(e instanceof Error?e.message:"Studio action failed");}
     finally{setBusy(false);}
+  };
+  const copyCaption=async(job:Reel,platform:"INSTAGRAM"|"YOUTUBE")=>{
+    if(job.status!=="APPROVED"){setError("Approve the actual rendered video before sharing its caption.");return;}
+    try{
+      const content=prepareManualCaption({productTitle:job.titleSnapshot,material:job.materialSnapshot,
+        productUrl:job.linkSnapshot,platform});
+      await navigator.clipboard.writeText(content);
+      setNotice(platform+" owner-reviewed caption copied. Open your official account manually to publish; no login or message was automated.");
+      setError("");
+    }catch{setError("Clipboard unavailable. Use a secure HTTPS browser.");}
   };
   const upload=async(e:React.FormEvent<HTMLFormElement>)=>{
     e.preventDefault();
@@ -105,6 +116,12 @@ export function CreativeStudio({products}:{products:Product[]}) {
                 if(window.confirm("Approve this actual rendered MP4 for manual use? This DOES NOT publish it."))void call("/api/creative/reels/"+job.id,{action:"approve"});
               }}><ShieldCheck size={14}/> Approve video</button>}
               {job.previewUrl&&<a href={job.previewUrl} download={"Prasanth-Jewellers-"+job.id+".mp4"}><Download size={14}/> View / save MP4</a>}
+              {job.status==="APPROVED"&&<>
+                <button disabled={busy} onClick={()=>copyCaption(job,"INSTAGRAM")}>Copy Instagram caption</button>
+                <button disabled={busy} onClick={()=>copyCaption(job,"YOUTUBE")}>Copy YouTube caption</button>
+                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Open Instagram manually</a>
+                <a href="https://studio.youtube.com/" target="_blank" rel="noopener noreferrer">Open YouTube Studio</a>
+              </>}
               {job.status==="FAILED"&&<button disabled={busy} onClick={()=>call("/api/creative/reels/"+job.id,{action:"retry"})}><RotateCcw size={14}/> Retry locally</button>}
               {["QUEUED","FAILED","RENDERED"].includes(job.status)&&<button disabled={busy} onClick={()=>{if(window.confirm("Void this local draft?"))void call("/api/creative/reels/"+job.id,{action:"void"});}}>Void</button>}
             </div>
