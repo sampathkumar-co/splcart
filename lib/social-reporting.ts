@@ -30,10 +30,17 @@ export function validateMetricCounts(values:{views?:number|null;likes?:number|nu
     throw new Error("INVALID_OWNER_METRICS");
   return true;
 }
-export type SocialMeasured={platform:SocialPlatform;views:number|null;likes:number|null;enquiries:number|null;sourceLabel:string;observedAt:Date};
+export type SocialMeasured={publicationId:string;platform:SocialPlatform;views:number|null;likes:number|null;enquiries:number|null;sourceLabel:string;observedAt:Date};
 export function summarizeOwnerReportedMetrics(rows:readonly SocialMeasured[]){
+  const latest=new Map<string,SocialMeasured>();
+  for(const r of rows){
+    if(r.sourceLabel!=="OWNER_REPORTED")continue;
+    const previous=latest.get(r.publicationId);
+    if(!previous || previous.observedAt.getTime()<r.observedAt.getTime())
+      latest.set(r.publicationId,r);
+  }
   const byPlatform=(["INSTAGRAM","YOUTUBE"] as const).map(platform=>{
-    const relevant=rows.filter(r=>r.platform===platform && r.sourceLabel==="OWNER_REPORTED");
+    const relevant=[...latest.values()].filter(r=>r.platform===platform);
     const sums={
       views:relevant.reduce((sum,r)=>sum+(r.views??0),0),
       likes:relevant.reduce((sum,r)=>sum+(r.likes??0),0),
