@@ -14,12 +14,15 @@ export function CustomerInbox({products,onUpdated}:{products:InquiryProduct[];on
  const [loading,setLoading]=useState(true);
  const [busy,setBusy]=useState(false);
  const [notice,setNotice]=useState("");
+ const [retentionDays,setRetentionDays]=useState<30|90|180>(90);
+ const [eligibleCounts,setEligibleCounts]=useState<Record<string,number>>({});
  const [error,setError]=useState("");
  const reload=useCallback(async()=>{
    const response=await fetch("/api/customer-inquiries",{cache:"no-store"});
    const result=await response.json();
    if(!response.ok)throw new Error(result.error||"Cannot read HQ inbox");
    setInquiries(result.inquiries||[]);setOpenCount(result.openCount||0);
+   setEligibleCounts(result.retention?.eligibleByDays||{});
  },[]);
  useEffect(()=>{let mounted=true;
    void reload().catch(e=>{if(mounted)setError(String(e.message||e));}).finally(()=>{if(mounted)setLoading(false);});
@@ -53,6 +56,19 @@ export function CustomerInbox({products,onUpdated}:{products:InquiryProduct[];on
  const close=async(id:string)=>{
   const note=window.prompt("Why close this enquiry? Nothing will be sent.");
   if(note)await save({action:"close",inquiryId:id,note:note.trim()});
+ };
+ const erase=async(id:string)=>{
+  // A distinct destructive action. Do not silently delete on navigation/close.
+  const confirmation=window.prompt("Erase this customer enquiry from the LIVE Headquarters database? Type ERASE to confirm. Encrypted backups are not immediately erased.");
+  if(confirmation!=="ERASE")return;
+  await save({action:"erase",inquiryId:id,confirm:"ERASE"});
+ };
+ const purge=async()=>{
+  if(!eligibleCounts[String(retentionDays)]||busy)return;
+  const confirmation=window.prompt("Erase up to 100 CLOSED enquiries last updated over "+retentionDays+
+   " days ago? OPEN and REPLIED records will be preserved. Type PURGE. Existing encrypted backups have separate expiry.");
+  if(confirmation!=="PURGE")return;
+  await save({action:"purge_closed",days:retentionDays,confirm:"PURGE"});
  };
  const copy=async(draft:string)=>{
   try{await navigator.clipboard.writeText(draft);
@@ -102,7 +118,18 @@ export function CustomerInbox({products,onUpdated}:{products:InquiryProduct[];on
      {q.replyText&&<p className="inbox-message">Owner-reported reply: {q.replyText}</p>}
      {q.status!=="CLOSED"&&<button type="button" className="inbox-close" disabled={busy} onClick={()=>close(q.id)}>Close enquiry</button>}
      {q.status==="CLOSED"&&<small>Owner closure: {q.closeNote}</small>}
+     <button type="button" className="inbox-danger-button inbox-erase" disabled={busy} onClick={()=>erase(q.id)}>Erase this enquiry</button>
     </article>)}</div>}
+  </section>
+  <section className="panel inbox-retention" aria-label="Customer enquiry retention and erasure">
+   <div className="panel-heading"><div><div className="eyebrow">OWNER-CONTROLLED PRIVACY</div><h2>Enquiry retention</h2></div></div>
+   <p className="panel-copy">No automatic deletion is enabled. Only closed enquiries older than the selected number of days since their last update can be purged. Each action removes up to 100 records. Existing encrypted backup copies are managed separately.</p>
+   <label className="field"><span>Closed-record retention cutoff</span><select value={retentionDays} onChange={e=>setRetentionDays(Number(e.currentTarget.value) as 30|90|180)}>
+    <option value={30}>30 days</option><option value={90}>90 days</option><option value={180}>180 days</option>
+   </select></label>
+   <p className="inbox-retention-count">{eligibleCounts[String(retentionDays)]??0} closed enquiries currently eligible for deletion</p>
+   <button type="button" className="inbox-danger-button" onClick={purge} disabled={busy||!(eligibleCounts[String(retentionDays)]>0)}>Erase eligible closed records (confirmation required)</button>
+   <p className="fineprint">Private historical customer-role reports are redacted. Live-database erasure does not immediately remove data from previously created encrypted backups.</p>
   </section>
   {error&&<p role="alert" className="alert danger">{error}</p>}
   {notice&&<p role="status" className="alert success">{notice}</p>}
