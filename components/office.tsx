@@ -20,7 +20,7 @@ const charcoal = "#16191b";
 const rooms = [
   { name:"EXECUTIVE SUITE", subtitle:"Owner approvals · decisions", value:"ceo", x:-4.1, z:-2.6 },
   { name:"SALES INTELLIGENCE", subtitle:"Evidence · wholesale pipeline", value:"sales", x:3.6, z:-2.6 },
-  { name:"CREATIVE STUDIO", subtitle:"Reserved · not configured", value:"marketing", x:-4.1, z:3.05 },
+  { name:"CREATIVE STUDIO", subtitle:"Owner-approved code-rendered Reels", value:"marketing", x:-4.1, z:3.05 },
   { name:"STRATEGY ROOM", subtitle:"Reviews · coordination", value:"meeting", x:3.6, z:3.05 },
 ] as const;
 export type RoomKey = typeof rooms[number]["value"];
@@ -49,7 +49,7 @@ function Station({role,agent,position,selected,onChoose,executive=false}:{
 }){
  const status=agent?.status||"NOT_CONFIGURED";
  const live=status==="RUNNING";
- const screen=status==="RUNNING"?"#3a886e":status==="ON_DEMAND"?"#8e7950":status==="MANUAL_ONLY"?"#6c6252":"#323b42";
+ const screen=status==="RUNNING"?"#71caaa":status==="ON_DEMAND"?"#c3a06a":status==="MANUAL_ONLY"?"#9e967b":"#4c5658";
  const scale=executive?1.55:1;
  const onOver=(e:ThreeEvent<PointerEvent>)=>{e.stopPropagation();document.body.style.cursor="pointer";};
  const onOut=(e:ThreeEvent<PointerEvent>)=>{e.stopPropagation();document.body.style.cursor="auto";};
@@ -60,7 +60,7 @@ function Station({role,agent,position,selected,onChoose,executive=false}:{
      </RoundedBox>
      {[-.59,.59].map(x=><Block key={x} at={[x,.26,0]} size={[.055,.52,.48]} color="#8c744f" metalness={.9}/>)}
      <Block at={[0,.90,-.08]} size={[.54,.37,.045]} color="#111619" metalness={.5}/>
-     <Block at={[0,.90,-.051]} size={[.47,.30,.008]} color={screen}/>
+     <mesh position={[0,.90,-.051]}><boxGeometry args={[.47,.30,.008]}/><meshBasicMaterial color={screen} toneMapped={false}/></mesh>
      <Block at={[0,.66,-.08]} size={[.025,.13,.035]} color={gold} metalness={.85}/>
      <Block at={[0,.61,.2]} size={[.44,.017,.14]} color="#4f5352"/>
      <Block at={[0,.20,.59]} size={[.50,.08,.42]} color="#444643" />
@@ -74,20 +74,20 @@ function Station({role,agent,position,selected,onChoose,executive=false}:{
 function LightRail({x,z,length=5.7}:{x:number;z:number;length?:number}){
  return <group position={[x,3.55,z]}>
   <Block at={[0,0,0]} size={[length,.045,.075]} color="#977952" metalness={.9}/>
-  <Block at={[0,-.04,0]} size={[length*.91,.018,.044]} color="#efdbaf" metalness={.04}/>
-  <pointLight position={[0,-.25,0]} color="#e8bc79" intensity={.75} distance={7}/>
+  <mesh position={[0,-.04,0]}><boxGeometry args={[length*.91,.018,.044]}/><meshBasicMaterial color="#ffe9c2" toneMapped={false}/></mesh>
+  <pointLight position={[0,-.25,0]} color="#ffe5b8" intensity={1.65} distance={10}/>
  </group>;
 }
 function Walls(){
  return <group>
-  <Block at={[0,-.24,.08]} size={[15.85,.38,12.3]} color="#25282a" metalness={.30} roughness={.30} />
+  <Block at={[0,-.24,.08]} size={[15.85,.38,12.3]} color="#4b5050" metalness={.06} roughness={.52} />
   {Array.from({length:15},(_,i)=><Block key={i} at={[-7.25+i*1.02,-.035,.1]} size={[.012,.012,11.7]} color="#725e42" metalness={.86}/>)}
-  {[-7.55,7.55].map(x=><Block key={x} at={[x,.56,.08]} size={[.095,1.2,11.9]} color="#a28b69" metalness={.68} opacity={.65}/>)}
+  {[-7.55,7.55].map(x=><Block key={x} at={[x,.48,.08]} size={[.055,1.0,11.9]} color="#a28b69" metalness={.68} opacity={.43}/>)}
   <Block at={[0,1.75,-5.83]} size={[15.18,3.1,.09]} color="#8e948e" metalness={.18} opacity={.25}/>
   <Block at={[0,.30,5.88]} size={[15.18,.48,.08]} color="#a38f71" metalness={.66} opacity={.50}/>
-  {[-7.5,0,7.5].map(x=><Block key={x} at={[x,3.35,.1]} size={[.11,.15,11.9]} color="#b09872" metalness={.79}/>)}
-  <Block at={[0,3.37,-5.85]} size={[15.4,.24,.14]} color="#d1bb90" metalness={.6}/>
-  <Text position={[0,3.72,-5.53]} fontSize={.36} color="#f7e1ae" letterSpacing={.15}>PRASANTH · AI HEADQUARTERS</Text>
+  {[-7.5,7.5].map(x=><Block key={x} at={[x,3.35,.1]} size={[.05,.055,11.9]} color="#b09872" metalness={.62} opacity={.6}/>)}
+  <Block at={[0,3.37,-5.85]} size={[15.4,.10,.08]} color="#d1bb90" metalness={.45} opacity={.74}/>
+  <Text position={[0,3.70,-5.53]} fontSize={.40} color="#fff0c9" letterSpacing={.13}>PRASANTH · AI HEADQUARTERS</Text>
   <Block at={[0,.05,.08]} size={[.052,.015,11.7]} color={gold} metalness={.85}/>
   <Block at={[0,.05,.08]} size={[15.0,.015,.052]} color={gold} metalness={.85}/>
  </group>;
@@ -122,15 +122,15 @@ function Room({room,chosen,agents,selectedAgentId,onChooseAgent,onChooseRoom}:{
  onChooseAgent:(id:string,room:RoomKey)=>void;onChooseRoom:(room:RoomKey)=>void;
 }){
  const members=ROLE_SPECS.filter(role=>role.room===room.value);
- const floor="#272a2d";
+ const floor="#3a403f";
  return <group position={[room.x,0,room.z]}>
   <mesh position={[0,.007,0]} receiveShadow onClick={e=>{e.stopPropagation();onChooseRoom(room.value);}}>
-   <boxGeometry args={[6.9,.065,4.86]}/><meshStandardMaterial color={chosen?"#343638":floor} roughness={.27} metalness={.41}/>
+   <boxGeometry args={[6.9,.065,4.86]}/><meshStandardMaterial color={chosen?"#51534c":floor} roughness={.63} metalness={.08}/>
   </mesh>
   <Block at={[0,.07,-2.32]} size={[6.55,.018,.055]} color={gold} metalness={.88}/>
   <Block at={[-3.25,.55,0]} size={[.07,1.0,4.7]} color="#af936b" metalness={.8}/>
-  <Block at={[0,.65,-2.39]} size={[6.55,1.24,.08]} color="#938777" opacity={.28} metalness={.2}/>
-  <Block at={[0,1.38,-2.36]} size={[6.7,.065,.12]} color="#b9a584" metalness={.8}/>
+  <Block at={[0,.65,-2.39]} size={[6.55,1.24,.05]} color="#b4a991" opacity={.15} metalness={.05}/>
+  <Block at={[0,1.38,-2.36]} size={[6.7,.045,.06]} color="#b9a584" metalness={.65}/>
   <Text position={[0,.09,-1.97]} rotation={[-Math.PI/2,0,0]} fontSize={.23} letterSpacing={.15} color="#e8d3a8" anchorX="center">{room.name}</Text>
   {room.value==="meeting"?<MeetingRoom choose={onChooseRoom}/>:members.map((role,index)=><Station
     key={role.id}
@@ -148,8 +148,8 @@ function Room({room,chosen,agents,selectedAgentId,onChooseAgent,onChooseRoom}:{
   <Block at={[0,.085,2.16]} size={[5.85,.014,.025]} color="#c9a775" metalness={.78}/>
   <spotLight position={[0,3.5,.4]} angle={1.1} penumbra={.8} intensity={2.0} distance={8} color="#ffe1b0"/>
   <LightRail x={0} z={0} length={5.7}/>
-  <Block at={[0,3.59,-2.35]} size={[6.7,.14,.13]} color="#c1aa82" metalness={.76}/>
-  <Block at={[0,3.59,2.35]} size={[6.7,.14,.13]} color="#c1aa82" metalness={.76}/>
+  <Block at={[0,3.59,-2.35]} size={[6.7,.055,.055]} color="#c1aa82" metalness={.45} opacity={.70}/>
+  <Block at={[0,3.59,2.35]} size={[6.7,.055,.055]} color="#c1aa82" metalness={.45} opacity={.70}/>
  </group>;
 }
 function Building({selected,selectedAgentId,agents,onChooseAgent,onChooseRoom}:{
@@ -159,9 +159,9 @@ function Building({selected,selectedAgentId,agents,onChooseAgent,onChooseRoom}:{
  return <group rotation={[0,-.105,0]}>
    <Walls/>
    {rooms.map(room=><Room key={room.value} room={room} chosen={selected===room.value} agents={agents} selectedAgentId={selectedAgentId} onChooseAgent={onChooseAgent} onChooseRoom={onChooseRoom}/>)}
-   <ambientLight intensity={1.20}/>
-   <hemisphereLight intensity={1.2} color="#fff3dc" groundColor="#292d30"/>
-   <directionalLight position={[4.5,10,3.5]} intensity={2.2} color="#ffe4bb" castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
+   <ambientLight intensity={1.70}/>
+   <hemisphereLight intensity={1.6} color="#fff3dc" groundColor="#353b3d"/>
+   <directionalLight position={[4.5,10,3.5]} intensity={2.8} color="#ffe4bb" castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
  </group>;
 }
 export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgentSelect}:{
@@ -174,7 +174,7 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
  const chooseRoom=(room:RoomKey)=>{setView(room);onSelect(room);};
  const chooseAgent=(id:string,room:RoomKey)=>{onAgentSelect?.(id);chooseRoom(room);};
  return <div className="office-canvas" role="group" aria-label="Interactive 3D Prasanth Jewellery Headquarters. Sixteen agents have evidence-based statuses.">
-   <Canvas shadows camera={{position:[13.5,13.5,16.5],fov:42,near:.1,far:90}} dpr={[1,1.5]} gl={{alpha:false,antialias:true,powerPreference:"high-performance"}}>
+   <Canvas shadows camera={{position:[11.7,12.2,14.5],fov:42,near:.1,far:90}} dpr={[1,1.5]} gl={{alpha:false,antialias:true,powerPreference:"high-performance"}}>
     <color attach="background" args={["#182027"]}/>
     <fog attach="fog" args={["#182027",42,72]}/>
     <Suspense fallback={null}><Building selected={selected} selectedAgentId={selectedAgentId} agents={agents} onChooseAgent={chooseAgent} onChooseRoom={chooseRoom}/></Suspense>
