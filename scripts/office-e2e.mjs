@@ -79,6 +79,22 @@ try {
   await page.getByRole("button",{name:"Enable daily briefing"}).waitFor({timeout:15_000});
   assert.equal(await page.getByRole("button",{name:"Enable daily briefing"}).getAttribute("aria-pressed"),"false");
   console.log("PASS real owner opt-in/out daily source-only 16-role reporting controls in browser");
+  // A real owner-only user journey, using CI-only invented message content.
+  await page.getByRole("button",{name:"Customer Inbox",exact:true}).click();
+  await page.getByRole("heading",{name:"Record a real enquiry"}).waitFor();
+  await page.getByLabel("Customer nickname, no contact details").fill("CI-only incoming shopper");
+  await page.getByLabel("Requested jewellery category").fill("CZ jewellery");
+  await page.getByLabel("Genuine customer question").fill("CI-only: do you have an earring design?");
+  await page.getByLabel(/I confirm the customer initiated this enquiry/).check();
+  await page.getByRole("button",{name:/Record owner-reported enquiry/}).click();
+  await page.getByText("CI-only incoming shopper").waitFor({timeout:15000});
+  await page.getByLabel(/I personally sent this reply outside HQ/).check();
+  await page.getByRole("button",{name:/Record my manual reply/}).click();
+  await page.getByText("REPLIED REPORTED").waitFor({timeout:15000});
+  await page.screenshot({path:"artifacts/hq-inbox-manual-workflow.png",fullPage:true});
+  await page.getByRole("button",{name:"Headquarters",exact:true}).click();
+  await page.locator(".office-canvas canvas").waitFor();
+  console.log("PASS actual owner-reported customer enquiry, editable manual-only reply, no connected account or message sent.");
 
   const viewCaptures = [
     {label:"executive",button:/AI General Manager/},

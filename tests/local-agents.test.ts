@@ -64,6 +64,17 @@ describe("truthful no-key role task execution",()=>{
      expect(output.modelCostPaise).toBe(0);
    }
  });
+ it("only unlocks the customer conversation report for genuine owner-recorded inbound evidence",()=>{
+   const none=evaluateLocalRole("customer-conversation",base);
+   expect(none.status).toBe("BLOCKED");
+   const actual=evaluateLocalRole("customer-conversation",{...base,inquiries:[{
+     id:"owner-inbox",customerAlias:"customer alias",channel:"WHATSAPP",category:"CZ",
+     status:"OPEN",createdAt:now,sourceLabel:"OWNER_RECORDED",
+   }]});
+   expect(actual.status).toBe("COMPLETED");
+   expect(actual.summary).toContain("not independently verified");
+   expect(actual.items[0].details).toContain("No verified account");
+ });
  it("does not claim a market trend from empty browser results",()=>{
    expect(evaluateLocalRole("trend-research",base).status).toBe("BLOCKED");
    const actual=evaluateLocalRole("trend-research",{...base,research:[{

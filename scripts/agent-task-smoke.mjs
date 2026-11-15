@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import {authenticateOwner,authHeaders,base} from "./ci-auth.mjs";
 import {runAgentScheduleSmoke} from "./agent-schedule-smoke.mjs";
+import {runInboxSmoke} from "./inbox-smoke.mjs";
 if(process.env.HQ_TEST_MODE!=="1")throw new Error("AGENT_TEST_ONLY_ISOLATED_CI");
 const cookie=await authenticateOwner();
 async function runRole(roleId){
@@ -36,7 +37,7 @@ assert.equal(briefingResponse.status,200,JSON.stringify(briefing));
 assert.equal(briefing.total,16);
 assert.equal(briefing.reports.length,16);
 assert.equal(briefing.completed+briefing.blocked,16);
-assert.ok(briefing.blocked>=3,"three missing external connectors cannot become operational");
+assert.ok(briefing.blocked>=2,"Instagram and calling platforms cannot become operational without real connectors");
 assert.equal(briefing.externalActionsPerformed,0);
 assert.equal(briefing.paidModelCostPaise,0);
 assert.equal(briefing.computeCost,"NOT_METERED");
@@ -44,7 +45,7 @@ assert.equal(briefing.reports.find(x=>x.roleId==="wholesale-calling").status,"BL
 assert.equal(briefing.reports.find(x=>x.roleId==="instagram-discovery").status,"BLOCKED");
 const batchAudit=(await fetch(base+"/api/dashboard",{headers:authHeaders(cookie)}));
 const batchDashboard=await batchAudit.json();
-assert.equal(batchDashboard.agentTasks.filter(t=>t.status==="BLOCKED").length>=3,true);
+assert.equal(batchDashboard.agentTasks.filter(t=>t.status==="BLOCKED").length>=2,true);
 console.log("PASS one-click 16-role persisted readiness batch, real blockers, no network or paid model activity.");
 const data=await fetch(base+"/api/dashboard",{headers:authHeaders(cookie)});
 assert.equal(data.status,200);
@@ -56,5 +57,12 @@ assert.equal(dashboard.agents.filter(a=>a.status==="RUNNING").length,0);
 assert.equal(dashboard.stats.verifiedRevenueRupees,0);
 console.log("PASS genuine owner-triggered persistent agent tasks, product sources, approved Reel handoff, explicit phone/Instagram blockers, zero verified revenue and zero paid model calls.");
 
+// CI Chromium records one actual HTTP inbound fixture before this stage.
+const conversation=await runRole("customer-conversation");
+assert.equal(conversation.status,"COMPLETED");
+assert.ok(conversation.report.summary.includes("Owner-recorded incoming enquiries"));
+assert.equal(conversation.report.modelCostPaise,0);
 // Reuse the authenticated CI session so the real 8-attempt owner-login limit stays intact.
 await runAgentScheduleSmoke(cookie);
+
+await runInboxSmoke(cookie);
