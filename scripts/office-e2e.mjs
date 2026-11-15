@@ -69,6 +69,45 @@ try {
   await page.evaluate(() => window.scrollTo(0,0));
   await page.screenshot({path:"artifacts/hq-desktop-3d.png",fullPage:true});
   console.log("PASS 16 real-state agent workstations, 3D scene and interactive inspector");
+  // Real WebGL visual QA: owner controls affect geometry, lighting and display
+  // size, never agent running status or synthetic task history.
+  const sceneCanvas=page.locator(".office-canvas canvas");
+  const signature=await sceneCanvas.screenshot({
+    path:"artifacts/hq-office-signature.png",
+  });
+  assert.ok(signature.length>20000,"signature geometry must be visible");
+  const nightButton=page.getByRole("button",{name:"Use after-hours lighting"});
+  await nightButton.click();
+  await page.waitForTimeout(450);
+  const night=await sceneCanvas.screenshot({
+    path:"artifacts/hq-office-after-hours.png",
+  });
+  assert.equal(nightButton?await page.getByRole("button",{name:"Use daylight lighting"}).getAttribute("aria-pressed"):null,"true");
+  assert.equal(signature.equals(night),false,
+    "lighting mode must change the actual WebGL pixels, not merely the control label");
+  await page.getByRole("button",{name:"Use daylight lighting"}).click();
+  const perfButton=page.getByRole("button",{name:"Use performance detail"});
+  await perfButton.click();
+  await page.waitForTimeout(500);
+  const performance=await sceneCanvas.screenshot({
+    path:"artifacts/hq-office-performance.png",
+  });
+  assert.equal(signature.equals(performance),false,
+    "performance mode must really omit luxury scene details");
+  await page.getByRole("button",{name:"Use signature detail"}).click();
+  const beforeHeight=await page.locator(".office-canvas").evaluate(el=>el.clientHeight);
+  await page.getByRole("button",{name:"Expand cinematic view"}).click();
+  const afterHeight=await page.locator(".office-canvas").evaluate(el=>el.clientHeight);
+  assert.ok(afterHeight>beforeHeight+60,
+    "cinematic view must physically enlarge the genuine WebGL scene");
+  await page.locator(".office-canvas").screenshot({
+    path:"artifacts/hq-office-cinema.png",
+  });
+  await page.getByRole("button",{name:"Exit cinematic view"}).click();
+  assert.equal(await page.locator(".station-chip .status-running").count(),0,
+    "cinema and lighting controls may not forge employee activity");
+  console.log("PASS true signature 3D materials, after-hours lighting, faster-detail mode and cinematic WebGL size; real 16-role statuses unchanged");
+
   // Owner controls real daily internal evidence, not unauthorized social/voice automation.
   const dailyOn=page.getByRole("button",{name:"Enable daily briefing"});
   await dailyOn.click();
