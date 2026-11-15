@@ -136,6 +136,18 @@ try {
   await page.getByRole("button",{name:"Enable daily briefing"}).waitFor({timeout:15_000});
   assert.equal(await page.getByRole("button",{name:"Enable daily briefing"}).getAttribute("aria-pressed"),"false");
   console.log("PASS real owner opt-in/out daily source-only 16-role reporting controls in browser");
+  // Explicit owner-only lightweight 2D entry: ordinary business workflows
+  // must not compete with a previous heavy software-WebGL frame capture.
+  await page.close();
+  page=await ctx.newPage();
+  page.on("pageerror",error=>failures.push(error.message));
+  page.on("console",msg=>{if(msg.type()==="error")console.log("BROWSER_CONSOLE_ERROR",msg.text().slice(0,280));});
+  const direct2d=await page.goto(base+"/2d",{waitUntil:"domcontentloaded",timeout:60000});
+  assert.equal(direct2d?.status(),200,"authenticated 2D route should load independently");
+  await page.locator(".room-select").first().waitFor({timeout:40000});
+  assert.equal(await page.locator(".office-canvas canvas").count(),0,
+    "lightweight 2D direct entry must not mount any WebGL scene");
+  console.log("PASS private standalone /2d HQ route, accessible workstations with zero WebGL canvases");
   // A real owner-only user journey, using CI-only invented message content.
   await page.getByRole("button",{name:"Customer Inbox",exact:true}).click();
   await page.getByRole("heading",{name:"Record a real enquiry"}).waitFor();
@@ -168,6 +180,9 @@ try {
   await page.locator(".office-canvas canvas").waitFor();
   console.log("PASS actual owner-reported customer enquiry, editable manual-only reply, no connected account or message sent.");
 
+  // 3D is still available on demand from the direct-entry 2D workspace.
+  await page.getByRole("button",{name:"3D OFFICE VIEW"}).click();
+  await page.locator(".office-canvas canvas").waitFor({timeout:45000});
   const viewCaptures = [
     {label:"executive",button:/AI General Manager/},
     {label:"marketing",button:/Creative Director/},
@@ -212,17 +227,14 @@ try {
   assert.ok((await page.locator(".agent-real-report").innerText()).includes("Local HQ evidence report"),
     "Real GM role task must persist source-derived report, not simulated activity");
   console.log("PASS actual owner-triggered local agent role and persisted 3D desk inspector");
-  // End the heavy 3D stress tab. A new tab in the SAME authenticated browser
-  // context is a real owner navigation and releases the previous WebGL renderer.
-  // A plain reload can leave a stale GPU context and starve UI click handlers.
+  // Repeat lightweight direct entry after real camera/orbit GPU stress,
+  // proving that sales and accessibility remain available without WebGL.
   await page.close();
-  page = await ctx.newPage();
-  page.on("pageerror", error => failures.push(error.message));
-  page.on("console", msg => {if(msg.type()==="error")console.log("BROWSER_CONSOLE_ERROR",msg.text().slice(0,280));});
-  await page.goto(base,{waitUntil:"domcontentloaded",timeout:60_000});
-  await page.locator(".station-chip").first().waitFor({timeout:60_000});
-  console.log("PASS 3D stress renderer released; fresh authenticated workspace for 2D fallback");
-  await page.getByRole("button", { name: "2D ACCESSIBLE VIEW" }).click({timeout:60_000});
+  page=await ctx.newPage();
+  page.on("pageerror",error=>failures.push(error.message));
+  page.on("console",msg=>{if(msg.type()==="error")console.log("BROWSER_CONSOLE_ERROR",msg.text().slice(0,280));});
+  await page.goto(base+"/2d",{waitUntil:"domcontentloaded",timeout:60_000});
+  await page.locator(".room-select").first().waitFor({timeout:60_000});
   await page.getByRole("button", { name: /SALES FLOOR/ }).waitFor();
   assert.equal(await page.locator(".room-select").count(), 4, "2D fallback must show all four departments");
   await page.screenshot({path:"artifacts/hq-2d-fallback.png",fullPage:true});
@@ -231,6 +243,8 @@ try {
   await page.getByRole("button", { name: "3D OFFICE VIEW" }).click();
   await page.locator(".office-canvas canvas").waitFor();
   await page.getByRole("button", { name: "Overview" }).click();
+  // Use lightweight 2D for all the following nonvisual owner business tasks.
+  await page.getByRole("button",{name:"2D ACCESSIBLE VIEW"}).click({timeout:60_000});
   await page.getByRole("button", { name: "Web Discovery" }).first().click();
   await page.getByRole("heading", { name: "Intelligence Discovery" }).waitFor();
   // Actual browser interaction with the owner's emergency pause on future work.
