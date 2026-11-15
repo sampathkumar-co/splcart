@@ -8,7 +8,7 @@ type Asset = {id:string;productId:string;width:number;height:number;createdAt:st
 type Reel = {id:string;productId:string;assetId:string;titleSnapshot:string;materialSnapshot:string;
   linkSnapshot:string;status:string;durationSeconds:number;errorCode:string|null;previewUrl:string|null;
   createdAt:string;finishedAt:string|null;approvedAt:string|null};
-type StudioData = {reels:Reel[];assets:Asset[]};
+type StudioData = {reels:Reel[];assets:Asset[];schedule:{enabled:boolean;dailyTarget:number}};
 function Status({value}:{value:string}){return <span className={"status status-"+value.toLowerCase().replace(/[^a-z]+/g,"-")}>{value.replaceAll("_"," ")}</span>;}
 async function imageToBase64(file:File) {
   if(file.size>3*1024*1024 || file.size<100) throw new Error("Upload a JPEG or PNG under 3 MB.");
@@ -25,7 +25,7 @@ async function imageToBase64(file:File) {
   });
 }
 export function CreativeStudio({products}:{products:Product[]}) {
-  const [data,setData]=useState<StudioData>({reels:[],assets:[]});
+  const [data,setData]=useState<StudioData>({reels:[],assets:[],schedule:{enabled:false,dailyTarget:2}});
   const [selectedProduct,setSelectedProduct]=useState("");
   const [assetId,setAssetId]=useState("");
   const [busy,setBusy]=useState(false);
@@ -83,6 +83,15 @@ export function CreativeStudio({products}:{products:Product[]}) {
     </div>
     {error&&<div className="alert danger" role="alert">{error}</div>}
     {notice&&<div className="alert success" role="status">{notice}</div>}
+    <div className="studio-schedule" role="group" aria-label="Daily local-only Reel generation settings">
+      <div><strong>Daily local Reel automation</strong>
+        <p>{data.schedule.enabled?"Enabled: "+data.schedule.dailyTarget+" original product Reels per India-local day, subject to distinct owner photos.":"Disabled by default. The worker never generates daily content without your approval."} All generated videos remain private until separately approved; nothing is published automatically.</p></div>
+      <div className="studio-schedule-actions">
+        <button disabled={busy} aria-pressed={data.schedule.enabled&&data.schedule.dailyTarget===2} onClick={()=>call("/api/creative/schedule",{enabled:true,dailyTarget:2})}>2 Reels/day</button>
+        <button disabled={busy} aria-pressed={data.schedule.enabled&&data.schedule.dailyTarget===3} onClick={()=>call("/api/creative/schedule",{enabled:true,dailyTarget:3})}>3 Reels/day</button>
+        <button disabled={busy||!data.schedule.enabled} onClick={()=>call("/api/creative/schedule",{enabled:false,dailyTarget:data.schedule.dailyTarget===3?3:2})}>Disable</button>
+      </div>
+    </div>
     <div className="studio-grid">
       <div className="studio-card">
         <h3><ImagePlus size={17}/> 01 / Add your product photo</h3>
