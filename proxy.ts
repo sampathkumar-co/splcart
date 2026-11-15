@@ -25,7 +25,8 @@ function validateWrite(req: NextRequest) {
   if (req.headers.get("content-type")?.split(";")[0].trim() !== "application/json")
     return "JSON_REQUIRED";
   const contentLength = Number(req.headers.get("content-length"));
-  if (Number.isFinite(contentLength) && contentLength > 32_768)
+  const maxBody = req.nextUrl.pathname === "/api/creative/assets" ? 4_350_000 : 32_768;
+  if (Number.isFinite(contentLength) && contentLength > maxBody)
     return "REQUEST_TOO_LARGE";
   return null;
 }
