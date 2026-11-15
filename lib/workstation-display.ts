@@ -86,10 +86,19 @@ export function buildWorkstationScreen(
   detail=roleId==="wholesale-calling"?
    "No compliant dialer or live phone calls":"No Instagram discovery automation or DMs";
   provenance="PROVIDER NOT CONFIGURED";
- }else if(last?.status==="RUNNING"||(!last&&status==="RUNNING")){
-  headline=last?"RECORDED TASK IN PROGRESS":"RECORDED BROWSER RUN ACTIVE";
-  detail=last?safeSummary(last.result?.summary)||"No result recorded yet":"No completion recorded";
-  provenance=last?"PERSISTED HQ AGENT TASK":"PERSISTED BROWSER STATUS";
+ }else if(last?.status==="RUNNING"&&status==="RUNNING"){
+  headline="RECORDED TASK IN PROGRESS";
+  detail=safeSummary(last.result?.summary)||"No result recorded yet";
+  provenance="PERSISTED HQ AGENT TASK";
+ }else if(last?.status==="RUNNING"){
+  // Old RUNNING rows are not permission to display a live worker forever.
+  headline="LAST TASK NOT CONFIRMED ACTIVE";
+  detail="No current task confirmed by HQ status";
+  provenance="PERSISTED HQ AGENT TASK";
+ }else if(!last&&status==="RUNNING"){
+  headline="RECORDED BROWSER RUN ACTIVE";
+  detail="No task completion recorded";
+  provenance="PERSISTED BROWSER STATUS";
  }else if(last?.status==="COMPLETED"){
   headline="LAST LOCAL CHECK COMPLETE";
   detail=safeSummary(last.result?.summary)||"Recorded report available in owner console";
