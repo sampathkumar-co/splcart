@@ -3,6 +3,7 @@
  * and channels are CI fixtures. No WhatsApp, Instagram or outgoing send.
  */
 import assert from "node:assert/strict";
+import {PrismaClient} from "@prisma/client";
 import {authHeaders,base} from "./ci-auth.mjs";
 if(process.env.HQ_TEST_MODE!=="1")throw new Error("INBOX_SMOKE_ONLY_DISPOSABLE_CI");
 export async function runInboxSmoke(cookie){
