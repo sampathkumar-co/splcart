@@ -252,3 +252,14 @@
  .luxury-office .overlay-tip{display:none}
 }
 @media(prefers-reduced-motion:reduce){.luxury-office{transition:none}}
+
+/* Actual selected workstation camera: no simulated activity or animation loop. */
+.office-desk-camera{position:absolute;right:17px;bottom:53px;z-index:6;background:rgba(16,24,27,.94);color:#ffdfaa;border:1px solid #bea172;border-radius:5px;padding:11px 13px;font:700 10px Manrope,Arial,sans-serif;letter-spacing:.06em;backdrop-filter:blur(12px);box-shadow:0 9px 25px #0007}
+.office-desk-camera:hover,.office-desk-camera:focus-visible,.office-desk-camera[aria-pressed=true]{border-color:#f7db9d;background:#51422f;outline-offset:2px}
+.office-desk-context{position:absolute;left:27px;bottom:58px;z-index:6;max-width:285px;padding:17px 19px;background:linear-gradient(120deg,#101b1eeF,#25302cef);border:1px solid #907b56;box-shadow:0 18px 45px #0009;border-radius:6px;display:flex;flex-direction:column;gap:8px;backdrop-filter:blur(14px)}
+.office-desk-context span{font:700 8px Manrope,Arial,sans-serif;letter-spacing:.2em;color:#c4ab7c}
+.office-desk-context strong{font:600 16px Manrope,Arial,sans-serif;color:#fff0d4}
+.office-desk-context small{font:500 10px Manrope,Arial,sans-serif;color:#b5c5c1}
+.office-desk-context button{align-self:flex-start;background:transparent;border:0;padding:5px 0;color:#f0c995;font:700 10px Manrope,Arial,sans-serif}
+.office-desk-context button:hover,.office-desk-context button:focus-visible{text-decoration:underline;outline-offset:3px}
+@media(max-width:700px){.office-desk-camera{right:10px;bottom:47px;font-size:8px;padding:8px 9px}.office-desk-context{left:10px;right:10px;bottom:86px;max-width:260px;padding:12px 13px}.office-desk-context strong{font-size:13px}}

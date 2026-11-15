@@ -12,26 +12,18 @@
 import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import { RoundedBox, Text } from "@react-three/drei";
 import {BoxGeometry} from "three";
-import { Suspense, useState, useEffect, useRef } from "react";
+import { Suspense, useState, useEffect, useRef, useMemo } from "react";
 import { ROLE_SPECS, type AgentRecord, type AgentRole } from "@/lib/agent-roster";
 import { OfficeCamera, type OfficeView } from "./office-camera";
+import {OFFICE_ROOMS,DESK_OFFSETS,getStationCameraPose,HQ_BUILDING_YAW,type RoomKey} from "@/lib/office-layout";
 import {PavilionArchitecture,StoneFloor,LuxuryRoomDetails} from "./office-luxury";
 
 const gold = "#c7a772";
 const SHARED_BLOCK_BOX=new BoxGeometry(1,1,1); // Reuse GPU buffers across static architecture.
 const charcoal = "#16191b";
-const rooms = [
-  { name:"EXECUTIVE SUITE", subtitle:"Owner approvals · decisions", value:"ceo", x:-4.1, z:-2.6 },
-  { name:"SALES INTELLIGENCE", subtitle:"Evidence · wholesale pipeline", value:"sales", x:3.6, z:-2.6 },
-  { name:"CREATIVE STUDIO", subtitle:"Owner-approved code-rendered Reels", value:"marketing", x:-4.1, z:3.05 },
-  { name:"STRATEGY ROOM", subtitle:"Reviews · coordination", value:"meeting", x:3.6, z:3.05 },
-] as const;
-export type RoomKey = typeof rooms[number]["value"];
-const deskPositions: Record<"ceo"|"sales"|"marketing",[number,number,number][]> = {
-  ceo:[[0,0,.35]],
-  sales:[[-2.12,0,-1.16],[0,0,-1.16],[2.12,0,-1.16],[-2.12,0,.05],[0,0,.05],[2.12,0,.05],[-2.12,0,1.26],[0,0,1.26],[2.12,0,1.26]],
-  marketing:[[-2.12,0,-.84],[0,0,-.84],[2.12,0,-.84],[-2.12,0,.87],[0,0,.87],[2.12,0,.87]],
-};
+const rooms=OFFICE_ROOMS;
+const deskPositions=DESK_OFFSETS;
+export type {RoomKey} from "@/lib/office-layout";
 type Vec3 = [number,number,number];
 function Block({at,size,color=charcoal,metalness=.15,roughness=.43,opacity=1,castShadow=false}:{
   at:Vec3;size:Vec3;color?:string;metalness?:number;roughness?:number;opacity?:number;castShadow?:boolean;
@@ -78,7 +70,7 @@ function Station({role,agent,position,selected,onChoose,executive=false}:{
      <mesh position={[0,1.025,-.024]}><boxGeometry args={[.41,.012,.009]}/><meshBasicMaterial color={screen} toneMapped={false}/></mesh>
      <Text position={[0,.914,-.021]} fontSize={.071} maxWidth={.5}
       color={screen} anchorX="center" anchorY="middle">
-      {status==="RUNNING"?"RUNNING":status==="ON_DEMAND"?"ON DEMAND":"NOT CONFIGURED"}
+      {status==="RUNNING"?"RUNNING":status==="ON_DEMAND"?"ON DEMAND":status==="MANUAL_ONLY"?"MANUAL ONLY":"NOT CONFIGURED"}
      </Text>
      <mesh position={[0,.846,-.025]}><boxGeometry args={[.30,.008,.008]}/><meshBasicMaterial color="#698477" toneMapped={false}/></mesh>
      <Block at={[0,.66,-.08]} size={[.025,.13,.035]} color={gold} metalness={.85}/>
@@ -218,7 +210,7 @@ function Building({selected,selectedAgentId,agents,onChooseAgent,onChooseRoom,ni
  onChooseAgent:(id:string,room:RoomKey)=>void;onChooseRoom:(room:RoomKey)=>void;
  night?:boolean;detail?:boolean;
 }){
- return <group rotation={[0,-.105,0]}>
+ return <group rotation={[0,HQ_BUILDING_YAW,0]}>
    <Walls/>
    {detail&&<PavilionArchitecture night={night}/>}
    {rooms.map(room=><Room key={room.value} room={room} chosen={selected===room.value} agents={agents} selectedAgentId={selectedAgentId} onChooseAgent={onChooseAgent} onChooseRoom={onChooseRoom} night={night} detail={detail}/>)}
@@ -235,16 +227,29 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
  const [night,setNight]=useState(false);
  const [detail,setDetail]=useState(true);
  const [cinema,setCinema]=useState(false);
+ const [focusId,setFocusId]=useState<string|null>(null);
+ const focusPose=useMemo(()=>focusId?getStationCameraPose(focusId):null,[focusId]);
+ const focusedAgent=agents.find(a=>a.id===focusId);
+ const focusRole=ROLE_SPECS.find(a=>a.id===focusId);
+ const canFocusSelected=selectedAgentId?getStationCameraPose(selectedAgentId):null;
  const firstRender=useRef(true);
  useEffect(()=>{if(firstRender.current){firstRender.current=false;return;}setView(selected)},[selected]);
- const chooseRoom=(room:RoomKey)=>{setView(room);onSelect(room);};
- const chooseAgent=(id:string,room:RoomKey)=>{onAgentSelect?.(id);chooseRoom(room);};
+ const chooseRoom=(room:RoomKey)=>{setFocusId(null);setView(room);onSelect(room);};
+ const chooseAgent=(id:string,room:RoomKey)=>{
+   onAgentSelect?.(id);setView(room);setFocusId(id);onSelect(room);
+ };
+ const focusSelected=()=>{
+   if(!selectedAgentId||!canFocusSelected)return;
+   const role=ROLE_SPECS.find(s=>s.id===selectedAgentId);
+   if(!role)return;
+   setView(role.room as RoomKey);setFocusId(selectedAgentId);onSelect(role.room as RoomKey);
+ };
  return <div className={"office-canvas luxury-office"+(cinema?" office-canvas-cinema":"")} role="group" aria-label="Interactive 3D Prasanth Jewellery Headquarters. Sixteen agents have evidence-based statuses.">
    <Canvas shadows frameloop="demand" camera={{position:[10.2,10.8,12.1],fov:40,near:.1,far:90}} dpr={[1,detail?1.5:1.2]} gl={{alpha:false,antialias:true,powerPreference:"high-performance"}}>
     <color attach="background" args={["#111d23"]}/>
     <fog attach="fog" args={["#111d23",42,72]}/>
     <Suspense fallback={null}><Building selected={selected} selectedAgentId={selectedAgentId} agents={agents} onChooseAgent={chooseAgent} onChooseRoom={chooseRoom} night={night} detail={detail}/></Suspense>
-    <OfficeCamera view={view}/>
+    <OfficeCamera view={view} focusPose={focusPose}/>
    </Canvas>
    <div className="office-cinema-titling" aria-hidden="true">
     <span>PRASANTH / INTELLIGENCE ATELIER</span>
@@ -267,7 +272,19 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
        <span className="office-room-nav-dot" aria-hidden="true"/>{room.name}
      </button>)}
    </div>
-   <button type="button" className="office-reset-camera" onClick={()=>setView("overview")} aria-label="Return to overview camera">Overview</button>
+   <button type="button" className="office-reset-camera" onClick={()=>{setFocusId(null);setView("overview")}} aria-label="Return to overview camera">Overview</button>
+   {canFocusSelected&&<button type="button" className="office-desk-camera"
+      aria-label="Focus selected workstation camera" aria-pressed={focusId===selectedAgentId}
+      onClick={focusSelected}>Inspect selected desk</button>}
+   {focusId&&<div className="office-desk-context" aria-live="polite" aria-label="Focused workstation information">
+     <span>WORKSTATION / SOURCE-GROUNDED</span>
+     <strong>{focusedAgent?.name||focusRole?.name||"Unknown role"}</strong>
+     <small>{focusedAgent?
+       focusedAgent.status.replaceAll("_"," ")+" · "+focusedAgent.evidenceCount+" recorded completions":
+       "Awaiting authenticated status"}</small>
+     <button type="button" onClick={()=>{setFocusId(null);setView(view)}}
+      aria-label="Return to room camera">Return to room</button>
+   </div>}
    <div className="office-overlay"><span className="light-dot"/> LIVE-SOURCE STATUS ONLY <span className="overlay-tip">Actual desk states · Drag to orbit · Scroll to zoom</span></div>
  </div>;
 }

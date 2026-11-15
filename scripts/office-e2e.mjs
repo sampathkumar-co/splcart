@@ -125,6 +125,21 @@ try {
   assert.equal(await page.locator(".station-chip .status-running").count(),0,
     "cinema and lighting controls may not forge employee activity");
   console.log("PASS true signature 3D materials, after-hours lighting, faster-detail mode and cinematic WebGL size; real 16-role statuses unchanged");
+  // A selected real desk receives a true close-up camera, not a decorative label.
+  await page.getByRole("button",{name:"Focus selected workstation camera"}).click();
+  const focusButton=page.getByRole("button",{name:"Focus selected workstation camera"});
+  assert.equal(await focusButton.getAttribute("aria-pressed"),"true");
+  const deskStatus=await page.locator(".office-desk-context").innerText();
+  assert.ok(deskStatus.includes("Google & Web Discovery")&&deskStatus.includes("ON DEMAND"),
+    "focused workstation must show the authenticated actual role/status");
+  await page.waitForTimeout(1000);
+  const focused=await captureOffice("artifacts/hq-office-selected-desk.png");
+  assert.equal(signature.equals(focused),false,
+    "moving to the selected station must change the real 3D camera pixels");
+  await page.getByRole("button",{name:"Return to room camera"}).click();
+  assert.equal(await page.locator(".office-desk-context").count(),0);
+  await page.getByRole("button",{name:"Return to overview camera"}).click();
+  console.log("PASS selected real workstation cinematic close-up, truthful role status and reversible room navigation");
 
   // Owner controls real daily internal evidence, not unauthorized social/voice automation.
   const dailyOn=page.getByRole("button",{name:"Enable daily briefing"});

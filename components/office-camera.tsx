@@ -16,13 +16,10 @@ import { OrbitControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef, type ElementRef } from "react";
 import * as THREE from "three";
-import type { RoomKey } from "./office";
+import type {RoomKey,CameraPose} from "@/lib/office-layout";
 
 export type OfficeView = RoomKey | "overview";
-type Pose = {
-  position: [number, number, number];
-  target: [number, number, number];
-};
+type Pose=CameraPose;
 
 /** All positions are in the locally authored jewellery HQ scene coordinate system. */
 export const OFFICE_CAMERA_POSES: Record<OfficeView, Pose> = {
@@ -33,7 +30,7 @@ export const OFFICE_CAMERA_POSES: Record<OfficeView, Pose> = {
   meeting: { position: [10.4, 6.3, 9.5], target: [3.6, 0.6, 3.05] },
 };
 
-export function OfficeCamera({ view }: { view: OfficeView }) {
+export function OfficeCamera({ view,focusPose=null }: { view: OfficeView;focusPose?:CameraPose|null }) {
   const controlsRef = useRef<ElementRef<typeof OrbitControls>>(null);
   const desiredRef = useRef<Pose | null>(null);
   const reducedMotionRef = useRef(false);
@@ -42,11 +39,11 @@ export function OfficeCamera({ view }: { view: OfficeView }) {
   const { camera, invalidate } = useThree();
 
   useEffect(() => {
-    desiredRef.current = OFFICE_CAMERA_POSES[view];
+    desiredRef.current = focusPose||OFFICE_CAMERA_POSES[view];
     reducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // A demand-driven Canvas must draw its next camera frame after view changes.
     invalidate();
-  }, [view,invalidate]);
+  }, [view,focusPose,invalidate]);
 
   useFrame((_, delta) => {
     const desired = desiredRef.current;
@@ -81,7 +78,7 @@ export function OfficeCamera({ view }: { view: OfficeView }) {
       ref={controlsRef}
       target={[0, 0.4, 0]}
       enablePan={false}
-      minDistance={7}
+      minDistance={focusPose?2.8:7}
       maxDistance={35}
       maxPolarAngle={Math.PI / 2.22}
       minPolarAngle={0.3}
