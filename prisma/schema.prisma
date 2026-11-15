@@ -225,6 +225,7 @@ model ReelJob {
   materialSnapshot String
   linkSnapshot    String
   durationSeconds Int        @default(20)
+  scheduleDate    String?    // Asia/Kolkata YYYY-MM-DD; null for manually queued Reels
   status          ReelStatus @default(QUEUED)
   outputFilename  String?    @unique
   errorCode       String?
@@ -237,4 +238,13 @@ model ReelJob {
   asset           CreativeAsset @relation(fields: [assetId], references: [id], onDelete: Restrict)
   @@index([status, createdAt])
   @@index([productId, createdAt])
+  @@unique([assetId, scheduleDate])
+}
+
+/** Opt-in unattended LOCAL rendering only. Publishing is always owner-controlled. */
+model CreativeSchedule {
+  id            String   @id
+  enabled       Boolean  @default(false)
+  dailyTarget   Int      @default(2)
+  updatedAt     DateTime @updatedAt
 }
