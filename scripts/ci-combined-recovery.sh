@@ -26,7 +26,7 @@ docker exec "$DB_CONTAINER" pg_dump -U hq -d hq --format=custom --no-owner > "$T
 tar -C "$HQ_MEDIA_DIR" -czf "$TEMP/bundle/media.tar.gz" assets reels
 (cd "$TEMP/bundle" && sha256sum db.dump media.tar.gz media-manifest.json > SHA256SUMS)
 age-keygen -o "$TEMP/ephemeral-ci.agekey" 2>"$TEMP/age-keygen.log"
-RECIPIENT="$(sed -n 's/.*public key: //p' "$TEMP/age-keygen.log")"
+RECIPIENT="$(age-keygen -y "$TEMP/ephemeral-ci.agekey")"
 [[ "$RECIPIENT" == age1* ]] || { echo "Missing ephemeral age public recipient" >&2; exit 2; }
 tar -C "$TEMP/bundle" -czf - db.dump media.tar.gz media-manifest.json SHA256SUMS |
   age -r "$RECIPIENT" > "$TEMP/recovery.age"
