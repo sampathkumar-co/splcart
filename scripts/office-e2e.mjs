@@ -21,6 +21,25 @@ const page = await ctx.newPage();
 const failures = [];
 page.on("pageerror", error => failures.push(error.message));
 page.on("console", msg => { if(msg.type()==="error")console.log("BROWSER_CONSOLE_ERROR",msg.text().slice(0,280)); });
+
+/** Capture the actual viewport-visible WebGL without Playwright's element
+ * stability wait; the 3D camera intentionally transitions while the Canvas
+ * DOM box remains fixed, and software WebGL can be slow on CI CPUs. */
+async function captureOffice(path){
+  const container=page.locator(".office-canvas");
+  await container.scrollIntoViewIfNeeded();
+  const box=await container.boundingBox();
+  assert.ok(box && box.width>350 && box.height>250,"real 3D canvas bounds required");
+  const viewport=page.viewportSize();
+  assert.ok(viewport,"viewport required for screenshot");
+  const x=Math.max(0,box.x),y=Math.max(0,box.y);
+  const width=Math.min(box.width-(x-box.x),viewport.width-x);
+  const height=Math.min(box.height-(y-box.y),viewport.height-y);
+  assert.ok(width>350&&height>200,"visible WebGL region must exist");
+  return page.screenshot({path,clip:{x,y,width,height},
+    timeout:90_000,animations:"disabled"});
+}
+
 try {
   const unauthenticated = await page.goto(base, { waitUntil: "domcontentloaded", timeout: 40_000 });
   assert.equal(unauthenticated?.status(), 200, "login page must load through protected redirect");
@@ -101,9 +120,7 @@ try {
   const afterHeight=await page.locator(".office-canvas").evaluate(el=>el.clientHeight);
   assert.ok(afterHeight>beforeHeight+60,
     "cinematic view must physically enlarge the genuine WebGL scene");
-  await page.locator(".office-canvas").screenshot({
-    path:"artifacts/hq-office-cinema.png",
-  });
+  await captureOffice("artifacts/hq-office-cinema.png");
   await page.getByRole("button",{name:"Exit cinematic view"}).click();
   assert.equal(await page.locator(".station-chip .status-running").count(),0,
     "cinema and lighting controls may not forge employee activity");
@@ -160,16 +177,14 @@ try {
     await page.getByRole("button",{name:focus.button}).first().click();
     await page.locator(".office-canvas").scrollIntoViewIfNeeded();
     await page.waitForTimeout(1250);
-    const image = await page.locator(".office-canvas").screenshot({
-      path:"artifacts/hq-room-"+focus.label+".png",
-    });
+    const image = await captureOffice("artifacts/hq-room-"+focus.label+".png");
     assert.ok(image.length>20_000,"room camera "+focus.label+" must render real detail");
   }
   const strategy=page.getByRole("button",{name:"Focus strategy room"});
   await strategy.click();
   assert.equal(await strategy.getAttribute("aria-pressed"),"true","strategy room camera must have accessible selected state");
   await page.waitForTimeout(1350);
-  const meetingImage=await page.locator(".office-canvas").screenshot({path:"artifacts/hq-room-strategy.png"});
+  const meetingImage=await captureOffice("artifacts/hq-room-strategy.png");
   assert.ok(meetingImage.length>20_000,"meeting room camera must render real geometry");
   await page.getByRole("button",{name:"Overview"}).click();
   await page.waitForTimeout(1300);
