@@ -191,3 +191,22 @@
 .agent-daily-opt-in button{flex-shrink:0;min-height:40px}
 .agent-daily-opt-in button[aria-pressed=true]{border:1px solid #b69670;background:#4b3e32;color:#ffe1c1}
 @media(max-width:740px){.agent-daily-opt-in{flex-direction:column;align-items:stretch}.agent-daily-opt-in button{width:100%}}
+
+/* Owner-only, non-connected customer enquiries; no automatic sending. */
+.inbox-layout{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(300px,1.15fr);align-items:start;gap:20px}
+.inbox-layout .panel{min-width:0}
+.inbox-layout textarea{width:100%;resize:vertical;background:#141c20;color:#f1e7d6;border:1px solid #59625b;padding:12px;border-radius:7px;font:inherit;line-height:1.55}
+.inbox-layout textarea:focus-visible{outline:2px solid #c8a774;outline-offset:2px}
+.inbox-layout .checkline{line-height:1.55}
+.inbox-list{display:grid;gap:15px;max-height:950px;overflow-y:auto}
+.inbox-record{padding:15px;background:linear-gradient(135deg,#233032,#172124);border:1px solid #46544d;border-radius:8px;overflow-wrap:anywhere}
+.inbox-record-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.inbox-record-head strong{color:#f1d7ad;font-size:13px}
+.inbox-record-head span{border:1px solid #756d58;padding:4px 8px;border-radius:12px;font-size:9px;color:#ead8b9}
+.inbox-record small{font-size:10px;color:#a9b7ae;line-height:1.5}
+.inbox-message{white-space:pre-wrap;line-height:1.6;font-size:12px;color:#dbe2d9;margin:13px 0}
+.inbox-products{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.inbox-products a{border:1px solid #a48a62;padding:7px;border-radius:6px;color:#f0d5a8;font-size:10px}
+.inbox-reply{border-top:1px solid #4c544b;margin-top:13px;padding-top:12px}
+.inbox-close{background:transparent;border:1px solid #897359;color:#edcfaa;padding:8px 12px;border-radius:5px;margin-top:12px;cursor:pointer}
+@media(max-width:1020px){.inbox-layout{grid-template-columns:1fr}.inbox-list{max-height:none}}
