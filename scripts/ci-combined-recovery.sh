@@ -8,7 +8,7 @@ if [[ "${HQ_TEST_MODE:-}" != "1" ||
   echo "Refusing to run combined recovery outside ephemeral HQ CI" >&2
   exit 2
 fi
-for binary in docker age age-keygen sha256sum tar pg_restore; do
+for binary in docker age age-keygen sha256sum tar; do
   command -v "$binary" >/dev/null || { echo "Missing CI backup verification tool $binary" >&2; exit 2; }
 done
 DB_CONTAINER="$(docker ps --filter ancestor=postgres:17 --format '{{.ID}}' | head -1)"
@@ -33,7 +33,8 @@ tar -C "$TEMP/bundle" -czf - db.dump media.tar.gz media-manifest.json SHA256SUMS
 test -s "$TEMP/recovery.age"
 age -d -i "$TEMP/ephemeral-ci.agekey" "$TEMP/recovery.age" | tar -xz -C "$TEMP/restored"
 (cd "$TEMP/restored" && sha256sum -c SHA256SUMS)
-pg_restore --list "$TEMP/restored/db.dump" >/dev/null
+bash scripts/hq-verify-encrypted-backup.sh "$TEMP/recovery.age" "$TEMP/ephemeral-ci.agekey"
+docker exec -i "$DB_CONTAINER" pg_restore --list < "$TEMP/restored/db.dump" >/dev/null
 docker exec "$DB_CONTAINER" createdb -U hq hq_media_restore_check
 docker exec -i "$DB_CONTAINER" pg_restore -U hq -d hq_media_restore_check --no-owner < "$TEMP/restored/db.dump"
 tar -C "$TEMP/restored-media" -xzf "$TEMP/restored/media.tar.gz"

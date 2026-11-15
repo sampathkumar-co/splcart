@@ -92,6 +92,10 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg fonts-dejavu-core
       - name: Render and verify genuine 20-second HQ-only video, approval and MP4
         run: node scripts/creative-smoke.mjs
+      - name: Install free offline age encryption CLI for independent HQ backup test
+        run: sudo apt-get install -y age
+      - name: Verify real encrypted isolated HQ DB + photo + MP4 restore
+        run: bash scripts/ci-combined-recovery.sh
       - name: Archive CI-only synthetic-source Reel MP4
         if: always()
         uses: actions/upload-artifact@v4
