@@ -17,7 +17,7 @@ const ctx = await browser.newContext({
   viewport: { width: 1600, height: 1000 },
   deviceScaleFactor: 1,
 });
-const page = await ctx.newPage();
+let page = await ctx.newPage();
 const failures = [];
 page.on("pageerror", error => failures.push(error.message));
 page.on("console", msg => { if(msg.type()==="error")console.log("BROWSER_CONSOLE_ERROR",msg.text().slice(0,280)); });
@@ -212,11 +212,16 @@ try {
   assert.ok((await page.locator(".agent-real-report").innerText()).includes("Local HQ evidence report"),
     "Real GM role task must persist source-derived report, not simulated activity");
   console.log("PASS actual owner-triggered local agent role and persisted 3D desk inspector");
-  // Real software-WebGL stress (four camera changes + mouse orbit) can leave
-  // slow CI Chromium busy. Validate the accessible alternative from a fresh,
-  // authenticated tab navigation, as an actual owner can always do.
-  await page.reload({waitUntil:"domcontentloaded",timeout:60_000});
-  await page.locator(".station-chip").first().waitFor({timeout:45_000});
+  // End the heavy 3D stress tab. A new tab in the SAME authenticated browser
+  // context is a real owner navigation and releases the previous WebGL renderer.
+  // A plain reload can leave a stale GPU context and starve UI click handlers.
+  await page.close();
+  page = await ctx.newPage();
+  page.on("pageerror", error => failures.push(error.message));
+  page.on("console", msg => {if(msg.type()==="error")console.log("BROWSER_CONSOLE_ERROR",msg.text().slice(0,280));});
+  await page.goto(base,{waitUntil:"domcontentloaded",timeout:60_000});
+  await page.locator(".station-chip").first().waitFor({timeout:60_000});
+  console.log("PASS 3D stress renderer released; fresh authenticated workspace for 2D fallback");
   await page.getByRole("button", { name: "2D ACCESSIBLE VIEW" }).click({timeout:60_000});
   await page.getByRole("button", { name: /SALES FLOOR/ }).waitFor();
   assert.equal(await page.locator(".room-select").count(), 4, "2D fallback must show all four departments");
