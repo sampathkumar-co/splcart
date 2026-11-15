@@ -45,7 +45,7 @@ export async function POST(req:Request) {
         db.creativeAsset.findMany({orderBy:{createdAt:"desc"},take:150,
           select:{id:true,productId:true}}),
         db.researchRun.findMany({orderBy:{startedAt:"desc"},take:100,
-          select:{id:true,sourceUrl:true,status:true,pageTitle:true}}),
+          select:{id:true,sourceUrl:true,status:true,provider:true,pageTitle:true}}),
       ]);
       const context:LocalContext={now:new Date(),
         leads:leads.map(p=>({id:p.id,name:p.name,category:p.category,stage:p.stage,
