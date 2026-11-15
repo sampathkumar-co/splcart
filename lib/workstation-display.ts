@@ -119,7 +119,7 @@ export function buildRoomScreen(
  room:ScreenRoom, agents:readonly AgentRecord[], tasks:readonly ScreenTask[],
 ){
  const roles=ROLE_SPECS.filter(r=>room==="meeting"?true:r.room===room);
- const relevant=new Set(roles.map(r=>r.id));
+ const relevant=new Set<string>(roles.map(r=>r.id));
  const count=roles.length;
  const active=agents.filter(a=>relevant.has(a.id)&&a.status==="RUNNING").length;
  const blocked=agents.filter(a=>relevant.has(a.id)&&a.status==="NOT_CONFIGURED").length;
