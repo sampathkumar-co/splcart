@@ -28,11 +28,22 @@ if tar -tvzf "$TEMP/bundle.tar.gz" | awk '{print substr($1,1,1)}' | grep -v '^-$
 fi
 tar --no-same-owner --no-same-permissions -xzf "$TEMP/bundle.tar.gz" -C "$TEMP/extract"
 (cd "$TEMP/extract" && sha256sum -c SHA256SUMS)
+# Allow only the dedicated HQ root, its two media directories and UUID files.
 tar -tzf "$TEMP/extract/media.tar.gz" | while IFS= read -r name; do
  case "$name" in
-  hq-media/|hq-media/assets/|hq-media/reels/|hq-media/assets/*|hq-media/reels/*) ;;
-  *) echo "Unsafe/non-HQ media archive entry: $name" >&2; exit 1 ;;
+  hq-media/|hq-media/assets/|hq-media/reels/) continue ;;
  esac
+ if [[ "$name" =~ ^hq-media/assets/[0-9a-f-]{36}\\.png$ ||
+       "$name" =~ ^hq-media/reels/[0-9a-f-]{36}\\.mp4$ ]]; then
+   continue
+ fi
+ echo "Unsafe/non-HQ media archive entry: $name" >&2
+ exit 1
 done
+# No special files/symlinks may be restored under the media volume.
+if tar -tvzf "$TEMP/extract/media.tar.gz" | awk '{print substr($1,1,1)}' | grep -Ev '^[-d]$' >/dev/null; then
+ echo "HQ media archive contains a forbidden special file or symlink" >&2
+ exit 1
+fi
 echo "PASS encrypted standalone HQ archive decrypted, expected members and SHA-256 checksums verified."
 echo "This read-only check is NOT a live target-host restore; run the DB/media fresh-restore acceptance separately."

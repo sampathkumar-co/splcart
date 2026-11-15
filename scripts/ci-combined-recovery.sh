@@ -23,7 +23,8 @@ mkdir -p "$TEMP/bundle" "$TEMP/restored" "$TEMP/restored-media"
 node scripts/hq-media-manifest.mjs snapshot > "$TEMP/bundle/media-manifest.json"
 node -e 'const m=require(process.argv[1]);if(m.photoCount<1||m.videoCount<1)process.exit(2)' "$TEMP/bundle/media-manifest.json"
 docker exec "$DB_CONTAINER" pg_dump -U hq -d hq --format=custom --no-owner > "$TEMP/bundle/db.dump"
-tar -C "$HQ_MEDIA_DIR" -czf "$TEMP/bundle/media.tar.gz" assets reels
+# Production media volume archives carry the root directory "hq-media/".
+tar -C "$HQ_MEDIA_DIR" --transform='s,^,hq-media/,' -czf "$TEMP/bundle/media.tar.gz" assets reels
 (cd "$TEMP/bundle" && sha256sum db.dump media.tar.gz media-manifest.json > SHA256SUMS)
 age-keygen -o "$TEMP/ephemeral-ci.agekey" 2>"$TEMP/age-keygen.log"
 RECIPIENT="$(age-keygen -y "$TEMP/ephemeral-ci.agekey")"
@@ -39,23 +40,23 @@ docker exec "$DB_CONTAINER" createdb -U hq hq_media_restore_check
 docker exec -i "$DB_CONTAINER" pg_restore -U hq -d hq_media_restore_check --no-owner < "$TEMP/restored/db.dump"
 tar -C "$TEMP/restored-media" -xzf "$TEMP/restored/media.tar.gz"
 RESTORED_URL="postgresql://hq:hq@localhost:5432/hq_media_restore_check?schema=public"
-env DATABASE_URL="$RESTORED_URL" HQ_MEDIA_DIR="$TEMP/restored-media" \
+env DATABASE_URL="$RESTORED_URL" HQ_MEDIA_DIR="$TEMP/restored-media/hq-media" \
   node scripts/hq-media-manifest.mjs verify "$TEMP/restored/media-manifest.json"
 
 # Deliberately corrupt recovered media and confirm validation FAILS CLOSED.
-PHOTO="$(find "$TEMP/restored-media/assets" -maxdepth 1 -type f -name '*.png' | head -1)"
+PHOTO="$(find "$TEMP/restored-media/hq-media/assets" -maxdepth 1 -type f -name '*.png' | head -1)"
 test -f "$PHOTO"
 printf 'CI-corruption' >> "$PHOTO"
-if env DATABASE_URL="$RESTORED_URL" HQ_MEDIA_DIR="$TEMP/restored-media" \
+if env DATABASE_URL="$RESTORED_URL" HQ_MEDIA_DIR="$TEMP/restored-media/hq-media" \
    node scripts/hq-media-manifest.mjs verify "$TEMP/restored/media-manifest.json" >/dev/null 2>&1; then
  echo "Media checksum test failed to detect corrupt photo" >&2
  exit 1
 fi
 tar -C "$TEMP/restored-media" -xzf "$TEMP/restored/media.tar.gz"
-VIDEO="$(find "$TEMP/restored-media/reels" -maxdepth 1 -type f -name '*.mp4' | head -1)"
+VIDEO="$(find "$TEMP/restored-media/hq-media/reels" -maxdepth 1 -type f -name '*.mp4' | head -1)"
 test -f "$VIDEO"
 rm -f "$VIDEO"
-if env DATABASE_URL="$RESTORED_URL" HQ_MEDIA_DIR="$TEMP/restored-media" \
+if env DATABASE_URL="$RESTORED_URL" HQ_MEDIA_DIR="$TEMP/restored-media/hq-media" \
    node scripts/hq-media-manifest.mjs verify "$TEMP/restored/media-manifest.json" >/dev/null 2>&1; then
  echo "Media recovery test failed to detect missing video" >&2
  exit 1
