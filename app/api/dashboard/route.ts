@@ -5,7 +5,8 @@ import { getAgentRecords } from "@/lib/agent-roster";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {
-    const [prospects, products, runs, control, controlAudit, agentTasks, agentSchedule] = await Promise.all([
+    const [prospects, products, runs, control, controlAudit, agentTasks, agentSchedule,
+      reelStatuses, openInquiryCount, ownerRecordedPostCount] = await Promise.all([
       db.prospect.findMany({ ...fullProspect, orderBy: { updatedAt: "desc" }, take: 100 }),
       db.product.findMany({ orderBy: { createdAt: "desc" }, take: 100 }),
       db.researchRun.findMany({ orderBy: { startedAt: "desc" }, take: 30 }),
@@ -13,6 +14,10 @@ export async function GET() {
       db.systemAudit.findMany({ orderBy: { createdAt:"desc" }, take:10 }),
       db.agentTask.findMany({ orderBy: { createdAt:"desc" }, take:60 }),
       db.agentSchedule.findUnique({where:{id:"hq-local-readiness"}}),
+      // Status-only aggregates; no images, chat content, media blobs or platform credentials.
+      db.reelJob.findMany({select:{status:true},orderBy:{createdAt:"desc"},take:100}),
+      db.customerInquiry.count({where:{status:"OPEN"}}),
+      db.socialPublication.count(),
     ]);
     const verifiedRevenue = prospects.filter(p => p.conversion?.verifiedAt).reduce((sum, p) => sum + (p.conversion?.grossAmountPaise || 0), 0);
     return Response.json({
@@ -43,6 +48,28 @@ export async function GET() {
       agentSchedule: {
         enabled:agentSchedule?.enabled??false,lastRunDate:agentSchedule?.lastRunDate??null,
         localTime:"08:30",timeZone:"Asia/Kolkata",
+      },
+      workstationSignals:{
+        reels:{
+          queued:reelStatuses.filter(r=>r.status==="QUEUED").length,
+          rendering:reelStatuses.filter(r=>r.status==="RENDERING").length,
+          rendered:reelStatuses.filter(r=>r.status==="RENDERED").length,
+          approved:reelStatuses.filter(r=>r.status==="APPROVED").length,
+          failed:reelStatuses.filter(r=>r.status==="FAILED").length,
+          scope:"LATEST_100_HQ_JOBS",
+        },
+        openInquiries:openInquiryCount,
+        ownerRecordedPosts:ownerRecordedPostCount,
+        leads:{
+          awaitingReview:prospects.filter(p=>p.decision==="PENDING").length,
+          approved:prospects.filter(p=>p.decision==="APPROVED").length,
+        },
+        research:{
+          running:runs.filter(r=>r.status==="RUNNING").length,
+          completed:runs.filter(r=>r.status==="COMPLETED").length,
+          blocked:runs.filter(r=>r.status==="BLOCKED"||r.status==="FAILED").length,
+          scope:"LATEST_30_HQ_RUNS",
+        },
       },
       integrations: { splcart: "EXTERNAL_SHOPPING_REFERENCE_ONLY", browser: "MANUAL_BROWSER_RESEARCH", outreach: "MANUAL_ONLY", quotations: "OWNER_APPROVED_MANUAL_SHARING", revenue: "OWNER_REPORTED_UNVERIFIED" },
     }, { headers: { "Cache-Control": "no-store" } });
