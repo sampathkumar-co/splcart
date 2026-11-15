@@ -89,7 +89,7 @@ function createRoomTexture(input:ReturnType<typeof buildRoomScreen>){
  text(ctx,"PRASANTH JEWELLERS  /  SOURCE-GROUNDED ROOM FEED",32,38,17,ATELIER_PALETTE.pearl,true,680);
  text(ctx,input.title,32,93,39,ATELIER_PALETTE.ivory,true,690);
  text(ctx,input.subtitle.toUpperCase(),32,133,18,input.accent,true,680);
- const stats:[
+ const stats=[
   {name:"REAL ROLE DESKS",value:input.count},
   {name:"RUNNING NOW",value:input.active},
   {name:"RECENT CHECKS",value:input.reports},
