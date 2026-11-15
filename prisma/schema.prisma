@@ -238,6 +238,7 @@ model ReelJob {
   asset           CreativeAsset @relation(fields: [assetId], references: [id], onDelete: Restrict)
   @@index([status, createdAt])
   @@index([productId, createdAt])
+  publications SocialPublication[]
   @@unique([assetId, scheduleDate])
 }
 
@@ -272,4 +273,40 @@ model AgentTask {
   finishedAt    DateTime?
   @@index([roleId, createdAt])
   @@index([status, createdAt])
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+  YOUTUBE
+}
+
+/**
+ * Owner-recorded external publication only. No platform API or login access,
+ * and no automatic proof of publication/engagement.
+ */
+model SocialPublication {
+  id          String         @id @default(uuid())
+  reelJobId   String
+  platform    SocialPlatform
+  postUrl     String         @unique
+  recordedAt  DateTime       @default(now())
+  sourceLabel String         @default("OWNER_REPORTED")
+  reel        ReelJob        @relation(fields: [reelJobId], references: [id], onDelete: Restrict)
+  metrics     SocialMetric[]
+  @@unique([reelJobId,platform])
+  @@index([platform,recordedAt])
+}
+
+model SocialMetric {
+  id            String            @id @default(uuid())
+  publicationId String
+  views         Int?
+  likes         Int?
+  enquiries     Int?
+  evidenceUrl   String
+  sourceLabel   String            @default("OWNER_REPORTED")
+  observedAt    DateTime          @default(now())
+  recordedAt    DateTime          @default(now())
+  publication   SocialPublication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  @@index([publicationId,observedAt])
 }
