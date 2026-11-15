@@ -134,7 +134,7 @@ export function RoomStatusWall({room,agents,tasks}:{
     <meshBasicMaterial color="#162028"/>}
   </mesh>
   {/* Warm architectural brass edge, no blinking fake-work beacon. */}
-  <mesh dispose={null} geometry={PLANE} scale={[3.65,.032,1]} position={[0,-.79,.026]}>
+  <mesh dispose={null} geometry={PLANE} scale={[3.65,.032,1]} position={[0,-.66,.026]}>
    <meshBasicMaterial color={input.accent} toneMapped={false}/>
   </mesh>
  </group>;
