@@ -162,6 +162,14 @@ A cinematic architectural headquarters rather than a toy office. Dark obsidian t
 - **Unfinished/blocked:** no genuine wholesale lead-to-paid-sale execution, no separate publicly reachable HQ site, no host firewall/sandbox test, encrypted off-host backup/restore, real-world robots/terms/consent review, owner GPU visual approval, real automated Google/Instagram discovery, programmatic Reels, social/phone/WhatsApp integrations, or complete 16-agent orchestration. Do not claim production readiness; publish no invented Reels/metrics. No storefront integration or merge authorized, ever.
 - **Next:** test target host egress isolation/Chromium sandbox and backup restore; complete separate TLS HQ deployment with dedicated secrets and owner review; run permitted live retailer workflow before expanding to content generation. Original archived agent roadmap remains aspirational until concrete tool and permission gates pass.
 
+### 2026-11-15 — Concurrent daily no-key Reel scheduling hardening
+- **Scope:** `lib/creative-schedule.ts` and `scripts/creative-schedule-smoke.mjs` only; no production store, API, database or deployment accessed. Remains isolated in the HQ draft feature branch, never merge.
+- **Implementation:** the complete scheduler read/check/queue/audit operation now holds a PostgreSQL *transaction-scoped advisory lock* across multiple creative workers. Owner opt-in remains required; two or three daily 20-second product-photo jobs are bounded by available distinct products and a five-job pending queue. Nothing is posted, called or messaged.
+- **Regression acceptance added:** ephemeral CI PostgreSQL test uploads CI-only synthetic photos for two different products plus a second photo of the first product; starts three local workers concurrently; asserts exactly two scheduled jobs for two distinct products, idempotent rerun and owner disable. These are TEST fixtures, not authentic jewellery Reels, real audiences or customer sales.
+- **Verification status:** implementation committed for GitHub CI verification; inspect the newest PR-head Actions job before claiming the concurrency regression passed. Operating FFmpeg/compute infrastructure has not been cost-metered, and no paid AI/video model API is configured.
+- **Next:** independently secure/deploy HQ with dedicated secrets/egress firewall, confirm source-permitted real retailer research and authentic owner assets, then verify local generated Reels and manual social engagement reporting against actual owner activity. No live external publishing or revenue claim.
+
+
 ## Original owner specification (archived for completeness)
 The complete original mission supplied by the owner follows verbatim. It is retained so future chats have *all* original requirements in this one file. **The latest decisions and security gates above supersede older proposed implementation methods below**. Do not treat an aspirational capability in this appendix as implemented or authorized.
 

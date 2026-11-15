@@ -33,32 +33,41 @@ export function chooseDistinctPhotoProducts(
 }
 
 export async function scheduleToday(now=new Date()){
-  const config=await db.creativeSchedule.findUnique({where:{id:"hq"}});
-  if(!config?.enabled)return {status:"DISABLED" as const,created:0,day:indiaBusinessDate(now)};
-  const target=Math.min(3,Math.max(2,config.dailyTarget));
   const day=indiaBusinessDate(now);
-  const existing=await db.reelJob.findMany({where:{scheduleDate:day},select:{assetId:true,productId:true}});
-  const missing=Math.max(0,target-existing.length);
-  if(missing===0)return {status:"TARGET_MET" as const,created:0,day};
-  const count=await db.reelJob.count({where:{status:{in:["QUEUED","RENDERING"]}}});
-  const room=Math.max(0,5-count);
-  if(!room)return {status:"QUEUE_FULL" as const,created:0,day};
-  const photos=await db.creativeAsset.findMany({orderBy:{createdAt:"desc"},take:150,
-    include:{product:{select:{title:true,material:true,productUrl:true}}}});
-  const alreadyUsed=new Set(existing.map(x=>x.assetId));
-  const usedProducts=new Set(existing.map(x=>x.productId));
-  const options=chooseDistinctPhotoProducts(photos.filter(p=>!usedProducts.has(p.productId)),alreadyUsed,Math.min(room,missing));
-  if(options.length===0)return {status:"NO_NEW_OWNER_PHOTOS" as const,created:0,day};
-  const result=await db.reelJob.createMany({data:options.map(p=>({
-    productId:p.productId,assetId:p.id,
-    titleSnapshot:p.product.title,materialSnapshot:p.product.material,
-    linkSnapshot:p.product.productUrl,
-    scheduleDate:day,durationSeconds:20,status:"QUEUED" as const,
-  })),skipDuplicates:true});
-  if(result.count>0)await db.systemAudit.create({data:{
-    event:"DAILY_ORIGINAL_REELS_QUEUED",actor:"HQ_LOCAL_CREATIVE_SCHEDULER",
-    reason:result.count+" original product-photo Reels queued for "+day+
-      ". Owner enabled daily target "+target+"; no external publishing.",
-  }});
-  return {status:"SCHEDULED" as const,created:result.count,day};
+  // The scheduler may run in multiple containers after a restart or scale-up.
+  // Serialize the eligibility/count/insert decision across ALL HQ workers.
+  // A transaction-scoped PostgreSQL advisory lock releases on commit/crash.
+  return db.$transaction(async tx=>{
+    await tx.$queryRaw`SELECT 1::int AS locked FROM pg_advisory_xact_lock(23901, 20)`;
+    const config=await tx.creativeSchedule.findUnique({where:{id:"hq"}});
+    if(!config?.enabled)return {status:"DISABLED" as const,created:0,day};
+    const target=Math.min(3,Math.max(2,config.dailyTarget));
+    const existing=await tx.reelJob.findMany({
+      where:{scheduleDate:day},select:{assetId:true,productId:true},
+    });
+    const missing=Math.max(0,target-existing.length);
+    if(missing===0)return {status:"TARGET_MET" as const,created:0,day};
+    const count=await tx.reelJob.count({where:{status:{in:["QUEUED","RENDERING"]}}});
+    const room=Math.max(0,5-count);
+    if(!room)return {status:"QUEUE_FULL" as const,created:0,day};
+    const photos=await tx.creativeAsset.findMany({orderBy:{createdAt:"desc"},take:150,
+      include:{product:{select:{title:true,material:true,productUrl:true}}}});
+    const alreadyUsed=new Set(existing.map(x=>x.assetId));
+    const usedProducts=new Set(existing.map(x=>x.productId));
+    const options=chooseDistinctPhotoProducts(
+      photos.filter(p=>!usedProducts.has(p.productId)),alreadyUsed,Math.min(room,missing));
+    if(options.length===0)return {status:"NO_NEW_OWNER_PHOTOS" as const,created:0,day};
+    const result=await tx.reelJob.createMany({data:options.map(p=>({
+      productId:p.productId,assetId:p.id,
+      titleSnapshot:p.product.title,materialSnapshot:p.product.material,
+      linkSnapshot:p.product.productUrl,
+      scheduleDate:day,durationSeconds:20,status:"QUEUED" as const,
+    })),skipDuplicates:true});
+    if(result.count>0)await tx.systemAudit.create({data:{
+      event:"DAILY_ORIGINAL_REELS_QUEUED",actor:"HQ_LOCAL_CREATIVE_SCHEDULER",
+      reason:result.count+" original product-photo Reels queued for "+day+
+        ". Owner enabled daily target "+target+"; no external publishing.",
+    }});
+    return {status:result.count?"SCHEDULED" as const:"TARGET_MET" as const,created:result.count,day};
+  },{maxWait:15_000,timeout:25_000});
 }
