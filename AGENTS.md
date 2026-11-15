@@ -209,6 +209,13 @@ A cinematic architectural headquarters rather than a toy office. Dark obsidian t
 - **Next verifiable release gates:** confirm latest GitHub green run; inspect final four room images; run target-device 3D/WebGL QA when that device becomes available; separately deploy HQ with fresh independent secrets and verified security. Maintain no-store-access hard boundary and an unmerged PR.
 
 
+### 2026-11-15 — Integrated 3D and sixteen-role readiness gate GREEN
+- **GitHub Actions fully SUCCESS:** [run 43689954843](https://github.com/sampathkumar-co/splcart/actions/runs/43689954843) for functional head `ce0bd07a085784d0fab93656bd87601e442546df`: **49/49 Vitest tests across 13 files**, TypeScript, Next production build, Prisma migrations/PostgreSQL and HTTP workflow, HQ-only backup/restore and Compose syntax, *actual* 20.0 s 720×1280 H.264 local video, real four-room WebGL focus screenshots/2D/mobile owner workflow, real IANA example.com browser smoke, source-linked social-owner-reported smoke, concurrent daily scheduler and real 16-role readiness batch. All steps completed successfully, no failing steps. Later `AGENTS.md`-only commit does not change tested functional code.
+- **Source-backed batch acceptance verified:** real disposable HQ PostgreSQL now persists 16 role evaluations in one atomic owner-requested batch with explicit BLOCKED status for missing compliant phone/Instagram/inbound channels, and no paid model actions. This confirms an internal *readiness coordinator* NOT a deployed autonomous sixteen-LLM company.
+- **3D QA limitation:** Chromium software-WebGL renders were inspected; user GPU and FPS/real production deployment are still not independently verified. Original geometry is premium-styled procedural low-poly, not a photoreal production 3D scene, and further owner design review can improve it.
+- **Safety:** no live SPLCART source/API/database/checkout/deployment access; default branch remains intact. Draft PR #1 remains UNMERGED. Real customers, external posting/calling, genuine paid revenue and authenticated domain deployment are not claimed.
+
+
 ## Original owner specification (archived for completeness)
 The complete original mission supplied by the owner follows verbatim. It is retained so future chats have *all* original requirements in this one file. **The latest decisions and security gates above supersede older proposed implementation methods below**. Do not treat an aspirational capability in this appendix as implemented or authorized.
 
