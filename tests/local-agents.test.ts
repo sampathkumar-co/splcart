@@ -55,7 +55,7 @@ describe("truthful no-key role task execution",()=>{
  it("does not claim a market trend from empty browser results",()=>{
    expect(evaluateLocalRole("trend-research",base).status).toBe("BLOCKED");
    const actual=evaluateLocalRole("trend-research",{...base,research:[{
-     id:"run",sourceUrl:"https://retailer.example.com/",status:"COMPLETED",pageTitle:"Real captured page",
+     id:"run",sourceUrl:"https://retailer.example.com/",status:"COMPLETED",provider:"PLAYWRIGHT",pageTitle:"Real captured page",
    }]});
    expect(actual.status).toBe("COMPLETED");
    expect(actual.summary).toContain("not a validated market trend");
