@@ -283,7 +283,7 @@ export function LuxuryRoomDetails({room,night=false,detail=true}:{
    <Cuboid pos={[x,1.06,-2.34]} size={[.035,2.12,.045]} color="#bc9e6b" metalness={.89}/>
    <Cuboid pos={[x,1.08,-2.38]} size={[.18,1.55,.03]} color="#45515a" opacity={.34}/>
   </group>)}
-  <Cuboid pos={[0,.13,2.37]} size={[6.25,.02,.06]} color="#efcb8d" emissive="#a98a50" glow={night?.8:.22}/>
+  <Cuboid pos={[0,.13,2.37]} size={[6.25,.02,.06]} color="#efcb8d" emissive="#a98a50" glow={night?0.8:0.22}/>
   {[-2.8,2.8].map(x=><Cuboid key={x} pos={[x,.17,0]} size={[.025,.014,4.2]} color="#bfa579" metalness={.8}/>)}
   {/* Visible open sky-frame; ceiling is absent so camera can still orbit over desks. */}
   <Pendant x={0} z={room==="meeting"?0:-.06} size={room==="meeting"?.88:.54} night={night}/>
