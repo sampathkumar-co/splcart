@@ -7,7 +7,7 @@ import storefront env files, change its checkout or alter its deployment.
 
 ## Current implementation status
 
-- A dedicated Next.js 16 web service, PostgreSQL 17 service, bearer-authenticated Chromium browser worker, and **local FFmpeg creative worker** are described in `Dockerfile` and `compose.hq.yml`. The creative worker has no Instagram/YouTube/WhatsApp credentials, no public ports, and no outbound network. Owner product photos and rendered MP4s live in a dedicated **HQ-only persistent media volume** (`hq_media_data`) shared with the HQ web service, not with SPLCART.
+- A dedicated Next.js 16 web service, PostgreSQL 17 service, bearer-authenticated Chromium browser worker, **local FFmpeg creative worker**, and a **database-only daily role-reporting worker** are described in `Dockerfile` and `compose.hq.yml`. The creative worker has no Instagram/YouTube/WhatsApp credentials, no public ports, and no outbound network. Owner product photos and rendered MP4s live in a dedicated **HQ-only persistent media volume** (`hq_media_data`) shared with the HQ web service, not with SPLCART.
 - The production web app refuses to launch browser research inside its own process. The worker has no database or shop credentials, no published port, an explicit host allowlist, capped tabs and a one-at-a-time task limit.
 - The browser verifies HTTPS and DNS against private ranges before navigation, blocks off-host navigation/resources, disables JavaScript and downloads, checks /robots.txt using the MIT `robots-parser` library (see license), and honors supported crawl delay. Robots compliance does **not** replace reviewing a website's terms or permissions.
 - The service has a private owner login, signed eight-hour HttpOnly SameSite=Strict cookie, HTTPS-only production cookie, no legacy Basic auth, global PostgreSQL rate limits for login/actions/research and protected same-origin JSON mutations.
@@ -37,7 +37,7 @@ docker compose --project-name pj-ai-headquarters --env-file .env.hq -f compose.h
 docker compose --project-name pj-ai-headquarters --env-file .env.hq -f compose.hq.yml up -d --build
 ```
 
-The `compose.hq.yml` web container alone attaches to the DB and browser networks. The worker is attached to the browser network **only**, never the DB network, and has no public port. The sample does not include the host's egress firewall, HTTPS certificate manager or production backup destination; these must be configured separately.
+The `compose.hq.yml` web container alone attaches to the DB and browser networks. The `hq-agents` local reporting container has only `hq_db_only` (Docker `internal: true`) and receives neither browser nor owner/social/phone credentials. It checks 08:30 Asia/Kolkata only after owner opt-in and stores reports atomically once per India-local day. The worker is attached to the browser network **only**, never the DB network, and has no public port. The sample does not include the host's egress firewall, HTTPS certificate manager or production backup destination; these must be configured separately.
 
 Example reverse-proxy behavior for a *new unrelated HQ hostname*:
 
