@@ -200,7 +200,7 @@ function Room({room,chosen,agents,tasks,selectedAgentId,onChooseAgent,onChooseRo
   <Block at={[0,.085,2.16]} size={[5.85,.014,.025]} color="#c9a775" metalness={.78}/>
   <Planter x={2.92} z={1.86}/>
   <LuxuryRoomDetails room={room.value} night={night} detail={detail}/>
-  <pointLight position={[-2.85,1.7,-1.25]} color={accent} intensity={night?.43:.25} distance={3.9}/>
+  <pointLight position={[-2.85,1.7,-1.25]} color={accent} intensity={night?0.43:0.25} distance={3.9}/>
   <spotLight position={[1.8,4.9,2.2]} angle={.92} penumbra={.9} intensity={night?1.85:1.25} distance={9} color="#ffe9c8"/>
   <LightRail x={0} z={-2.02} length={4.65} night={night}/>
  </group>;
