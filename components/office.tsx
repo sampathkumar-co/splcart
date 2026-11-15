@@ -56,37 +56,62 @@ function Station({role,agent,position,selected,onChoose,executive=false}:{
  const onOut=(e:ThreeEvent<PointerEvent>)=>{e.stopPropagation();document.body.style.cursor="auto";};
  return <group position={position} onClick={e=>{e.stopPropagation();onChoose(role.id,role.room as RoomKey);}} onPointerOver={onOver} onPointerOut={onOut}>
    <group scale={scale}>
+     {/* Bronze-trimmed stone worktop over the actual selectable station. */}
+     <RoundedBox position={[0,.485,-.035]} args={[1.63,.19,.76]} radius={.055} smoothness={3} castShadow>
+      <meshStandardMaterial color="#20292b" metalness={.5} roughness={.24}/>
+     </RoundedBox>
+     <RoundedBox position={[0,.588,-.035]} args={[1.65,.035,.76]} radius={.012} smoothness={3}>
+      <meshStandardMaterial color="#b99a65" metalness={.9} roughness={.17}/>
+     </RoundedBox>
+     <RoundedBox position={[0,.614,-.035]} args={[1.58,.018,.71]} radius={.012} smoothness={2}>
+      <meshStandardMaterial color={executive?"#504a3e":"#303e40"} metalness={.31} roughness={.23}/>
+     </RoundedBox>
      <RoundedBox position={[0,.55,0]} args={[1.55,.12,.66]} radius={.045} smoothness={3} castShadow>
        <meshStandardMaterial color={executive?"#574737":"#343b3b"} metalness={.37} roughness={.27}/>
      </RoundedBox>
      {[-.59,.59].map(x=><Block key={x} at={[x,.26,0]} size={[.055,.52,.48]} color="#8c744f" metalness={.9}/>)}
-     <Block at={[0,.90,-.08]} size={[.54,.37,.045]} color="#111619" metalness={.5}/>
-     <mesh position={[0,.90,-.051]}><boxGeometry args={[.47,.30,.008]}/><meshBasicMaterial color={screen} toneMapped={false}/></mesh>
+     <Block at={[0,.90,-.08]} size={[.67,.47,.055]} color="#b99a69" metalness={.82}/>
+     <Block at={[0,.90,-.05]} size={[.60,.41,.027]} color="#10191b" metalness={.5}/>
+     <mesh position={[0,.90,-.032]}><boxGeometry args={[.54,.34,.008]}/><meshBasicMaterial color="#172124" toneMapped={false}/></mesh>
+     <mesh position={[0,1.025,-.024]}><boxGeometry args={[.41,.012,.009]}/><meshBasicMaterial color={screen} toneMapped={false}/></mesh>
+     <Text position={[0,.914,-.021]} fontSize={.071} maxWidth={.5}
+      color={screen} anchorX="center" anchorY="middle">
+      {status==="RUNNING"?"RUNNING":status==="ON_DEMAND"?"ON DEMAND":"NOT CONFIGURED"}
+     </Text>
+     <mesh position={[0,.846,-.025]}><boxGeometry args={[.30,.008,.008]}/><meshBasicMaterial color="#698477" toneMapped={false}/></mesh>
      <Block at={[0,.66,-.08]} size={[.025,.13,.035]} color={gold} metalness={.85}/>
      <Block at={[0,.61,.2]} size={[.44,.017,.14]} color="#535b58"/>
      <Block at={[0,.49,-.23]} size={[1.29,.085,.058]} color="#b99b68" metalness={.9}/>
      <mesh position={[0,.907,-.018]}><boxGeometry args={[.40,.012,.009]}/><meshBasicMaterial color="#e7c894" toneMapped={false}/></mesh>
      <mesh position={[-.15,.83,-.018]}><boxGeometry args={[.095,.01,.008]}/><meshBasicMaterial color="#7e9c92" toneMapped={false}/></mesh>
-     <Block at={[0,.20,.59]} size={[.50,.08,.42]} color="#444643" />
-     <Block at={[0,.40,.79]} size={[.50,.40,.06]} color="#4b5755"/>
+     <RoundedBox args={[.53,.09,.43]} radius={.08} smoothness={3} position={[0,.21,.59]}>
+      <meshStandardMaterial color="#495a54" roughness={.80}/>
+     </RoundedBox>
+     <RoundedBox args={[.55,.43,.09]} radius={.07} smoothness={3} position={[0,.42,.80]}>
+      <meshStandardMaterial color="#4d5f5a" roughness={.80}/>
+     </RoundedBox>
      <Block at={[0,.17,.58]} size={[.07,.34,.07]} color="#ad946c" metalness={.7}/>
      <Block at={[0,.065,.58]} size={[.49,.045,.44]} color="#252b2c" metalness={.25}/>
+     <Block at={[.59,.662,-.26]} size={[.13,.024,.08]} color="#b59b6d" metalness={.89}/>
+     <mesh position={[.59,.685,-.26]}><cylinderGeometry args={[.044,.029,.042,12]}/>
+      <meshStandardMaterial color="#e4c188" metalness={.88} roughness={.18}/>
+     </mesh>
    </group>
    <Ring selected={selected}/>
    <Text position={[0,.08,.79]} rotation={[-Math.PI/2,0,0]} fontSize={.13} letterSpacing={.1} color="#e5cc9b" anchorX="center" maxWidth={1.65}>{role.short}</Text>
    {live&&<mesh position={[.59*scale,1.1*scale,-.12]}><sphereGeometry args={[.085,12,12]}/><meshBasicMaterial color="#82e1a8"/></mesh>}
  </group>;
 }
-function LightRail({x,z,length=4.25}:{x:number;z:number;length?:number}){
+function LightRail({x,z,length=4.25,night=false}:{x:number;z:number;length?:number;night?:boolean}){
  return <group position={[x,2.83,z]}>
    <RoundedBox args={[length,.09,.14]} radius={.038} smoothness={3}>
      <meshStandardMaterial color="#594b39" metalness={.82} roughness={.28}/>
    </RoundedBox>
    <mesh position={[0,-.052,.012]}>
      <boxGeometry args={[length*.93,.014,.09]}/>
-     <meshBasicMaterial color="#ffdc9a" toneMapped={false}/>
+     <meshBasicMaterial color={night?"#ffd69a":"#ffecd2"} toneMapped={false}/>
    </mesh>
-   <pointLight position={[0,-.3,.58]} color="#ffe4bb" intensity={.88} distance={5.7}/>
+   <pointLight position={[0,-.3,.58]} color="#ffe4bb" intensity={night?.80:.38} distance={5.7}/>
  </group>;
 }
 function Planter({x,z}:{x:number;z:number}){
@@ -183,7 +208,7 @@ function Room({room,chosen,agents,selectedAgentId,onChooseAgent,onChooseRoom,nig
   <Planter x={2.92} z={1.86}/>
   <LuxuryRoomDetails room={room.value} night={night} detail={detail}/>
   <spotLight position={[1.8,4.9,2.2]} angle={.92} penumbra={.9} intensity={night?1.85:1.25} distance={9} color="#ffe9c8"/>
-  <LightRail x={0} z={-2.02} length={4.65}/>
+  <LightRail x={0} z={-2.02} length={4.65} night={night}/>
  </group>;
 }
 function Building({selected,selectedAgentId,agents,onChooseAgent,onChooseRoom,night=false,detail=true}:{
