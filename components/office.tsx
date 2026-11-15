@@ -230,17 +230,33 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
  selectedAgentId?:string|null;onAgentSelect?:(agentId:string)=>void;
 }){
  const [view,setView]=useState<OfficeView>("overview");
+ const [night,setNight]=useState(false);
+ const [detail,setDetail]=useState(true);
+ const [cinema,setCinema]=useState(false);
  const firstRender=useRef(true);
  useEffect(()=>{if(firstRender.current){firstRender.current=false;return;}setView(selected)},[selected]);
  const chooseRoom=(room:RoomKey)=>{setView(room);onSelect(room);};
  const chooseAgent=(id:string,room:RoomKey)=>{onAgentSelect?.(id);chooseRoom(room);};
- return <div className="office-canvas" role="group" aria-label="Interactive 3D Prasanth Jewellery Headquarters. Sixteen agents have evidence-based statuses.">
-   <Canvas shadows frameloop="demand" camera={{position:[10.2,10.8,12.1],fov:40,near:.1,far:90}} dpr={[1,1.5]} gl={{alpha:false,antialias:true,powerPreference:"high-performance"}}>
+ return <div className={"office-canvas luxury-office"+(cinema?" office-canvas-cinema":"")} role="group" aria-label="Interactive 3D Prasanth Jewellery Headquarters. Sixteen agents have evidence-based statuses.">
+   <Canvas shadows frameloop="demand" camera={{position:[10.2,10.8,12.1],fov:40,near:.1,far:90}} dpr={[1,detail?1.5:1.2]} gl={{alpha:false,antialias:true,powerPreference:"high-performance"}}>
     <color attach="background" args={["#111d23"]}/>
     <fog attach="fog" args={["#111d23",42,72]}/>
-    <Suspense fallback={null}><Building selected={selected} selectedAgentId={selectedAgentId} agents={agents} onChooseAgent={chooseAgent} onChooseRoom={chooseRoom}/></Suspense>
+    <Suspense fallback={null}><Building selected={selected} selectedAgentId={selectedAgentId} agents={agents} onChooseAgent={chooseAgent} onChooseRoom={chooseRoom} night={night} detail={detail}/></Suspense>
     <OfficeCamera view={view}/>
    </Canvas>
+   <div className="office-cinema-titling" aria-hidden="true">
+    <span>PRASANTH / INTELLIGENCE ATELIER</span>
+    <strong>Architecture of ambition.</strong>
+    <small>Four rooms · Sixteen evidence-driven workstations</small>
+   </div>
+   <div className="office-visual-controls" role="group" aria-label="3D presentation preferences">
+    <button type="button" aria-pressed={night} onClick={()=>setNight(v=>!v)}
+     aria-label={night?"Use daylight lighting":"Use after-hours lighting"}>{night?"Daylight":"After hours"}</button>
+    <button type="button" aria-pressed={!detail} onClick={()=>setDetail(v=>!v)}
+     aria-label={detail?"Use performance detail":"Use signature detail"}>{detail?"Performance":"Signature"}</button>
+    <button type="button" aria-pressed={cinema} onClick={()=>setCinema(v=>!v)}
+     aria-label={cinema?"Exit cinematic view":"Expand cinematic view"}>{cinema?"Compact":"Cinema"}</button>
+   </div>
    <div className="office-room-navigation" role="group" aria-label="Navigate the four 3D office rooms">
      {rooms.map(room=><button type="button" key={room.value}
        aria-label={"Focus "+room.name.toLowerCase()}
@@ -250,6 +266,6 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
      </button>)}
    </div>
    <button type="button" className="office-reset-camera" onClick={()=>setView("overview")} aria-label="Return to overview camera">Overview</button>
-   <div className="office-overlay"><span className="light-dot"/> LIVE-SOURCE STATUS ONLY <span className="overlay-tip">Select a workstation · Drag to orbit · Scroll to zoom</span></div>
+   <div className="office-overlay"><span className="light-dot"/> LIVE-SOURCE STATUS ONLY <span className="overlay-tip">Actual desk states · Drag to orbit · Scroll to zoom</span></div>
  </div>;
 }
