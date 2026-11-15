@@ -49,7 +49,9 @@ function screenBase(ctx:CanvasRenderingContext2D,w:number,h:number,accent:string
 }
 function isValidStatus(code:string){return ["COMPLETED","RUNNING","BLOCKED","FAILED"].includes(code);}
 export function createWorkstationTexture(screen:WorkstationScreenData){
- const {el,ctx}=surface(640,400),accent=screen.accent;
+ const {el,ctx}=surface(384,240),accent=screen.accent;
+ // Lower-res textures match the physical tiny monitors: much lower GPU upload.
+ ctx.scale(384/640,240/400);
  screenBase(ctx,640,400,accent);
  text(ctx,"PRASANTH  /  AGENT INTELLIGENCE",27,35,16,ATELIER_PALETTE.pearl,true);
  text(ctx,screen.short,29,97,53,ATELIER_PALETTE.ivory,true);
@@ -85,7 +87,8 @@ export function createWorkstationTexture(screen:WorkstationScreenData){
  return map;
 }
 function createRoomTexture(input:ReturnType<typeof buildRoomScreen>){
- const {el,ctx}=surface(768,320);
+ const {el,ctx}=surface(576,240);
+ ctx.scale(576/768,240/320);
  screenBase(ctx,768,320,input.accent);
  text(ctx,"PRASANTH JEWELLERS  /  SOURCE-GROUNDED ROOM FEED",32,38,17,ATELIER_PALETTE.pearl,true,680);
  text(ctx,input.title,32,93,39,ATELIER_PALETTE.ivory,true,690);
@@ -113,7 +116,15 @@ function createRoomTexture(input:ReturnType<typeof buildRoomScreen>){
  return texture;
 }
 export function WorkstationScreen({data}:{data:WorkstationScreenData}){
- const map=useMemo(()=>typeof document!=="undefined"?createWorkstationTexture(data):null,[data]);
+ // UI polling creates new JS objects even when the underlying task did not
+ // change. A stable content key preserves the same GPU texture in that case.
+ const contentKey=[
+  data.roleId,data.status,data.mainNumber,data.numberLabel,data.headline,
+  data.detail,data.provenance,data.lastRecordedAt||"",
+  ...data.recentTaskStatuses,
+ ].join("|");
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ const map=useMemo(()=>typeof document!=="undefined"?createWorkstationTexture(data):null,[contentKey]);
  useEffect(()=>()=>map?.dispose(),[map]);
  return <mesh dispose={null} geometry={PLANE} scale={[.565,.391,1]} position={[0,.908,-.015]}>
   {map?<meshBasicMaterial map={map} toneMapped={false} side={THREE.DoubleSide}/>:
@@ -124,7 +135,10 @@ export function RoomStatusWall({room,agents,tasks}:{
  room:RoomKey;agents:AgentRecord[];tasks:ScreenTask[];
 }){
  const input=useMemo(()=>buildRoomScreen(room,agents,tasks),[room,agents,tasks]);
- const map=useMemo(()=>typeof document!=="undefined"?createRoomTexture(input):null,[input]);
+ const contentKey=[input.room,input.count,input.active,input.blocked,
+  input.reports].join("|");
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ const map=useMemo(()=>typeof document!=="undefined"?createRoomTexture(input):null,[contentKey]);
  useEffect(()=>()=>map?.dispose(),[map]);
  return <group position={[0,1.0,-2.205]}>
   <mesh dispose={null} geometry={PLANE} scale={[3.62,1.26,1]}>
