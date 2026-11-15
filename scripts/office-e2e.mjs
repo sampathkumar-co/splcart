@@ -69,6 +69,17 @@ try {
   await page.evaluate(() => window.scrollTo(0,0));
   await page.screenshot({path:"artifacts/hq-desktop-3d.png",fullPage:true});
   console.log("PASS 16 real-state agent workstations, 3D scene and interactive inspector");
+  // Owner controls real daily internal evidence, not unauthorized social/voice automation.
+  const dailyOn=page.getByRole("button",{name:"Enable daily briefing"});
+  await dailyOn.click();
+  const dailyOff=page.getByRole("button",{name:"Disable daily briefing"});
+  await dailyOff.waitFor({timeout:15_000});
+  assert.equal(await dailyOff.getAttribute("aria-pressed"),"true");
+  await dailyOff.click();
+  await page.getByRole("button",{name:"Enable daily briefing"}).waitFor({timeout:15_000});
+  assert.equal(await page.getByRole("button",{name:"Enable daily briefing"}).getAttribute("aria-pressed"),"false");
+  console.log("PASS real owner opt-in/out daily source-only 16-role reporting controls in browser");
+
   const viewCaptures = [
     {label:"executive",button:/AI General Manager/},
     {label:"marketing",button:/Creative Director/},
