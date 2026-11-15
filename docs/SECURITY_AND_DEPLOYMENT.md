@@ -71,11 +71,64 @@ This is an example, not a claim a domain was registered or deployed.
 - Preserve failed browser research statuses and owner audit events. Rotate session/worker secrets after suspected compromise. Signed-session logout currently clears the local cookie; rotation of `HQ_SESSION_SECRET` invalidates issued tokens across devices.
 - Check actual browser/ecommerce provider costs before enabling any paid integrations. Current agent roster has no paid models configured, so spending claims remain zero/unmeasured until proper metering exists.
 
-### Media backup requirement (not accomplished by database backups)
+### Encrypted dedicated HQ database + media recovery (standalone, operator-triggered)
 
-The existing `scripts/hq-backup.sh` backs up **only PostgreSQL**, not photo or MP4 file contents. The Creative Studio stores owner-provided images under `/app/data/hq-media/assets` and rendered videos under `/app/data/hq-media/reels` in the dedicated `hq_media_data` Docker volume. A production-ready recovery design must **also** back up that independent media volume, encrypt the backup, store it off-host, and test restoring both the media files AND matching HQ database rows to a fresh standalone HQ instance.
+The legacy `scripts/hq-backup.sh` is **database only** and cannot restore photos
+or finished videos. The newer `scripts/hq-backup-encrypted.sh` is a **separate
+operator-triggered, cold** backup of both the HQ PostgreSQL schema and
+`hq_media_data` photo/MP4 volume. It does NOT fetch or touch SPLCART resources.
 
-Do not assert that the CI `pg_dump`/restore test proves Creative Studio media recovery. It does not. Never take media/DB backups from SPLCART or reuse storefront volumes.
+- `scripts/hq-media-manifest.mjs snapshot` reads the HQ-only Prisma DB,
+  validates every referenced PNG and rendered MP4 on disk, checks byte sizes
+  against photo DB rows and writes a SHA-256 inventory. The `verify` mode checks
+  the **restored** media against a **restored** database, rejecting missing,
+  corrupted and symlinked referenced files. A CI fixture is not a real owner photo.
+- The backup script requires **age** encryption (free offline X25519 tooling).
+  It pauses only previously running `hq-web` and `hq-creative` during the
+  consistent snapshot and resumes those same services on exit. The private
+  decryption identity is NOT stored in the repo/Compose env. A random X25519
+  public recipient encrypts PostgreSQL custom dump, media tar and SHA-256
+  manifest. Temporary plaintext stages have restrictive permissions and are
+  deleted; encrypted output is the only completed artifact.
+- `scripts/hq-verify-encrypted-backup.sh` decrypts into a disposable private
+  directory, checks the outer member allowlist, content hashes, and
+  media archive paths. **This is read-only verification, not restoration into
+  an active database.** An offline copy alone is NOT off-host retention.
+- `scripts/ci-combined-recovery.sh` exercises a full encrypted/decrypted
+  round-trip into a **brand-new disposable HQ database and media directory**.
+  It must prove restored PNG and H.264 MP4 bytes actually match restored HQ
+  row references, and must fail if the image is corrupted or the video is
+  missing. Check the latest Actions run before claiming this gate passed.
+
+Generate and separately protect an `age` private identity on a secure
+operator-controlled machine; only its **public** recipient is passed to the
+backup job:
+
+```sh
+# On an authorized independent Headquarters machine, NOT the store VPS.
+age-keygen -o /secure/offline/pj-hq-recovery-identity.agekey
+age-keygen -y /secure/offline/pj-hq-recovery-identity.agekey
+# Use the printed age1... recipient on the second command:
+bash scripts/hq-backup-encrypted.sh /secure/hq-backups /secure/pj-ai-hq.env age1YOUR_PUBLIC_RECIPIENT
+bash scripts/hq-verify-encrypted-backup.sh /secure/hq-backups/prasanth-hq-TIMESTAMP.age /secure/offline/pj-hq-recovery-identity.agekey
+```
+
+The backup script requires **absolute** HQ-specific env and backup paths,
+the fixed Docker Compose project `pj-ai-headquarters`, and an already running
+HQ database. It refuses known SPLCART project filenames. Do not put a private
+identity, the unencrypted staging directory, or plaintext customer data into
+Git, public storage, chat or a shared owner photo collection. Copy encrypted
+`.age` bundles off the host and set an owner-approved backup rotation policy.
+
+**Disaster-recovery procedure:** use an entirely NEW, independent, isolated
+HQ Docker Compose project/volumes and separate fresh secrets. Verify/decrypt
+the bundle. Restore its `db.dump` into the new empty HQ PostgreSQL 17 database
+and extract `media.tar.gz` into that project's HQ-only media volume. Run
+`hq-media-manifest.mjs verify` in the **restored** container with its DB URL
+and the bundled manifest before enabling any web/creative worker service.
+Never restore over an active project, never point recovery at SPLCART, and
+do not treat the documented scripts as proof of a production host firewall,
+off-host retention or real-world scheduled backup frequency.
 
 ### Creative Studio security and no-paid-API execution
 
