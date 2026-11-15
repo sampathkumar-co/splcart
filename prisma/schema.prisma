@@ -248,3 +248,28 @@ model CreativeSchedule {
   dailyTarget   Int      @default(2)
   updatedAt     DateTime @updatedAt
 }
+
+/**
+ * Durable and auditable local agent actions. Not every desk has a real tool;
+ * unsupported roles complete as BLOCKED with an explicit reason.
+ */
+enum AgentTaskStatus {
+  RUNNING
+  COMPLETED
+  BLOCKED
+  FAILED
+}
+model AgentTask {
+  id            String          @id @default(uuid())
+  roleId        String
+  action        String
+  status        AgentTaskStatus @default(RUNNING)
+  resultJson    Json?
+  errorCode     String?
+  sourceUrls    Json?
+  modelCostPaise Int            @default(0)
+  createdAt     DateTime        @default(now())
+  finishedAt    DateTime?
+  @@index([roleId, createdAt])
+  @@index([status, createdAt])
+}
