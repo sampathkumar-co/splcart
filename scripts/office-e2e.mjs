@@ -177,7 +177,7 @@ try {
   console.log("PASS actual owner-confirmed live customer enquiry erasure in private browser workflow.");
 
   await page.getByRole("button",{name:"Headquarters",exact:true}).click();
-  await page.locator(".office-canvas canvas").waitFor();
+  await page.locator(".room-select").first().waitFor();
   console.log("PASS actual owner-reported customer enquiry, editable manual-only reply, no connected account or message sent.");
 
   // 3D is still available on demand from the direct-entry 2D workspace.
