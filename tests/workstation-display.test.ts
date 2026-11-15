@@ -54,6 +54,29 @@ describe("truthful code-native workstation screens",()=>{
   expect(phone.recentTaskStatuses).toEqual([]);
   expect(phone.detail).toContain("No compliant dialer");
  });
+ it("shows actual offline render, owner-inbox and research state without fake activity",()=>{
+  const signals={
+    reels:{queued:2,rendering:1,rendered:3,approved:2,failed:0,scope:"LATEST_100_HQ_JOBS" as const},
+    openInquiries:4,ownerRecordedPosts:5,
+    leads:{awaitingReview:6,approved:2},
+    research:{running:0,completed:3,blocked:1,scope:"LATEST_30_HQ_RUNS" as const},
+  };
+  const reel=buildWorkstationScreen("reel-generation",empty,[],signals)!;
+  expect(reel.mainNumber).toBe("1");
+  expect(reel.headline).toContain("FFMPEG RENDER");
+  expect(reel.provenance).toBe("PERSISTED HQ REEL JOBS");
+  expect(reel.detail).toContain("Queued: 2");
+  const inbox=buildWorkstationScreen("customer-conversation",empty,[],signals)!;
+  expect(inbox.mainNumber).toBe("4");
+  expect(inbox.provenance).toBe("OWNER-RECORDED HQ INQUIRIES");
+  const research=buildWorkstationScreen("web-discovery",empty,[],signals)!;
+  expect(research.headline).toBe("NO CONFIRMED ACTIVE BROWSER");
+  expect(research.detail).toContain("Completed: 3");
+  expect(buildWorkstationScreen("general-manager",empty,[],signals)?.mainNumber).toBe("6");
+  expect(buildWorkstationScreen("sales-manager",empty,[],signals)?.mainNumber).toBe("2");
+  expect(buildWorkstationScreen("social-publishing",empty,[],signals)?.detail).toContain("No automatic");
+  expect(buildWorkstationScreen("wholesale-calling",empty,[],signals)?.headline).toBe("INTEGRATION UNAVAILABLE");
+ });
  it("uses luxurious distinct palette without inventing metrics",()=>{
   const ceo=buildRoomScreen("ceo",empty,[]);
   const sales=buildRoomScreen("sales",empty,[]);

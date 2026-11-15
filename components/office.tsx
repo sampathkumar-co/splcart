@@ -18,7 +18,7 @@ import { OfficeCamera, type OfficeView } from "./office-camera";
 import {OFFICE_ROOMS,DESK_OFFSETS,getStationCameraPose,HQ_BUILDING_YAW,type RoomKey} from "@/lib/office-layout";
 import {PavilionArchitecture,StoneFloor,LuxuryRoomDetails} from "./office-luxury";
 import {WorkstationScreen,RoomStatusWall} from "./workstation-screen";
-import {buildWorkstationScreen,ATELIER_PALETTE,type ScreenTask} from "@/lib/workstation-display";
+import {buildWorkstationScreen,ATELIER_PALETTE,type ScreenTask,type WorkstationSignals} from "@/lib/workstation-display";
 
 const gold = "#c7a772";
 const SHARED_BLOCK_BOX=new BoxGeometry(1,1,1); // Reuse GPU buffers across static architecture.
@@ -41,12 +41,12 @@ function Ring({selected}:{selected:boolean}) {
    <ringGeometry args={[.80,.86,64]}/><meshBasicMaterial color="#edc789" side={2} transparent opacity={.95}/>
  </mesh>;
 }
-function Station({role,agent,position,selected,onChoose,tasks,executive=false}:{
- role:AgentRole;agent?:AgentRecord;position:Vec3;selected:boolean;onChoose:(id:string,room:RoomKey)=>void;tasks:ScreenTask[];executive?:boolean;
+function Station({role,agent,position,selected,onChoose,tasks,signals,executive=false}:{
+ role:AgentRole;agent?:AgentRecord;position:Vec3;selected:boolean;onChoose:(id:string,room:RoomKey)=>void;tasks:ScreenTask[];signals:WorkstationSignals|null;executive?:boolean;
 }){
  const status=agent?.status||"NOT_CONFIGURED";
  const live=status==="RUNNING";
- const screenData=useMemo(()=>buildWorkstationScreen(role.id,agent?[agent]:[],tasks),[role.id,agent,tasks]);
+ const screenData=useMemo(()=>buildWorkstationScreen(role.id,agent?[agent]:[],tasks,signals),[role.id,agent,tasks,signals]);
  const scale=executive?1.55:1;
  const onOver=(e:ThreeEvent<PointerEvent>)=>{e.stopPropagation();document.body.style.cursor="pointer";};
  const onOut=(e:ThreeEvent<PointerEvent>)=>{e.stopPropagation();document.body.style.cursor="auto";};
@@ -158,8 +158,8 @@ function MeetingRoom({choose}:{choose:(room:RoomKey)=>void}){
   {/* Strategy wall now shows real current HQ role telemetry, not a slogan. */}
  </group>;
 }
-function Room({room,chosen,agents,tasks,selectedAgentId,onChooseAgent,onChooseRoom,night=false,detail=true}:{
- room:typeof rooms[number];chosen:boolean;agents:AgentRecord[];tasks:ScreenTask[];selectedAgentId:string|null;
+function Room({room,chosen,agents,tasks,signals,selectedAgentId,onChooseAgent,onChooseRoom,night=false,detail=true}:{
+ room:typeof rooms[number];chosen:boolean;agents:AgentRecord[];tasks:ScreenTask[];signals:WorkstationSignals|null;selectedAgentId:string|null;
  onChooseAgent:(id:string,room:RoomKey)=>void;onChooseRoom:(room:RoomKey)=>void;
  night?:boolean;detail?:boolean;
 }){
@@ -184,6 +184,7 @@ function Room({room,chosen,agents,tasks,selectedAgentId,onChooseAgent,onChooseRo
     role={role}
     agent={agents.find(a=>a.id===role.id)}
     tasks={tasks}
+    signals={signals}
     position={deskPositions[room.value as "ceo"|"sales"|"marketing"][index]}
     selected={selectedAgentId===role.id}
     onChoose={onChooseAgent}
@@ -205,22 +206,22 @@ function Room({room,chosen,agents,tasks,selectedAgentId,onChooseAgent,onChooseRo
   <LightRail x={0} z={-2.02} length={4.65} night={night}/>
  </group>;
 }
-function Building({selected,selectedAgentId,agents,tasks,onChooseAgent,onChooseRoom,night=false,detail=true}:{
- selected:RoomKey;selectedAgentId:string|null;agents:AgentRecord[];tasks:ScreenTask[];
+function Building({selected,selectedAgentId,agents,tasks,signals,onChooseAgent,onChooseRoom,night=false,detail=true}:{
+ selected:RoomKey;selectedAgentId:string|null;agents:AgentRecord[];tasks:ScreenTask[];signals:WorkstationSignals|null;
  onChooseAgent:(id:string,room:RoomKey)=>void;onChooseRoom:(room:RoomKey)=>void;
  night?:boolean;detail?:boolean;
 }){
  return <group rotation={[0,HQ_BUILDING_YAW,0]}>
    <Walls/>
    {detail&&<PavilionArchitecture night={night}/>}
-   {rooms.map(room=><Room key={room.value} room={room} chosen={selected===room.value} agents={agents} tasks={tasks} selectedAgentId={selectedAgentId} onChooseAgent={onChooseAgent} onChooseRoom={onChooseRoom} night={night} detail={detail}/>)}
+   {rooms.map(room=><Room key={room.value} room={room} chosen={selected===room.value} agents={agents} tasks={tasks} signals={signals} selectedAgentId={selectedAgentId} onChooseAgent={onChooseAgent} onChooseRoom={onChooseRoom} night={night} detail={detail}/>)}
    <ambientLight intensity={night?0.56:0.85}/>
    <hemisphereLight intensity={night?1.05:1.42} color={night?"#ffe4cc":"#fff7e9"} groundColor="#243238"/>
    <directionalLight position={[4.5,10,3.5]} intensity={night?2.45:3.1} color={night?"#ffd5a0":"#ffebd2"} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
  </group>;
 }
-export function Office({selected,onSelect,agents=[],tasks=[],selectedAgentId=null,onAgentSelect}:{
- selected:RoomKey;onSelect:(room:RoomKey)=>void;agents?:AgentRecord[];tasks?:ScreenTask[];
+export function Office({selected,onSelect,agents=[],tasks=[],signals=null,selectedAgentId=null,onAgentSelect}:{
+ selected:RoomKey;onSelect:(room:RoomKey)=>void;agents?:AgentRecord[];tasks?:ScreenTask[];signals?:WorkstationSignals|null;
  selectedAgentId?:string|null;onAgentSelect?:(agentId:string)=>void;
 }){
  const [view,setView]=useState<OfficeView>("overview");
@@ -231,7 +232,7 @@ export function Office({selected,onSelect,agents=[],tasks=[],selectedAgentId=nul
  const focusPose=useMemo(()=>focusId?getStationCameraPose(focusId):null,[focusId]);
  const focusRole=ROLE_SPECS.find(a=>a.id===focusId);
  const focusScreen=useMemo(()=>focusId?
-   buildWorkstationScreen(focusId,agents,tasks):null,[focusId,agents,tasks]);
+   buildWorkstationScreen(focusId,agents,tasks,signals):null,[focusId,agents,tasks,signals]);
  const canFocusSelected=selectedAgentId?getStationCameraPose(selectedAgentId):null;
  const firstRender=useRef(true);
  useEffect(()=>{if(firstRender.current){firstRender.current=false;return;}setView(selected)},[selected]);
@@ -257,7 +258,7 @@ export function Office({selected,onSelect,agents=[],tasks=[],selectedAgentId=nul
    <Canvas shadows frameloop="demand" camera={{position:[10.2,10.8,12.1],fov:40,near:.1,far:90}} dpr={[1,detail?1.5:1.2]} gl={{alpha:false,antialias:true,powerPreference:"high-performance"}}>
     <color attach="background" args={["#111d23"]}/>
     <fog attach="fog" args={["#111d23",42,72]}/>
-    <Suspense fallback={null}><Building selected={selected} selectedAgentId={selectedAgentId} agents={agents} tasks={tasks} onChooseAgent={chooseAgent} onChooseRoom={chooseRoom} night={night} detail={detail}/></Suspense>
+    <Suspense fallback={null}><Building selected={selected} selectedAgentId={selectedAgentId} agents={agents} tasks={tasks} signals={signals} onChooseAgent={chooseAgent} onChooseRoom={chooseRoom} night={night} detail={detail}/></Suspense>
     <OfficeCamera view={view} focusPose={focusPose}/>
    </Canvas>
    <div className="office-cinema-titling" aria-hidden="true">
