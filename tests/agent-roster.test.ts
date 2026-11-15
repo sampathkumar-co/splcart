@@ -28,7 +28,10 @@ describe("truthful sixteen-role office", () => {
    ]);
    expect(records.find(a=>a.id==="general-manager")?.status).toBe("RUNNING");
    expect(records.find(a=>a.id==="sales-manager")?.evidenceCount).toBe(1);
-   expect(records.find(a=>a.id==="customer-conversation")?.status).toBe("NOT_CONFIGURED");
+   expect(records.find(a=>a.id==="customer-conversation")?.status).toBe("ON_DEMAND");
+   expect(records.find(a=>a.id==="customer-conversation")?.evidenceCount).toBe(0);
+   expect(records.find(a=>a.id==="wholesale-calling")?.status).toBe("NOT_CONFIGURED");
+   expect(records.find(a=>a.id==="instagram-discovery")?.status).toBe("NOT_CONFIGURED");
    expect(records.filter(a=>a.status==="RUNNING")).toHaveLength(1);
  });
  it("counts only completed browser evidence, not unverified attempts", () => {
