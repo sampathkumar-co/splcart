@@ -12,7 +12,7 @@ export const ROLE_SPECS = [
   { id:"social-publishing", name:"Social Publishing", short:"M05", room:"marketing", description:"Owner-approved MP4 and manual Instagram/YouTube caption handoff; no auto-post." },
   { id:"marketing-performance", name:"Marketing Performance", short:"M06", room:"marketing", description:"Owner-reported Instagram/YouTube engagement snapshots, with provenance. No analytics API." },
   { id:"sales-manager", name:"Sales Manager", short:"S01", room:"sales", description:"Source-backed ranked lead evidence report on demand; no autonomous decisions." },
-  { id:"customer-conversation", name:"Customer Conversation", short:"S02", room:"sales", description:"Opted-in inbound messages; not configured." },
+  { id:"customer-conversation", name:"Customer Conversation", short:"S02", room:"sales", description:"Owner-transcribed customer-initiated messages, category suggestions and manual reply logging; no connected chat account." },
   { id:"jewellery-recommendation", name:"Jewellery Recommendation", short:"S03", room:"sales", description:"Local category-matched owner-attested product recommendations, no stock claims." },
   { id:"lead-follow-up", name:"Lead Follow-up", short:"S04", room:"sales", description:"Local consent-aware due-for-follow-up candidates; all sending remains manual." },
   { id:"wholesale-relationship", name:"Wholesale Relationship", short:"S05", room:"sales", description:"Local owner-approved permissioned wholesale relationship shortlist." },
@@ -34,7 +34,7 @@ export type AgentRecord = {
 const ON_DEMAND_IDS = new Set([
  "general-manager","marketing-manager","trend-research","creative-director",
  "reel-generation","social-publishing","marketing-performance","sales-manager","jewellery-recommendation",
- "lead-follow-up","wholesale-relationship","customer-retention","web-discovery",
+ "lead-follow-up","wholesale-relationship","customer-retention","web-discovery","customer-conversation",
 ]);
 
 export function getAgentRecords(

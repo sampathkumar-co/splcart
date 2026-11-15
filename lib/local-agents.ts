@@ -17,9 +17,12 @@ export type LocalReel={id:string;status:string;productId:string;titleSnapshot:st
 export type LocalPhoto={id:string;productId:string};
 export type LocalBrowserRun={id:string;sourceUrl:string;status:string;provider:string;pageTitle:string|null};
 export type LocalSocialPost={id:string;platform:"INSTAGRAM"|"YOUTUBE";title:string;postUrl:string;views:number|null;likes:number|null;enquiries:number|null;metricSource:string|null};
+export type LocalInboundInquiry={id:string;customerAlias:string;channel:string;category:string;
+ status:string;createdAt:Date;sourceLabel:string};
 export type LocalContext={
   leads:LocalLead[];products:LocalProduct[];reels:LocalReel[];photos:LocalPhoto[];
   research:LocalBrowserRun[];socialPosts:LocalSocialPost[];now:Date;
+  inquiries?:LocalInboundInquiry[];
 };
 export type LocalAgentReport={
   status:"COMPLETED"|"BLOCKED";roleId:string;summary:string;
@@ -31,7 +34,7 @@ export type LocalAgentReport={
 export const NO_KEY_TASK_ROLES = new Set([
   "general-manager","marketing-manager","trend-research","creative-director",
   "reel-generation","social-publishing","marketing-performance","sales-manager",
-  "jewellery-recommendation","lead-follow-up","wholesale-relationship",
+  "customer-conversation","jewellery-recommendation","lead-follow-up","wholesale-relationship",
   "customer-retention","web-discovery",
 ]);
 
@@ -147,8 +150,16 @@ export function evaluateLocalRole(roleId:string,context:LocalContext):LocalAgent
        sourceUrl:p.postUrl,
      })));
  }
- case "customer-conversation":
-   return blocked(roleId,"NO_OPTED_IN_INBOUND_CHANNEL","No consent-aware inbound Instagram/WhatsApp/website account connection is configured.");
+ case "customer-conversation":{
+   const inbound=(context.inquiries||[]).filter(q=>q.sourceLabel==="OWNER_RECORDED");
+   if(!inbound.length)return blocked(roleId,"NO_OWNER_RECORDED_INBOUND",
+     "No genuine customer-initiated enquiry has been manually recorded by the owner. No WhatsApp/Instagram account is connected.");
+   return report(roleId,
+     "Owner-recorded incoming enquiries, not independently verified platform messages; replies remain strictly manual.",
+     inbound.slice(0,12).map(q=>({label:q.customerAlias+" · "+q.channel,
+       details:"Owner-recorded "+q.category+" inquiry; current review state "+q.status+
+       ". No verified account, automatic reply or implied permission to send outbound promotions."})));
+ }
  case "instagram-discovery":
    return blocked(roleId,"INSTAGRAM_RESEARCH_MANUAL_ONLY","Research leads manually on the platform; automated cold DMs/scraping are not enabled.");
  case "wholesale-calling":

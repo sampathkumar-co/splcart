@@ -3,7 +3,7 @@ import { db } from "./prisma";
 import type {LocalContext} from "./local-agents";
 
 export async function loadLocalContext(now=new Date()):Promise<LocalContext>{
-      const [leads,products,reels,photos,research,publications]=await Promise.all([
+      const [leads,products,reels,photos,research,publications,inquiries]=await Promise.all([
         db.prospect.findMany({orderBy:{updatedAt:"desc"},take:200,
           select:{id:true,name:true,category:true,stage:true,decision:true,
             businessSourceUrl:true,updatedAt:true,verifiedBusinessAt:true,
@@ -25,6 +25,9 @@ export async function loadLocalContext(now=new Date()):Promise<LocalContext>{
             metrics:{orderBy:{observedAt:"desc"},take:1,
               select:{views:true,likes:true,enquiries:true,sourceLabel:true}}},
         }),
+        db.customerInquiry.findMany({orderBy:{createdAt:"desc"},take:150,
+          select:{id:true,customerAlias:true,channel:true,category:true,
+            status:true,createdAt:true,sourceLabel:true}}),
       ]);
       return {now,
         leads:leads.map(p=>({id:p.id,name:p.name,category:p.category,stage:p.stage,
@@ -33,7 +36,7 @@ export async function loadLocalContext(now=new Date()):Promise<LocalContext>{
           wholesaleIntentEvidenceUrl:p.wholesaleIntentEvidenceUrl,contactConsentUrl:p.contactConsentUrl,
           consentGrantedAt:p.consentGrantedAt,
           lastActivityAt:p.activities[0]?.createdAt??null,reportedOrder:!!p.conversion})),
-        products,reels,photos,research,
+        products,reels,photos,research,inquiries,
         socialPosts:publications.map(p=>({
           id:p.id,platform:p.platform,title:p.reel.titleSnapshot,
           postUrl:p.postUrl,
