@@ -17,7 +17,7 @@ describe("local code-rendered jewellery studio without paid API keys",()=>{
  it("enforces bounded owner image payload before trying to decode",async()=>{
    await expect(saveOwnerPhoto("not base 64!")).rejects.toThrow("INVALID_IMAGE_ENCODING");
    await expect(saveOwnerPhoto(Buffer.from("not-image").toString("base64"))).rejects.toThrow("INVALID_IMAGE_ENCODING");
-   await expect(saveOwnerPhoto(Buffer.alloc(3*1024*1024+1).toString("base64"))).rejects.toThrow("INVALID_IMAGE_ENCODING");
+   await expect(saveOwnerPhoto(Buffer.alloc(3*1024*1024+1).toString("base64"))).rejects.toThrow("INVALID_IMAGE_CONTENT");
  });
  it("always uses 20 seconds at 720x1280 in non-test mode",async()=>{
    expect(REEL_DURATION_SECONDS).toBe(20);
