@@ -103,6 +103,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Verify real browser UI and save desktop/mobile screenshots
         run: node scripts/office-e2e.mjs
+      - name: Prove opt-in daily original Reel scheduling is idempotent and owner-reversible
+        run: node scripts/creative-schedule-smoke.mjs
       - name: Genuine public HTTPS two-tab Playwright research smoke
         run: node scripts/real-browser-smoke.mjs
       - name: Test separate Chromium worker over authenticated internal HTTP
