@@ -125,7 +125,7 @@ export function RoomStatusWall({room,agents,tasks}:{
  const input=useMemo(()=>buildRoomScreen(room,agents,tasks),[room,agents,tasks]);
  const map=useMemo(()=>typeof document!=="undefined"?createRoomTexture(input):null,[input]);
  useEffect(()=>()=>map?.dispose(),[map]);
- return <group position={[0,1.10,-2.205]}>
+ return <group position={[0,1.0,-2.205]}>
   <mesh dispose={null} geometry={PLANE} scale={[3.62,1.52,1]}>
    <meshStandardMaterial color="#232B31" metalness={.67} roughness={.21}/>
   </mesh>
