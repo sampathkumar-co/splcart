@@ -10,7 +10,7 @@ export const ROLE_SPECS = [
   { id:"creative-director", name:"Creative Director", short:"M03", room:"marketing", description:"Local briefs from actual owner-uploaded product photography." },
   { id:"reel-generation", name:"Reel Generation", short:"M04", room:"marketing", description:"Genuine FFmpeg 20-second product Reels; local owner-triggered and opt-in scheduling." },
   { id:"social-publishing", name:"Social Publishing", short:"M05", room:"marketing", description:"Owner-approved MP4 and manual Instagram/YouTube caption handoff; no auto-post." },
-  { id:"marketing-performance", name:"Marketing Performance", short:"M06", room:"marketing", description:"Campaign attribution; not configured." },
+  { id:"marketing-performance", name:"Marketing Performance", short:"M06", room:"marketing", description:"Owner-reported Instagram/YouTube engagement snapshots, with provenance. No analytics API." },
   { id:"sales-manager", name:"Sales Manager", short:"S01", room:"sales", description:"Source-backed ranked lead evidence report on demand; no autonomous decisions." },
   { id:"customer-conversation", name:"Customer Conversation", short:"S02", room:"sales", description:"Opted-in inbound messages; not configured." },
   { id:"jewellery-recommendation", name:"Jewellery Recommendation", short:"S03", room:"sales", description:"Local category-matched owner-attested product recommendations, no stock claims." },
@@ -33,7 +33,7 @@ export type AgentRecord = {
 /** Source-derived live state; not a simulated 16-agent workforce. */
 const ON_DEMAND_IDS = new Set([
  "general-manager","marketing-manager","trend-research","creative-director",
- "reel-generation","social-publishing","sales-manager","jewellery-recommendation",
+ "reel-generation","social-publishing","marketing-performance","sales-manager","jewellery-recommendation",
  "lead-follow-up","wholesale-relationship","customer-retention","web-discovery",
 ]);
 
