@@ -11,12 +11,14 @@
  */
 import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import { RoundedBox, Text } from "@react-three/drei";
+import {BoxGeometry} from "three";
 import { Suspense, useState, useEffect, useRef } from "react";
 import { ROLE_SPECS, type AgentRecord, type AgentRole } from "@/lib/agent-roster";
 import { OfficeCamera, type OfficeView } from "./office-camera";
 import {PavilionArchitecture,StoneFloor,LuxuryRoomDetails} from "./office-luxury";
 
 const gold = "#c7a772";
+const SHARED_BLOCK_BOX=new BoxGeometry(1,1,1); // Reuse GPU buffers across static architecture.
 const charcoal = "#16191b";
 const rooms = [
   { name:"EXECUTIVE SUITE", subtitle:"Owner approvals · decisions", value:"ceo", x:-4.1, z:-2.6 },
@@ -34,8 +36,8 @@ type Vec3 = [number,number,number];
 function Block({at,size,color=charcoal,metalness=.15,roughness=.43,opacity=1,castShadow=false}:{
   at:Vec3;size:Vec3;color?:string;metalness?:number;roughness?:number;opacity?:number;castShadow?:boolean;
 }){
- return <mesh position={at} castShadow={castShadow} receiveShadow>
-   <boxGeometry args={size}/>
+ return <mesh geometry={SHARED_BLOCK_BOX} scale={size} position={at}
+   castShadow={castShadow} receiveShadow>
    <meshStandardMaterial color={color} metalness={metalness} roughness={roughness} transparent={opacity<1} opacity={opacity}/>
  </mesh>;
 }
