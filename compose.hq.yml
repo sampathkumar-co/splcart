@@ -1,4 +1,4 @@
-# Standalone HQ. Never combine this stack or its volumes with the SPLCART store.
+# Independent Prasanth Jewellers AI HQ only. NEVER connect or merge with SPLCART.
 services:
   hq-db:
     image: postgres:17-alpine
@@ -16,6 +16,7 @@ services:
       retries: 8
     networks: [hq_db_only]
     security_opt: ["no-new-privileges:true"]
+
   hq-web:
     build:
       context: .
@@ -24,29 +25,7 @@ services:
     depends_on:
       hq-db:
         condition: service_healthy
-      hq-creative:
-    build:
-      context: .
-      target: hq-creative
-    restart: unless-stopped
-    depends_on:
-      hq-db:
-        condition: service_healthy
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: "postgresql://hq:${HQ_DB_PASSWORD:?}@hq-db:5432/hq?schema=public"
-      HQ_MEDIA_DIR: /app/data/hq-media
-      HQ_FFMPEG_BINARY: ffmpeg
-    volumes:
-      - hq_media_data:/app/data
-    # No external network, no published ports, no AI API keys or web browser.
-    networks: [hq_db_only]
-    security_opt: ["no-new-privileges:true"]
-    cap_drop: [ALL]
-    pids_limit: 120
-    mem_limit: 2g
-    tmpfs: [/tmp]
-  hq-browser:
+      hq-browser:
         condition: service_started
       hq-creative:
         condition: service_started
@@ -70,6 +49,30 @@ services:
     cap_drop: [ALL]
     pids_limit: 128
     tmpfs: [/tmp]
+
+  hq-creative:
+    build:
+      context: .
+      target: hq-creative
+    restart: unless-stopped
+    depends_on:
+      hq-db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://hq:${HQ_DB_PASSWORD:?}@hq-db:5432/hq?schema=public"
+      HQ_MEDIA_DIR: /app/data/hq-media
+      HQ_FFMPEG_BINARY: ffmpeg
+    volumes:
+      - hq_media_data:/app/data
+    # No external network, no public ports, no AI API keys or browser.
+    networks: [hq_db_only]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    pids_limit: 120
+    mem_limit: 2g
+    tmpfs: [/tmp]
+
   hq-browser:
     build:
       context: .
@@ -81,7 +84,7 @@ services:
       HQ_BROWSER_EGRESS_VERIFIED: ${HQ_BROWSER_EGRESS_VERIFIED:-0}
       HQ_BROWSER_WORKER_TOKEN: ${HQ_BROWSER_WORKER_TOKEN:?}
       HQ_ALLOWED_RESEARCH_HOSTS: ${HQ_ALLOWED_RESEARCH_HOSTS:-}
-    # Deliberately no DATABASE_URL, OWNER_PASSWORD, storefront keys, or public ports.
+    # Deliberately no DATABASE_URL, OWNER_PASSWORD, store keys or public ports.
     networks: [hq_browser_only]
     security_opt: ["no-new-privileges:true"]
     cap_drop: [ALL]
@@ -89,6 +92,7 @@ services:
     mem_limit: 1g
     shm_size: 256mb
     tmpfs: [/tmp]
+
 networks:
   hq_db_only:
     internal: true
