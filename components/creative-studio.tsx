@@ -9,6 +9,9 @@ type Reel = {id:string;productId:string;assetId:string;titleSnapshot:string;mate
   linkSnapshot:string;status:string;durationSeconds:number;scheduleDate:string|null;errorCode:string|null;previewUrl:string|null;
   createdAt:string;finishedAt:string|null;approvedAt:string|null};
 type StudioData = {reels:Reel[];assets:Asset[];schedule:{enabled:boolean;dailyTarget:number}};
+type Publication={id:string;reelJobId:string;platform:"INSTAGRAM"|"YOUTUBE";postUrl:string;
+  recordedAt:string;sourceLabel:string;title:string;
+  latest:{views:number|null;likes:number|null;enquiries:number|null;observedAt:string;evidenceUrl:string;sourceLabel:string}|null};
 function Status({value}:{value:string}){return <span className={"status status-"+value.toLowerCase().replace(/[^a-z]+/g,"-")}>{value.replaceAll("_"," ")}</span>;}
 async function imageToBase64(file:File) {
   if(file.size>3*1024*1024 || file.size<100) throw new Error("Upload a JPEG or PNG under 3 MB.");
@@ -28,15 +31,19 @@ export function CreativeStudio({products}:{products:Product[]}) {
   const [data,setData]=useState<StudioData>({reels:[],assets:[],schedule:{enabled:false,dailyTarget:2}});
   const [selectedProduct,setSelectedProduct]=useState("");
   const [assetId,setAssetId]=useState("");
+  const [publications,setPublications]=useState<Publication[]>([]);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState("");
   const [notice,setNotice]=useState("");
   const refresh=useCallback(async()=>{
     try{
-      const response=await fetch("/api/creative/reels",{cache:"no-store"});
-      const payload=await response.json();
-      if(!response.ok)throw new Error(payload.error||"Could not load video studio");
-      setData(payload);
+      const [response,publicationResponse]=await Promise.all([
+        fetch("/api/creative/reels",{cache:"no-store"}),
+        fetch("/api/creative/publications",{cache:"no-store"}),
+      ]);
+      const [payload,publicationBody]=await Promise.all([response.json(),publicationResponse.json()]);
+      if(!response.ok||!publicationResponse.ok)throw new Error(payload.error||publicationBody.error||"Could not load video studio");
+      setData(payload);setPublications(publicationBody.publications||[]);
     }catch(e){setError(e instanceof Error?e.message:"Studio unavailable");}
   },[]);
   useEffect(()=>{void refresh();const interval=setInterval(()=>void refresh(),8000);return()=>clearInterval(interval);},[refresh]);
@@ -74,6 +81,28 @@ export function CreativeStudio({products}:{products:Product[]}) {
       await call("/api/creative/assets",{productId:selectedProduct,contentBase64});
       if(input)input.value="";
     }catch(e){setError(e instanceof Error?e.message:"Invalid photo");}
+  };
+  const recordPost=async(e:React.FormEvent<HTMLFormElement>)=>{
+    e.preventDefault();
+    const form=e.currentTarget;
+    const row=Object.fromEntries(new FormData(form));
+    await call("/api/creative/publications",{
+      reelJobId:String(row.reelJobId),
+      platform:String(row.platform),
+      postUrl:String(row.postUrl).trim(),
+    });
+  };
+  const recordMetrics=async(e:React.FormEvent<HTMLFormElement>,publicationId:string)=>{
+    e.preventDefault();
+    const row=new FormData(e.currentTarget);
+    const counts=(key:string)=>{
+      const raw=String(row.get(key)||"").trim();
+      return raw===""?null:Number(raw);
+    };
+    await call("/api/creative/metrics",{
+      publicationId,views:counts("views"),likes:counts("likes"),
+      enquiries:counts("enquiries"),evidenceUrl:String(row.get("evidenceUrl")||"").trim(),
+    });
   };
   return <section className="studio-section" aria-label="Code-native jewellery Reel studio">
     <div className="studio-banner">
@@ -137,6 +166,34 @@ export function CreativeStudio({products}:{products:Product[]}) {
           </div>)}
         </div>
       </div>
+    </div>
+    <div className="studio-card">
+      <h3>03 / Owner-recorded manual publishing</h3>
+      <p className="studio-muted">After publishing a genuinely approved Reel yourself, save the official public post URL. HQ does not connect to or scrape Instagram or YouTube and cannot independently confirm ownership or publish status.</p>
+      {data.reels.some(j=>j.status==="APPROVED")&&<form className="studio-publish-form" onSubmit={recordPost}>
+        <label className="field"><span>Previously approved real MP4</span><select required name="reelJobId">
+          {data.reels.filter(j=>j.status==="APPROVED").map(j=><option key={j.id} value={j.id}>{j.titleSnapshot} · {j.id.slice(0,8)}</option>)}
+        </select></label>
+        <label className="field"><span>Where you posted it manually</span><select name="platform"><option value="INSTAGRAM">Instagram Reel</option><option value="YOUTUBE">YouTube Short</option></select></label>
+        <label className="field"><span>Official published post URL</span><input name="postUrl" type="url" required placeholder="https://www.instagram.com/reel/..." maxLength={1000}/></label>
+        <button disabled={busy} className="action-secondary">Record owner-reported post link</button>
+      </form>}
+      {!data.reels.some(j=>j.status==="APPROVED")&&<p className="fineprint">Approve a genuine rendered MP4 before registering an external post.</p>}
+      {publications.length>0&&<div className="studio-job-list">
+        {publications.map(p=><div key={p.id} className="studio-job">
+          <div className="studio-job-top"><strong>{p.title} · {p.platform}</strong><Status value={p.sourceLabel}/></div>
+          <p><a href={p.postUrl} target="_blank" rel="noopener noreferrer">Open owner-reported public post</a></p>
+          {p.latest&&<p className="studio-muted">Latest owner-reported snapshot: {p.latest.views??"Unknown"} views · {p.latest.likes??"Unknown"} likes · {p.latest.enquiries??"Unknown"} enquiries. Observed {new Date(p.latest.observedAt).toLocaleString("en-IN")}.</p>}
+          <form className="studio-metric-form" onSubmit={e=>recordMetrics(e,p.id)}>
+            <label className="field"><span>Observed views (optional)</span><input name="views" type="number" min="0" max="1000000000" placeholder="Unknown"/></label>
+            <label className="field"><span>Observed likes (optional)</span><input name="likes" type="number" min="0" max="1000000000" placeholder="Unknown"/></label>
+            <label className="field"><span>Observed enquiries (optional)</span><input name="enquiries" type="number" min="0" max="1000000000" placeholder="Unknown"/></label>
+            <label className="field"><span>Your public evidence/reference link</span><input required name="evidenceUrl" type="url" defaultValue={p.postUrl}/></label>
+            <button className="action-secondary" disabled={busy}>Save owner-observed metrics</button>
+          </form>
+        </div>)}
+      </div>}
+      <p className="studio-disclaimer">No figures above are independently verified by a platform. Multiple snapshots are a historical series, not additional views. Do not interpret them as confirmed sales or paid revenue.</p>
     </div>
   </section>;
 }
