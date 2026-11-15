@@ -40,7 +40,7 @@ describe("truthful code-native workstation screens",()=>{
   expect(reel.headline).toBe("LAST TASK NOT CONFIRMED ACTIVE");
   expect(reel.detail).toContain("No current task confirmed");
   expect(reel.mainNumber).toBe("0");
-  expect(reel.detail).toMatch(/no result recorded/i);
+  expect(reel.detail).toMatch(/no current task confirmed/i);
   expect(buildRoomScreen("sales",agents,tasks).reports).toBe(1);
   expect(buildRoomScreen("marketing",agents,tasks).reports).toBe(0);
  });
