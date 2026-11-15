@@ -10,7 +10,8 @@ describe("truthful sixteen-role office", () => {
    const agents=getAgentRecords([],now);
    expect(agents.filter(a=>a.status==="RUNNING")).toHaveLength(0);
    expect(agents.find(a=>a.id==="web-discovery")?.status).toBe("ON_DEMAND");
-   expect(agents.find(a=>a.id==="reel-generation")?.status).toBe("NOT_CONFIGURED");
+   expect(agents.find(a=>a.id==="reel-generation")?.status).toBe("ON_DEMAND");
+   expect(agents.find(a=>a.id==="wholesale-calling")?.status).toBe("NOT_CONFIGURED");
  });
  it("only shows running for recent persisted browser research", () => {
    const running=getAgentRecords([{status:"RUNNING",startedAt:new Date("2026-11-14T09:59:30Z")}],now);
@@ -18,6 +19,17 @@ describe("truthful sixteen-role office", () => {
    expect(running.filter(a=>a.status==="RUNNING")).toHaveLength(1);
    const stale=getAgentRecords([{status:"RUNNING",startedAt:new Date("2026-11-14T09:55:00Z")}],now);
    expect(stale.find(a=>a.id==="web-discovery")?.status).toBe("ON_DEMAND");
+ });
+ it("only reports real active local tasks, not fabricated virtual employees",()=>{
+   const records=getAgentRecords([],now,[
+     {roleId:"general-manager",status:"RUNNING",createdAt:new Date("2026-11-14T09:59:30Z")},
+     {roleId:"sales-manager",status:"COMPLETED",createdAt:new Date("2026-11-14T09:40:00Z")},
+     {roleId:"customer-conversation",status:"BLOCKED",createdAt:new Date("2026-11-14T09:30:00Z")},
+   ]);
+   expect(records.find(a=>a.id==="general-manager")?.status).toBe("RUNNING");
+   expect(records.find(a=>a.id==="sales-manager")?.evidenceCount).toBe(1);
+   expect(records.find(a=>a.id==="customer-conversation")?.status).toBe("NOT_CONFIGURED");
+   expect(records.filter(a=>a.status==="RUNNING")).toHaveLength(1);
  });
  it("counts only completed browser evidence, not unverified attempts", () => {
    const agents=getAgentRecords([
