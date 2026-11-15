@@ -73,7 +73,8 @@ describe("truthful no-key role task execution",()=>{
    }]});
    expect(actual.status).toBe("COMPLETED");
    expect(actual.summary).toContain("not independently verified");
-   expect(actual.items[0].details).toContain("No verified account");
+   expect(actual.items[2].details).toContain("No verified account");
+   expect(JSON.stringify(actual)).not.toContain("customer alias");
  });
  it("does not claim a market trend from empty browser results",()=>{
    expect(evaluateLocalRole("trend-research",base).status).toBe("BLOCKED");

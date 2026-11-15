@@ -154,11 +154,18 @@ export function evaluateLocalRole(roleId:string,context:LocalContext):LocalAgent
    const inbound=(context.inquiries||[]).filter(q=>q.sourceLabel==="OWNER_RECORDED");
    if(!inbound.length)return blocked(roleId,"NO_OWNER_RECORDED_INBOUND",
      "No genuine customer-initiated enquiry has been manually recorded by the owner. No WhatsApp/Instagram account is connected.");
+   const open=inbound.filter(q=>q.status==="OPEN").length;
+   const replied=inbound.filter(q=>q.status==="REPLIED_REPORTED").length;
+   const closed=inbound.filter(q=>q.status==="CLOSED").length;
+   // Privacy: agent reports are durable. Never copy customer aliases,
+   // message text or individual inquiry IDs into historical AgentTask rows.
    return report(roleId,
-     "Owner-recorded incoming enquiries, not independently verified platform messages; replies remain strictly manual.",
-     inbound.slice(0,12).map(q=>({label:q.customerAlias+" · "+q.channel,
-       details:"Owner-recorded "+q.category+" inquiry; current review state "+q.status+
-       ". No verified account, automatic reply or implied permission to send outbound promotions."})));
+     "Owner-recorded incoming enquiries, not independently verified platform messages; replies remain strictly manual. No customer identifiers retained in role reports.",
+     [
+       {label:"Owner-recorded inbound",details:inbound.length+" private HQ enquiry records, not independently platform-verified"},
+       {label:"Requires owner review",details:open+" OPEN; "+replied+" owner-reported manual replies; "+closed+" CLOSED"},
+       {label:"Channel limitations",details:"No verified account, automatic reply or implied permission to send outbound promotions."},
+     ]);
  }
  case "instagram-discovery":
    return blocked(roleId,"INSTAGRAM_RESEARCH_MANUAL_ONLY","Research leads manually on the platform; automated cold DMs/scraping are not enabled.");
