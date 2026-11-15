@@ -62,7 +62,7 @@ The owner-only `CustomerInquiry` table stores short, **owner-attested** customer
 - Keep this dedicated HQ PostgreSQL private and covered by its encrypted independent backup/restore contract; never replicate customer messages into a public asset directory or a storefront database.
 - Only enter minimum necessary, non-sensitive messages and nicknames. Do not enter payment data, authentication tokens, phone/address details, or full private message histories.
 - Owner-only Customer Inbox now supports `OPEN`, `REPLIED_REPORTED`, `CLOSED`, explicit **single-record erasure** and an opt-in **manual closed-case retention purge** (30/90/180 days, at most 100 per operation, based on `updatedAt`). Single erasure requires typed `ERASE`; bulk purge requires typed `PURGE`. The API rejects missing confirmations, leaves open and unclosed replied enquiries intact during bulk purging, scrubs historical customer-role AgentTask details and legacy closure audit notes. New Customer Conversation reports retain only aggregate counts, not individual customer aliases. See `scripts/inbox-smoke.mjs` and `scripts/office-e2e.mjs` for real isolated PostgreSQL and Chromium verification.
-- **Still missing:** automated retention scheduling, separate encrypted **off-site backup expiry/deletion** proof, broader privacy/legal review, real account sync, verified platform delivery and production host testing. A live database deletion does not purge previous encrypted backup copies or external customer devices.
+- **Still missing:** automated inquiry retention, **off-site encrypted backup expiry/deletion proof** (a bounded manual **local** HQ-only expiry tool is now available below), broader privacy/legal review, real account sync, verified platform delivery and production host testing. A live database deletion does not purge previous encrypted backup copies or external customer devices.
 - Original, owner-recorded transcripts are not independently verified or evidence of general marketing consent.
 
 ## Browser research policy
@@ -139,6 +139,48 @@ and the bundled manifest before enabling any web/creative worker service.
 Never restore over an active project, never point recovery at SPLCART, and
 do not treat the documented scripts as proof of a production host firewall,
 off-host retention or real-world scheduled backup frequency.
+
+### Optional owner-confirmed encrypted backup expiry (HQ-only local files)
+
+`scripts/hq-backup-retention.mjs` is an **operator-triggered local retention
+tool**, separate from the backup/restore jobs. It never decrypts archives and
+has no automatic schedule. Default is a **read-only dry run**:
+
+```sh
+node scripts/hq-backup-retention.mjs --dir /secure/hq-backups --days 90
+```
+
+To actually remove eligible archives **only after the owner reviews the JSON
+candidate list and confirms the independent recovery copies exist**:
+
+```sh
+node scripts/hq-backup-retention.mjs --dir /secure/hq-backups --days 90 \\
+  --apply --confirm DELETE_EXPIRED_HQ_BACKUPS
+```
+
+Hard safeguards: only files named
+`prasanth-hq-YYYYMMDDTHHMMSSZ-RANDOM.age` in a dedicated, non-symlink,
+**operator-owned** HQ directory are eligible. The tool refuses SPLCART/root
+paths, refuses matching symlinks and special files, supports 30/60/90/180 day
+policies, and always preserves the **two newest** local matching archives.
+Unknown files, identity keys and fresh archives remain untouched. The age
+threshold is based on the filename UTC timestamp, so this is not
+cryptographic provenance verification. It emits a JSON plan and an explicit
+list of actual removals on confirmed application.
+
+Unit/integration tests run only against temporary **CI fake archive files**,
+and prove the default makes no changes, wrong confirmation is rejected,
+unknown/identity files are preserved, old eligible test archives can be
+removed when expressly confirmed, symlinks/indirect paths are refused and
+the two newest stay protected. No production/offsite archives are accessed
+by CI.
+
+**Still outstanding:** automate any real owner-approved offsite backup
+retention/expiry, confirm that old encrypted *remote* copies were removed,
+record backup inventory approvals, recoverability monitoring and independent
+privacy/legal review. This local deletion utility does **not** purge offsite
+copies, provider snapshots, external devices or connected social platforms;
+it does not by itself guarantee data-subject erasure.
 
 ### Creative Studio security and no-paid-API execution
 
