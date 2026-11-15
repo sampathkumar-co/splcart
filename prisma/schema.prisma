@@ -243,6 +243,40 @@ model ReelJob {
 }
 
 /** Explicit owner opt-in for 08:30 India-local, DB-only evidence reports. */
+/**
+ * Owner-reported customer-initiated enquiry, manually transcribed into HQ.
+ * NO connected inbox, external login, telephone/email, automated send or implied consent.
+ */
+enum InquiryChannel {
+  WHATSAPP
+  INSTAGRAM
+  WEBSITE
+  OTHER
+}
+
+enum InquiryStatus {
+  OPEN
+  REPLIED_REPORTED
+  CLOSED
+}
+
+model CustomerInquiry {
+  id              String        @id @default(uuid())
+  channel         InquiryChannel
+  customerAlias   String
+  category        String
+  message         String
+  status          InquiryStatus @default(OPEN)
+  sourceLabel     String        @default("OWNER_RECORDED")
+  receivedAt      DateTime      @default(now())
+  replyText       String?
+  repliedAt       DateTime?
+  closeNote       String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  @@index([status, createdAt])
+}
+
 model AgentSchedule {
   id          String @id
   enabled     Boolean @default(false)
