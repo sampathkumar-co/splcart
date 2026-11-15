@@ -33,8 +33,8 @@ tar -tzf "$TEMP/extract/media.tar.gz" | while IFS= read -r name; do
  case "$name" in
   hq-media/|hq-media/assets/|hq-media/reels/) continue ;;
  esac
- if [[ "$name" =~ ^hq-media/assets/[0-9a-f-]{36}\\.png$ ||
-       "$name" =~ ^hq-media/reels/[0-9a-f-]{36}\\.mp4$ ]]; then
+ if [[ "$name" =~ ^hq-media/assets/[0-9a-f-]{36}\.png$ ||
+       "$name" =~ ^hq-media/reels/[0-9a-f-]{36}\.mp4$ ]]; then
    continue
  fi
  echo "Unsafe/non-HQ media archive entry: $name" >&2
