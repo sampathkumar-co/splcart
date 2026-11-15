@@ -207,7 +207,7 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
  const chooseRoom=(room:RoomKey)=>{setView(room);onSelect(room);};
  const chooseAgent=(id:string,room:RoomKey)=>{onAgentSelect?.(id);chooseRoom(room);};
  return <div className="office-canvas" role="group" aria-label="Interactive 3D Prasanth Jewellery Headquarters. Sixteen agents have evidence-based statuses.">
-   <Canvas shadows camera={{position:[10.2,10.8,12.1],fov:40,near:.1,far:90}} dpr={[1,1.5]} gl={{alpha:false,antialias:true,powerPreference:"high-performance"}}>
+   <Canvas shadows frameloop="demand" camera={{position:[10.2,10.8,12.1],fov:40,near:.1,far:90}} dpr={[1,1.5]} gl={{alpha:false,antialias:true,powerPreference:"high-performance"}}>
     <color attach="background" args={["#111d23"]}/>
     <fog attach="fog" args={["#111d23",42,72]}/>
     <Suspense fallback={null}><Building selected={selected} selectedAgentId={selectedAgentId} agents={agents} onChooseAgent={chooseAgent} onChooseRoom={chooseRoom}/></Suspense>

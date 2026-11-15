@@ -39,12 +39,14 @@ export function OfficeCamera({ view }: { view: OfficeView }) {
   const reducedMotionRef = useRef(false);
   const positionRef = useRef(new THREE.Vector3());
   const lookAtRef = useRef(new THREE.Vector3());
-  const { camera } = useThree();
+  const { camera, invalidate } = useThree();
 
   useEffect(() => {
     desiredRef.current = OFFICE_CAMERA_POSES[view];
     reducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  }, [view]);
+    // A demand-driven Canvas must draw its next camera frame after view changes.
+    invalidate();
+  }, [view,invalidate]);
 
   useFrame((_, delta) => {
     const desired = desiredRef.current;
@@ -68,6 +70,9 @@ export function OfficeCamera({ view }: { view: OfficeView }) {
       controls.target.copy(lookAtRef.current);
       controls.update();
       desiredRef.current = null;
+    } else {
+      // Transition only while necessary. Idle rooms consume no animation loop GPU time.
+      invalidate();
     }
   });
 

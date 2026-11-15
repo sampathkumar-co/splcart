@@ -91,7 +91,23 @@ try {
   assert.ok(meetingImage.length>20_000,"meeting room camera must render real geometry");
   await page.getByRole("button",{name:"Overview"}).click();
   await page.waitForTimeout(1300);
-  console.log("PASS real CEO, Marketing, Sales and Strategy 3D camera screenshots and accessible navigation");
+  // Test orbit and zoom with the genuine WebGL canvas in demand-render mode.
+  const orbitCanvas=page.locator(".office-canvas canvas");
+  const orbitBefore=await orbitCanvas.screenshot();
+  const bounds=await orbitCanvas.boundingBox();
+  assert.ok(bounds && bounds.width>350 && bounds.height>250,"3D canvas must be interactable");
+  const x=bounds.x+bounds.width*.55, y=bounds.y+bounds.height*.52;
+  await page.mouse.move(x,y);
+  await page.mouse.down();
+  await page.mouse.move(x+190,y+75,{steps:14});
+  await page.mouse.up();
+  await page.waitForTimeout(1200);
+  const orbitAfter=await orbitCanvas.screenshot();
+  assert.equal(orbitBefore.equals(orbitAfter),false,
+    "drag to orbit must produce a different real scene frame with on-demand WebGL rendering");
+  await page.getByRole("button",{name:"Overview"}).click();
+  await page.waitForTimeout(950);
+  console.log("PASS real CEO, Marketing, Sales, Strategy and genuine mouse orbit in power-saving demand-render mode");
 
   await page.getByRole("button",{name:/AI General Manager/}).first().click();
   await page.getByRole("button",{name:"Run local evidence task"}).click();
