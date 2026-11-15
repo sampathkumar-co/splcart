@@ -7,7 +7,7 @@ import storefront env files, change its checkout or alter its deployment.
 
 ## Current implementation status
 
-- A dedicated Next.js 16 web service, PostgreSQL 17 service and bearer-authenticated Chromium browser worker are described in `Dockerfile` and `compose.hq.yml`.
+- A dedicated Next.js 16 web service, PostgreSQL 17 service, bearer-authenticated Chromium browser worker, and **local FFmpeg creative worker** are described in `Dockerfile` and `compose.hq.yml`. The creative worker has no Instagram/YouTube/WhatsApp credentials, no public ports, and no outbound network. Owner product photos and rendered MP4s live in a dedicated **HQ-only persistent media volume** (`hq_media_data`) shared with the HQ web service, not with SPLCART.
 - The production web app refuses to launch browser research inside its own process. The worker has no database or shop credentials, no published port, an explicit host allowlist, capped tabs and a one-at-a-time task limit.
 - The browser verifies HTTPS and DNS against private ranges before navigation, blocks off-host navigation/resources, disables JavaScript and downloads, checks /robots.txt using the MIT `robots-parser` library (see license), and honors supported crawl delay. Robots compliance does **not** replace reviewing a website's terms or permissions.
 - The service has a private owner login, signed eight-hour HttpOnly SameSite=Strict cookie, HTTPS-only production cookie, no legacy Basic auth, global PostgreSQL rate limits for login/actions/research and protected same-origin JSON mutations.
@@ -70,6 +70,22 @@ This is an example, not a claim a domain was registered or deployed.
 - The CI-only `scripts/ci-backup-restore.sh` now **actually tests pg_dump and pg_restore** into a brand-new `hq_restore_check` test database and verifies restored prospect/quote/owner-pause audit rows. Verified in [GitHub Actions run 43597580971](https://github.com/sampathkumar-co/splcart/actions/runs/43597580971), with an ephemeral HQ-only PostgreSQL 17 database. This does not prove an encrypted off-site production backup/restore. Never overwrite a live instance while proving a restore.
 - Preserve failed browser research statuses and owner audit events. Rotate session/worker secrets after suspected compromise. Signed-session logout currently clears the local cookie; rotation of `HQ_SESSION_SECRET` invalidates issued tokens across devices.
 - Check actual browser/ecommerce provider costs before enabling any paid integrations. Current agent roster has no paid models configured, so spending claims remain zero/unmeasured until proper metering exists.
+
+### Media backup requirement (not accomplished by database backups)
+
+The existing `scripts/hq-backup.sh` backs up **only PostgreSQL**, not photo or MP4 file contents. The Creative Studio stores owner-provided images under `/app/data/hq-media/assets` and rendered videos under `/app/data/hq-media/reels` in the dedicated `hq_media_data` Docker volume. A production-ready recovery design must **also** back up that independent media volume, encrypt the backup, store it off-host, and test restoring both the media files AND matching HQ database rows to a fresh standalone HQ instance.
+
+Do not assert that the CI `pg_dump`/restore test proves Creative Studio media recovery. It does not. Never take media/DB backups from SPLCART or reuse storefront volumes.
+
+### Creative Studio security and no-paid-API execution
+
+- Owner image upload is bounded to 3 MB JPEG/PNG (streaming HTTP body max ~4.35 MB), magic-byte checked, Sharp decoded with pixel limits, re-encoded to a new PNG and stored in the HQ-only media volume. Paths accept only server-generated UUID filenames.
+- Owner-triggered or opted-in daily 2/3 silent 20-second local FFmpeg renders are queued in PostgreSQL; FFmpeg runs with bounded time and no shell expansion. Each MP4 must actually exist before owner approval.
+- The private approved MP4 route remains cookie-protected. No video is uploaded to social platforms, no API key is stored and no human-wearing-jewellery footage or licensed music is invented.
+- Official Instagram/YouTube post links and performance snapshots are explicitly **OWNER_REPORTED**, never platform-verified. No access to social accounts, no automated publishing, no external analytics API.
+- The test synthetic video/image and dummy platform post URLs are disposable CI fixtures, never business evidence.
+- The worker uses local CPU, disk, electricity and potentially server charges, which are **NOT_METERED**. Zero paid-model API calls are not zero operating costs.
+- The separate creative container image has not been validated end-to-end with a production host filesystem, reverse proxy, backup and media volume restore. GitHub tests validate local render and Compose syntax, not all host-side conditions.
 
 ## Explicitly missing production gate evidence
 
