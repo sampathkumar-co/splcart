@@ -92,6 +92,21 @@ try {
   await page.getByRole("button",{name:/Record my manual reply/}).click();
   await page.getByText("REPLIED REPORTED").waitFor({timeout:15000});
   await page.screenshot({path:"artifacts/hq-inbox-manual-workflow.png",fullPage:true});
+  // Privacy control browser acceptance. A disposable second CI-only enquiry is
+  // erased while the earlier replied case remains for later role evaluation.
+  await page.getByLabel("Customer nickname, no contact details").fill("CI-case-to-erase");
+  await page.getByLabel("Requested jewellery category").fill("CZ jewellery");
+  await page.getByLabel("Genuine customer question").fill("CI-only second enquiry for erasure test.");
+  await page.getByLabel(/I confirm the customer initiated this enquiry/).check();
+  await page.getByRole("button",{name:/Record owner-reported enquiry/}).click();
+  await page.getByText("CI-case-to-erase").waitFor({timeout:15000});
+  page.once("dialog",dialog=>{void dialog.accept("ERASE")});
+  await page.locator(".inbox-record").filter({hasText:"CI-case-to-erase"})
+    .getByRole("button",{name:"Erase this enquiry"}).click();
+  await page.getByText("CI-case-to-erase").waitFor({state:"detached",timeout:15000});
+  await page.screenshot({path:"artifacts/hq-inbox-privacy.png",fullPage:true});
+  console.log("PASS actual owner-confirmed live customer enquiry erasure in private browser workflow.");
+
   await page.getByRole("button",{name:"Headquarters",exact:true}).click();
   await page.locator(".office-canvas canvas").waitFor();
   console.log("PASS actual owner-reported customer enquiry, editable manual-only reply, no connected account or message sent.");
