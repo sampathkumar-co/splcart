@@ -6,7 +6,7 @@ import { prepareManualCaption } from "@/lib/creative-caption";
 type Product = {id:string;title:string;material:string;productUrl:string};
 type Asset = {id:string;productId:string;width:number;height:number;createdAt:string;product:{title:string}};
 type Reel = {id:string;productId:string;assetId:string;titleSnapshot:string;materialSnapshot:string;
-  linkSnapshot:string;status:string;durationSeconds:number;errorCode:string|null;previewUrl:string|null;
+  linkSnapshot:string;status:string;durationSeconds:number;scheduleDate:string|null;errorCode:string|null;previewUrl:string|null;
   createdAt:string;finishedAt:string|null;approvedAt:string|null};
 type StudioData = {reels:Reel[];assets:Asset[];schedule:{enabled:boolean;dailyTarget:number}};
 function Status({value}:{value:string}){return <span className={"status status-"+value.toLowerCase().replace(/[^a-z]+/g,"-")}>{value.replaceAll("_"," ")}</span>;}
@@ -117,7 +117,7 @@ export function CreativeStudio({products}:{products:Product[]}) {
           {data.reels.length===0&&<div className="empty">No videos have been rendered yet. The studio starts empty by design.</div>}
           {data.reels.map(job=><div key={job.id} className="studio-job">
             <div className="studio-job-top"><strong>{job.titleSnapshot}</strong><Status value={job.status}/></div>
-            <div className="studio-meta">{job.durationSeconds}s · 9:16 · original product photo · created {new Date(job.createdAt).toLocaleString("en-IN")}</div>
+            <div className="studio-meta">{job.durationSeconds}s · 9:16 · original product photo · {job.scheduleDate?"scheduled for "+job.scheduleDate+" (India)":"owner queued"} · created {new Date(job.createdAt).toLocaleString("en-IN")}</div>
             {job.errorCode&&<div className="studio-error">Actual renderer error: {job.errorCode}</div>}
             {job.previewUrl&&<video className="studio-video" controls playsInline preload="metadata" src={job.previewUrl} aria-label={"Preview rendered Reel for "+job.titleSnapshot}/>}
             <div className="studio-actions">
