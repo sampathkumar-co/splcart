@@ -107,6 +107,8 @@ jobs:
         run: node scripts/creative-schedule-smoke.mjs
       - name: Genuine public HTTPS two-tab Playwright research smoke
         run: node scripts/real-browser-smoke.mjs
+      - name: Verify owner-only social post evidence and manual metrics without platform API keys
+        run: node scripts/social-reporting-smoke.mjs
       - name: Run real source-grounded no-key role tasks and verify permission blockers
         run: node scripts/agent-task-smoke.mjs
       - name: Test separate Chromium worker over authenticated internal HTTP
