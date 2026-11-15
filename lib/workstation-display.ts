@@ -129,7 +129,7 @@ export function buildWorkstationScreen(
  // never from decorative motion or a fabricated external integration.
  let mainNumber=String(count);
  let numberLabel="RECORDED EVIDENCE";
- let sourceTime=last?.createdAt??null;
+ let sourceTime:string|null=last?.createdAt??null;
  if(signals&&!forcedOffline){
   if(roleId==="reel-generation"){
    const r=signals.reels;
