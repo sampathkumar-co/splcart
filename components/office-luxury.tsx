@@ -117,16 +117,13 @@ export function PavilionArchitecture({night=false}:{night?:boolean}){
    {[-5.55,-2.75,0,2.75,5.55].map(z=><Cuboid key={z}
      pos={[x,1.14,z]} size={[.22,2.40,.17]} color="#c0ae8d" metalness={.81}/>)}
   </group>)}
-  {[-6.14,6.14].map(z=><group key={z}>
-   <Cuboid pos={[0,2.47,z]} size={[16.63,.11,.14]} color="#c8a977" metalness={.81}/>
-   <Cuboid pos={[0,2.32,z]} size={[16.65,.034,.055]} color="#ffdaa0"
+  {/* Keep rear cornice. The front facade remains open to view every desk. */}
+  <Cuboid pos={[0,2.47,-6.14]} size={[16.63,.11,.14]} color="#c8a977" metalness={.81}/>
+  <Cuboid pos={[0,2.32,-6.14]} size={[16.65,.034,.055]} color="#ffdaa0"
      emissive="#edbf73" glow={night?1.1:.42}/>
-  </group>)}
-  {/* Deliberate frame mullions; no roof that hides the interactive office. */}
-  {[-5.88,-3.08,0,3.08,5.88].map(x=><group key={x}>
-   <Cuboid pos={[x,1.2,-6.0]} size={[.065,2.26,.05]} color="#9d8663" metalness={.78}/>
-   <Cuboid pos={[x,1.2,6.03]} size={[.058,2.27,.045]} color="#9d8663" metalness={.78}/>
-  </group>)}
+  {/* Three restrained rear mullions; no obstructive front cage. */}
+  {[-5.88,0,5.88].map(x=><Cuboid key={x}
+   pos={[x,1.2,-6.0]} size={[.065,2.26,.05]} color="#9d8663" metalness={.78}/>)}
   {/* A jewellery-museum entrance in front, fully ornamental and non-interactive. */}
   <group position={[0,0,6.23]}>
    <Cuboid pos={[0,-.18,0]} size={[3.45,.13,.52]} color="#ae976d" metalness={.77}/>
@@ -271,14 +268,12 @@ export function LuxuryRoomDetails({room,night=false,detail=true}:{
  return <group>
   {/* Slim architectural perimeter and fluted wall panels. */}
   {[-3.35,3.35].map(x=><group key={x}>
-   {[-2.39,2.39].map(z=><group key={z}>
-    <Cuboid pos={[x,1.39,z]} size={[.093,2.73,.10]} color="#bdaa84" metalness={.75}/>
-    <Cuboid pos={[x,2.74,z]} size={[.18,.11,.18]} color="#f0cfa0" metalness={.84}/>
-   </group>)}
-   <Cuboid pos={[x,2.76,0]} size={[.10,.078,4.83]} color="#ccb185" metalness={.86}/>
+    <Cuboid pos={[x,1.39,-2.39]} size={[.093,2.73,.10]} color="#bdaa84" metalness={.75}/>
+    <Cuboid pos={[x,2.74,-2.39]} size={[.18,.11,.18]} color="#f0cfa0" metalness={.84}/>
+    {/* Rear-half ceiling ribs frame the room without obscuring its centre. */}
+    <Cuboid pos={[x,2.76,-1.34]} size={[.075,.07,2.11]} color="#ccb185" metalness={.86}/>
   </group>)}
-  {[-2.37,2.37].map(z=><Cuboid key={z} pos={[0,2.75,z]}
-   size={[6.75,.09,.095]} color="#d6b889" metalness={.82}/>)}
+  <Cuboid pos={[0,2.75,-2.37]} size={[6.75,.09,.095]} color="#d6b889" metalness={.82}/>
   {[-2.63,-1.88,1.88,2.63].map(x=><group key={x}>
    <Cuboid pos={[x,1.06,-2.34]} size={[.035,2.12,.045]} color="#bc9e6b" metalness={.89}/>
    <Cuboid pos={[x,1.08,-2.38]} size={[.18,1.55,.03]} color="#45515a" opacity={.34}/>
