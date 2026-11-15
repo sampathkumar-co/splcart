@@ -13,6 +13,11 @@ import {type ThreeEvent} from "@react-three/fiber";
 import * as THREE from "three";
 
 type Vec3=[number,number,number];
+// GPU geometry is immutable and shared: draw each panel with a scale transform
+// instead of allocating hundreds of identical box/cylinder buffers.
+const UNIT_CUBE=new THREE.BoxGeometry(1,1,1);
+const UNIT_CYLINDER=new THREE.CylinderGeometry(1,1,1,8);
+
 export type LuxuryRoom="ceo"|"sales"|"marketing"|"meeting";
 
 function Cuboid({pos,size,color="#272c2c",metalness=.18,roughness=.38,
@@ -20,8 +25,7 @@ function Cuboid({pos,size,color="#272c2c",metalness=.18,roughness=.38,
  pos:Vec3;size:Vec3;color?:string;metalness?:number;roughness?:number;
  opacity?:number;emissive?:string;glow?:number;cast?:boolean;
 }){
- return <mesh position={pos} castShadow={cast} receiveShadow>
-  <boxGeometry args={size}/>
+ return <mesh geometry={UNIT_CUBE} position={pos} scale={size} castShadow={cast} receiveShadow>
   <meshStandardMaterial color={color} metalness={metalness} roughness={roughness}
    transparent={opacity<1} opacity={opacity} depthWrite={opacity===1}
    emissive={emissive||"#000000"} emissiveIntensity={glow}/>
@@ -35,8 +39,8 @@ function Line({from,to,color="#b99b6c",r=.018}:{
  const midpoint=start.add(end).multiplyScalar(.5);
  const q=new THREE.Quaternion().setFromUnitVectors(
   new THREE.Vector3(0,1,0),direction.clone().normalize());
- return <mesh position={midpoint.toArray() as Vec3} quaternion={q}>
-  <cylinderGeometry args={[r,r,direction.length(),8]}/>
+ return <mesh geometry={UNIT_CYLINDER} position={midpoint.toArray() as Vec3}
+    quaternion={q} scale={[r,direction.length(),r]}>
   <meshStandardMaterial color={color} metalness={.86} roughness={.21}/>
  </mesh>;
 }
