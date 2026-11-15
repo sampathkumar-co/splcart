@@ -17,6 +17,8 @@ import { ROLE_SPECS, type AgentRecord, type AgentRole } from "@/lib/agent-roster
 import { OfficeCamera, type OfficeView } from "./office-camera";
 import {OFFICE_ROOMS,DESK_OFFSETS,getStationCameraPose,HQ_BUILDING_YAW,type RoomKey} from "@/lib/office-layout";
 import {PavilionArchitecture,StoneFloor,LuxuryRoomDetails} from "./office-luxury";
+import {WorkstationScreen,RoomStatusWall} from "./workstation-screen";
+import {buildWorkstationScreen,ATELIER_PALETTE,type ScreenTask} from "@/lib/workstation-display";
 
 const gold = "#c7a772";
 const SHARED_BLOCK_BOX=new BoxGeometry(1,1,1); // Reuse GPU buffers across static architecture.
@@ -39,12 +41,12 @@ function Ring({selected}:{selected:boolean}) {
    <ringGeometry args={[.80,.86,64]}/><meshBasicMaterial color="#edc789" side={2} transparent opacity={.95}/>
  </mesh>;
 }
-function Station({role,agent,position,selected,onChoose,executive=false}:{
- role:AgentRole;agent?:AgentRecord;position:Vec3;selected:boolean;onChoose:(id:string,room:RoomKey)=>void;executive?:boolean;
+function Station({role,agent,position,selected,onChoose,tasks,executive=false}:{
+ role:AgentRole;agent?:AgentRecord;position:Vec3;selected:boolean;onChoose:(id:string,room:RoomKey)=>void;tasks:ScreenTask[];executive?:boolean;
 }){
  const status=agent?.status||"NOT_CONFIGURED";
  const live=status==="RUNNING";
- const screen=status==="RUNNING"?"#66d5ac":status==="ON_DEMAND"?"#c4a776":status==="MANUAL_ONLY"?"#807868":"#394547";
+ const screenData=useMemo(()=>buildWorkstationScreen(role.id,agent?[agent]:[],tasks),[role.id,agent,tasks]);
  const scale=executive?1.55:1;
  const onOver=(e:ThreeEvent<PointerEvent>)=>{e.stopPropagation();document.body.style.cursor="pointer";};
  const onOut=(e:ThreeEvent<PointerEvent>)=>{e.stopPropagation();document.body.style.cursor="auto";};
@@ -66,18 +68,12 @@ function Station({role,agent,position,selected,onChoose,executive=false}:{
      {[-.59,.59].map(x=><Block key={x} at={[x,.26,0]} size={[.055,.52,.48]} color="#8c744f" metalness={.9}/>)}
      <Block at={[0,.90,-.08]} size={[.67,.47,.055]} color="#b99a69" metalness={.82}/>
      <Block at={[0,.90,-.05]} size={[.60,.41,.027]} color="#10191b" metalness={.5}/>
-     <mesh position={[0,.90,-.032]}><boxGeometry args={[.54,.34,.008]}/><meshBasicMaterial color="#172124" toneMapped={false}/></mesh>
-     <mesh position={[0,1.025,-.024]}><boxGeometry args={[.41,.012,.009]}/><meshBasicMaterial color={screen} toneMapped={false}/></mesh>
-     <Text position={[0,.914,-.021]} fontSize={.071} maxWidth={.5}
-      color={screen} anchorX="center" anchorY="middle">
-      {status==="RUNNING"?"RUNNING":status==="ON_DEMAND"?"ON DEMAND":status==="MANUAL_ONLY"?"MANUAL ONLY":"NOT CONFIGURED"}
-     </Text>
-     <mesh position={[0,.846,-.025]}><boxGeometry args={[.30,.008,.008]}/><meshBasicMaterial color="#698477" toneMapped={false}/></mesh>
+     {/* Genuine role/task micro-dashboard, not a fixed "RUNNING" prop. */}
+     {screenData&&<WorkstationScreen data={screenData}/>}
      <Block at={[0,.66,-.08]} size={[.025,.13,.035]} color={gold} metalness={.85}/>
      <Block at={[0,.61,.2]} size={[.44,.017,.14]} color="#535b58"/>
      <Block at={[0,.49,-.23]} size={[1.29,.085,.058]} color="#b99b68" metalness={.9}/>
-     <mesh position={[0,.907,-.018]}><boxGeometry args={[.40,.012,.009]}/><meshBasicMaterial color="#e7c894" toneMapped={false}/></mesh>
-     <mesh position={[-.15,.83,-.018]}><boxGeometry args={[.095,.01,.008]}/><meshBasicMaterial color="#7e9c92" toneMapped={false}/></mesh>
+     {/* Screen pixels contain task facts; the metal frame remains geometry. */}
      <RoundedBox args={[.53,.09,.43]} radius={.08} smoothness={3} position={[0,.21,.59]}>
       <meshStandardMaterial color="#495a54" roughness={.80}/>
      </RoundedBox>
@@ -159,22 +155,23 @@ function MeetingRoom({choose}:{choose:(room:RoomKey)=>void}){
     <Block at={[x,.22,-1.08]} size={[.49,.11,.50]} color="#313538"/>
     <Block at={[x,.45,-1.38]} size={[.49,.52,.08]} color="#434948"/>
   </group>)}
-  <Block at={[0,1.73,-2.17]} size={[3.0,1.22,.065]} color="#1e272c" metalness={.4}/>
-  <Text position={[0,1.80,-2.115]} fontSize={.25} color="#dbbd86" letterSpacing={.15}>EVIDENCE FIRST</Text>
-  <Text position={[0,1.45,-2.105]} fontSize={.13} color="#909b98" letterSpacing={.07}>REVIEW · APPROVE · TRACK</Text>
+  {/* Strategy wall now shows real current HQ role telemetry, not a slogan. */}
  </group>;
 }
-function Room({room,chosen,agents,selectedAgentId,onChooseAgent,onChooseRoom,night=false,detail=true}:{
- room:typeof rooms[number];chosen:boolean;agents:AgentRecord[];selectedAgentId:string|null;
+function Room({room,chosen,agents,tasks,selectedAgentId,onChooseAgent,onChooseRoom,night=false,detail=true}:{
+ room:typeof rooms[number];chosen:boolean;agents:AgentRecord[];tasks:ScreenTask[];selectedAgentId:string|null;
  onChooseAgent:(id:string,room:RoomKey)=>void;onChooseRoom:(room:RoomKey)=>void;
  night?:boolean;detail?:boolean;
 }){
  const members=ROLE_SPECS.filter(role=>role.room===room.value);
+ const accent=room.value==="ceo"?ATELIER_PALETTE.gold:
+   room.value==="sales"?ATELIER_PALETTE.emerald:
+   room.value==="marketing"?ATELIER_PALETTE.plum:ATELIER_PALETTE.sapphire;
  // Original code-rendered veined stone in each room, not a flat material.
  return <group position={[room.x,0,room.z]}>
   <StoneFloor selected={chosen} room={room.value} onSelect={()=>onChooseRoom(room.value)}/>
-  <Block at={[0,.07,-2.32]} size={[6.55,.022,.055]} color={gold} metalness={.88}/>
-  <Block at={[0,.065,2.32]} size={[6.55,.022,.055]} color={gold} metalness={.88}/>
+  <Block at={[0,.07,-2.32]} size={[6.55,.022,.055]} color={accent} metalness={.79}/>
+  <Block at={[0,.065,2.32]} size={[6.55,.022,.055]} color={accent} metalness={.83}/>
   <Block at={[3.25,.055,0]} size={[.04,.013,4.60]} color="#a18b67" metalness={.85}/>
   <Block at={[0,-.085,0]} size={[7.0,.11,4.94]} color="#141c1f" roughness={.35}/>
   <Block at={[-3.25,.66,0]} size={[.052,1.2,4.7]} color="#b89a6b" metalness={.78}/>
@@ -186,6 +183,7 @@ function Room({room,chosen,agents,selectedAgentId,onChooseAgent,onChooseRoom,nig
     key={role.id}
     role={role}
     agent={agents.find(a=>a.id===role.id)}
+    tasks={tasks}
     position={deskPositions[room.value as "ceo"|"sales"|"marketing"][index]}
     selected={selectedAgentId===role.id}
     onChoose={onChooseAgent}
@@ -196,31 +194,33 @@ function Room({room,chosen,agents,selectedAgentId,onChooseAgent,onChooseRoom,nig
     <meshStandardMaterial color="#1a2225" metalness={.48} roughness={.26}/>
   </RoundedBox>
   <Text position={[0,1.83,-2.245]} fontSize={.245} letterSpacing={.10} color="#ffe0a7" anchorX="center">{room.name}</Text>
+  <RoomStatusWall room={room.value} agents={agents} tasks={tasks}/>
   <Block at={[-3.08,1.28,-2.30]} size={[.040,2.55,.065]} color="#c8ab7c" metalness={.68}/>
   <Block at={[3.08,1.28,-2.30]} size={[.040,2.55,.065]} color="#c8ab7c" metalness={.68}/>
   <Block at={[0,.085,2.16]} size={[5.85,.014,.025]} color="#c9a775" metalness={.78}/>
   <Planter x={2.92} z={1.86}/>
   <LuxuryRoomDetails room={room.value} night={night} detail={detail}/>
+  <pointLight position={[-2.85,1.7,-1.25]} color={accent} intensity={night?.43:.25} distance={3.9}/>
   <spotLight position={[1.8,4.9,2.2]} angle={.92} penumbra={.9} intensity={night?1.85:1.25} distance={9} color="#ffe9c8"/>
   <LightRail x={0} z={-2.02} length={4.65} night={night}/>
  </group>;
 }
-function Building({selected,selectedAgentId,agents,onChooseAgent,onChooseRoom,night=false,detail=true}:{
- selected:RoomKey;selectedAgentId:string|null;agents:AgentRecord[];
+function Building({selected,selectedAgentId,agents,tasks,onChooseAgent,onChooseRoom,night=false,detail=true}:{
+ selected:RoomKey;selectedAgentId:string|null;agents:AgentRecord[];tasks:ScreenTask[];
  onChooseAgent:(id:string,room:RoomKey)=>void;onChooseRoom:(room:RoomKey)=>void;
  night?:boolean;detail?:boolean;
 }){
  return <group rotation={[0,HQ_BUILDING_YAW,0]}>
    <Walls/>
    {detail&&<PavilionArchitecture night={night}/>}
-   {rooms.map(room=><Room key={room.value} room={room} chosen={selected===room.value} agents={agents} selectedAgentId={selectedAgentId} onChooseAgent={onChooseAgent} onChooseRoom={onChooseRoom} night={night} detail={detail}/>)}
+   {rooms.map(room=><Room key={room.value} room={room} chosen={selected===room.value} agents={agents} tasks={tasks} selectedAgentId={selectedAgentId} onChooseAgent={onChooseAgent} onChooseRoom={onChooseRoom} night={night} detail={detail}/>)}
    <ambientLight intensity={night?0.56:0.85}/>
    <hemisphereLight intensity={night?1.05:1.42} color={night?"#ffe4cc":"#fff7e9"} groundColor="#243238"/>
    <directionalLight position={[4.5,10,3.5]} intensity={night?2.45:3.1} color={night?"#ffd5a0":"#ffebd2"} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
  </group>;
 }
-export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgentSelect}:{
- selected:RoomKey;onSelect:(room:RoomKey)=>void;agents?:AgentRecord[];
+export function Office({selected,onSelect,agents=[],tasks=[],selectedAgentId=null,onAgentSelect}:{
+ selected:RoomKey;onSelect:(room:RoomKey)=>void;agents?:AgentRecord[];tasks?:ScreenTask[];
  selectedAgentId?:string|null;onAgentSelect?:(agentId:string)=>void;
 }){
  const [view,setView]=useState<OfficeView>("overview");
@@ -231,6 +231,8 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
  const focusPose=useMemo(()=>focusId?getStationCameraPose(focusId):null,[focusId]);
  const focusedAgent=agents.find(a=>a.id===focusId);
  const focusRole=ROLE_SPECS.find(a=>a.id===focusId);
+ const focusScreen=useMemo(()=>focusId?
+   buildWorkstationScreen(focusId,agents,tasks):null,[focusId,agents,tasks]);
  const canFocusSelected=selectedAgentId?getStationCameraPose(selectedAgentId):null;
  const firstRender=useRef(true);
  useEffect(()=>{if(firstRender.current){firstRender.current=false;return;}setView(selected)},[selected]);
@@ -256,7 +258,7 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
    <Canvas shadows frameloop="demand" camera={{position:[10.2,10.8,12.1],fov:40,near:.1,far:90}} dpr={[1,detail?1.5:1.2]} gl={{alpha:false,antialias:true,powerPreference:"high-performance"}}>
     <color attach="background" args={["#111d23"]}/>
     <fog attach="fog" args={["#111d23",42,72]}/>
-    <Suspense fallback={null}><Building selected={selected} selectedAgentId={selectedAgentId} agents={agents} onChooseAgent={chooseAgent} onChooseRoom={chooseRoom} night={night} detail={detail}/></Suspense>
+    <Suspense fallback={null}><Building selected={selected} selectedAgentId={selectedAgentId} agents={agents} tasks={tasks} onChooseAgent={chooseAgent} onChooseRoom={chooseRoom} night={night} detail={detail}/></Suspense>
     <OfficeCamera view={view} focusPose={focusPose}/>
    </Canvas>
    <div className="office-cinema-titling" aria-hidden="true">
@@ -287,9 +289,15 @@ export function Office({selected,onSelect,agents=[],selectedAgentId=null,onAgent
    {focusId&&<div className="office-desk-context" aria-live="polite" aria-label="Focused workstation information">
      <span>WORKSTATION / SOURCE-GROUNDED</span>
      <strong>{focusedAgent?.name||focusRole?.name||"Unknown role"}</strong>
-     <small>{focusedAgent?
-       focusedAgent.status.replaceAll("_"," ")+" · "+focusedAgent.evidenceCount+" recorded completions":
+     <small>{focusScreen?
+       focusScreen.statusText+" · "+focusScreen.mainNumber+" recorded evidence":
        "Awaiting authenticated status"}</small>
+     {focusScreen&&<div className="office-desk-activity" aria-label="Authenticated workstation screen details">
+       <strong>{focusScreen.purpose}</strong>
+       <span>{focusScreen.headline}</span>
+       <small>{focusScreen.detail}</small>
+       <small>Source: {focusScreen.provenance}</small>
+     </div>}
      <div className="office-desk-tour" role="group" aria-label="Visit real agent workstations">
        <button type="button" onClick={()=>tourTo(-1)} aria-label="Previous workstation">← Previous</button>
        <button type="button" onClick={()=>tourTo(1)} aria-label="Next workstation">Next →</button>
