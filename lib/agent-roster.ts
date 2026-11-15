@@ -40,7 +40,7 @@ const ON_DEMAND_IDS = new Set([
 export function getAgentRecords(
   runs: readonly {status:string;startedAt:Date}[],
   now=new Date(),
-  tasks:readonly {roleId:string;status:string;createdAt:Date}[]=[],
+  tasks:readonly {roleId:string;status:string;createdAt:Date}[]=[],reelRendering=false,
 ):AgentRecord[]{
   const recentRuns=runs.filter(r=>now.getTime()>=r.startedAt.getTime() &&
     now.getTime()-r.startedAt.getTime()<90_000);
@@ -51,7 +51,8 @@ export function getAgentRecords(
     const running=actualTasks.some(t=>t.status==="RUNNING" &&
       now.getTime()>=t.createdAt.getTime() && now.getTime()-t.createdAt.getTime()<90_000);
     const actualCompletions=actualTasks.filter(t=>t.status==="COMPLETED").length;
-    return {...role,status:running||(role.id==="web-discovery"&&browserBusy)?"RUNNING":
+    return {...role,status:running||(role.id==="web-discovery"&&browserBusy)||
+      (role.id==="reel-generation"&&reelRendering)?"RUNNING":
       ON_DEMAND_IDS.has(role.id)?"ON_DEMAND":"NOT_CONFIGURED",
       evidenceCount:actualCompletions+(role.id==="web-discovery"?realBrowserCount:0)};
   });

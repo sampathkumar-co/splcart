@@ -12,7 +12,7 @@ export type ScreenTask={
 export type ScreenRoom="ceo"|"sales"|"marketing"|"meeting";
 export type WorkstationSignals={
  reels:{
-  queued:number;rendering:number;rendered:number;approved:number;failed:number;
+  queued:number;rendering:number;stalled:number;rendered:number;approved:number;failed:number;
   scope:"LATEST_100_HQ_JOBS";
  };
  openInquiries:number;
@@ -136,9 +136,10 @@ export function buildWorkstationScreen(
    mainNumber=String(r.rendering);
    numberLabel="REELS RENDERING";
    headline=r.rendering>0?"FFMPEG RENDER JOB ACTIVE":
+    r.stalled>0?"STALE RENDER NEEDS OWNER REVIEW":
     r.queued>0?"LOCAL RENDER QUEUE PENDING":"NO ACTIVE LOCAL RENDERS";
    detail="Queued: "+r.queued+" | Rendered: "+r.rendered+
-    " | Approved: "+r.approved+" (recent 100)";
+    " | Approved: "+r.approved+" | Stale: "+r.stalled+" (recent 100)";
    provenance="PERSISTED HQ REEL JOBS";sourceTime=null;
   }else if(roleId==="customer-conversation"){
    mainNumber=String(signals.openInquiries);

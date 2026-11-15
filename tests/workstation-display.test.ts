@@ -56,7 +56,7 @@ describe("truthful code-native workstation screens",()=>{
  });
  it("shows actual offline render, owner-inbox and research state without fake activity",()=>{
   const signals={
-    reels:{queued:2,rendering:1,rendered:3,approved:2,failed:0,scope:"LATEST_100_HQ_JOBS" as const},
+    reels:{queued:2,rendering:1,stalled:0,rendered:3,approved:2,failed:0,scope:"LATEST_100_HQ_JOBS" as const},
     openInquiries:4,ownerRecordedPosts:5,
     leads:{awaitingReview:6,approved:2},
     research:{running:0,completed:3,blocked:1,scope:"LATEST_30_HQ_RUNS" as const},

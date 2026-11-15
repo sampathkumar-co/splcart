@@ -15,10 +15,16 @@ export async function GET() {
       db.agentTask.findMany({ orderBy: { createdAt:"desc" }, take:60 }),
       db.agentSchedule.findUnique({where:{id:"hq-local-readiness"}}),
       // Status-only aggregates; no images, chat content, media blobs or platform credentials.
-      db.reelJob.findMany({select:{status:true},orderBy:{createdAt:"desc"},take:100}),
+      db.reelJob.findMany({select:{status:true,startedAt:true},orderBy:{createdAt:"desc"},take:100}),
       db.customerInquiry.count({where:{status:"OPEN"}}),
       db.socialPublication.count(),
     ]);
+    const snapshotNow=new Date();
+    const activeRenderJobs=reelStatuses.filter(r=>r.status==="RENDERING"&&r.startedAt&&
+      snapshotNow.getTime()>=r.startedAt.getTime()&&
+      snapshotNow.getTime()-r.startedAt.getTime()<15*60_000);
+    const stalledRenderJobs=reelStatuses.filter(r=>r.status==="RENDERING"&&
+      (!r.startedAt||snapshotNow.getTime()-r.startedAt.getTime()>=15*60_000)).length;
     const verifiedRevenue = prospects.filter(p => p.conversion?.verifiedAt).reduce((sum, p) => sum + (p.conversion?.grossAmountPaise || 0), 0);
     return Response.json({
       stats: { researched: prospects.length, qualified: prospects.filter(p => p.stage === "QUALIFIED" || p.stage === "APPROVED").length,
@@ -38,7 +44,7 @@ export async function GET() {
         updatedAt: control?.updatedAt?.toISOString() || null,
         audit: controlAudit.map(a=>({id:a.id,event:a.event,reason:a.reason,createdAt:a.createdAt.toISOString()})),
       },
-      agents: getAgentRecords(runs,new Date(),agentTasks),
+      agents: getAgentRecords(runs,snapshotNow,agentTasks,activeRenderJobs.length>0),
       agentTasks: agentTasks.slice(0,25).map(t=>({
         id:t.id,roleId:t.roleId,status:t.status,errorCode:t.errorCode,
         createdAt:t.createdAt.toISOString(),
@@ -52,7 +58,8 @@ export async function GET() {
       workstationSignals:{
         reels:{
           queued:reelStatuses.filter(r=>r.status==="QUEUED").length,
-          rendering:reelStatuses.filter(r=>r.status==="RENDERING").length,
+          rendering:activeRenderJobs.length,
+          stalled:stalledRenderJobs,
           rendered:reelStatuses.filter(r=>r.status==="RENDERED").length,
           approved:reelStatuses.filter(r=>r.status==="APPROVED").length,
           failed:reelStatuses.filter(r=>r.status==="FAILED").length,
@@ -65,7 +72,9 @@ export async function GET() {
           approved:prospects.filter(p=>p.decision==="APPROVED").length,
         },
         research:{
-          running:runs.filter(r=>r.status==="RUNNING").length,
+          running:runs.filter(r=>r.status==="RUNNING"&&
+            snapshotNow.getTime()>=r.startedAt.getTime()&&
+            snapshotNow.getTime()-r.startedAt.getTime()<90_000).length,
           completed:runs.filter(r=>r.status==="COMPLETED").length,
           blocked:runs.filter(r=>r.status==="BLOCKED"||r.status==="FAILED").length,
           scope:"LATEST_30_HQ_RUNS",
