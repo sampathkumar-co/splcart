@@ -46,11 +46,25 @@ For 3D use, WebGL must be available; the complete 2D view works without it. Rese
 
 The production web service will not start a Chromium browser in the Next.js process. It delegates to `scripts/browser-worker.ts` in the dedicated `hq-browser` container, which never receives DB or SPLCART credentials. The worker enforces exact host allowlists, robots.txt rules, crawl delays and single active research. Owner requests are rate-limited.
 
-The three-service `compose.hq.yml` is a **deployment scaffold, not a deployed site**. It keeps the database on its own internal network and exposes the web app only on the server's loopback port. Production research remains fail-closed without a token-authenticated browser worker and a verified host-level outbound firewall. Read [SECURITY_AND_DEPLOYMENT.md](docs/SECURITY_AND_DEPLOYMENT.md) before any deployment. Never merge the draft PR or use the SPLCART server/database.
+The four-service `compose.hq.yml` (HQ web, HQ database, browser research worker, creative FFmpeg worker) is a **deployment scaffold, not a deployed site**. It keeps the database on its own internal network and exposes the web app only on the server's loopback port. Production research remains fail-closed without a token-authenticated browser worker and a verified host-level outbound firewall. Read [SECURITY_AND_DEPLOYMENT.md](docs/SECURITY_AND_DEPLOYMENT.md) before any deployment. Never merge the draft PR or use the SPLCART server/database.
 
 Schema changes are now captured in the dedicated HQ `prisma/migrations` directory. Use `npm run db:deploy` after taking a backup; do not apply destructive schema pushes to persistent data.
 
 A dedicated **HQ-only** backup script is available at `scripts/hq-backup.sh`. GitHub Actions verifies actual `pg_dump` and `pg_restore` into an isolated temporary PostgreSQL database using `scripts/ci-backup-restore.sh`. An encrypted off-host backup plan and target-host recovery test remain separate deployment requirements. The browser policy also forbids automated research against SPLCART domains, though a public SPLCART product link can still appear in the HQ catalogue.
+
+## No paid AI API key creative and agent workflows
+
+**Owner photos → actual local FFmpeg Reels.** Register a genuine independent product reference, upload an original JPEG/PNG photo to Creative Studio, queue a Reel, and let the local FFmpeg worker render a real **20-second silent 720×1280 H.264 MP4**. Only a successfully rendered file can be approved. Approval is for manual use, not an Instagram/YouTube post. There are no paid AI-video calls, no generated human models, and no invented discounts or testimonials.
+
+**Opt-in daily 2–3 Reels.** The owner may enable two or three locally rendered photo-based videos per India-local day, subject to existing distinct owner photos and bounded queue size. Disabled by default; repeated checks are deduplicated. Videos are never automatically sent or published.
+
+**Manual post and marketing feedback.** An owner can copy grounded Instagram/YouTube captions, publish manually from their own account, then record the official post link and directly observed metrics. Every external link and metric is labeled **OWNER_REPORTED**, never platform-verified. Marketing Performance can prepare an on-demand source-linked report but no authenticated platform analytics is connected.
+
+**16 roles, without fake autonomous staff.** The 3D scene and accessible roster expose sixteen named jobs. Thirteen have real **owner-triggered local deterministic reporting/evidence tools** that persist outcomes and cost labels in `AgentTask`. Tasks needing records can explicitly return `BLOCKED`. Calling, inbound message automation, and Instagram cold lead discovery remain unconfigured without compliant external connections, permissions or platform access. No 16 always-on AI models are running.
+
+**Computing is not free.** The implemented local model API charge is zero, but electricity, CPU/GPU time, VPS, storage, manual work and production monitoring are **not metered**. Do not confuse `modelCostPaise=0` with total business operating cost ₹0.
+
+The authoritative walkthrough is [NO_API_KEYS_OPERATIONS.md](docs/NO_API_KEYS_OPERATIONS.md), including image rights, proof labels, 2/3-Reel scheduling, publishing handoff, role task limits and CI tests.
 
 ## Real open-source office reuse and quality gates
 
@@ -64,7 +78,7 @@ A dedicated **HQ-only** backup script is available at `scripts/hq-backup.sh`. Gi
 ## Known blockers and safety
 
 - **SPLCART storefront integration is explicitly out of scope.** There is no storefront API connection, database access, webhook, checkout change or authorized write. HQ stores only independently owner-entered product references. Verified revenue requires separate trustworthy financial evidence; no paid order reconciliation is implemented.
-- No automatic outreach, no Instagram DMs, no promotional calls, no external publishing, no unapproved spending.
+- No automatic outreach, no Instagram DMs, no promotional calls, no external publishing, no unapproved spending. A recorded manual social URL is not platform verification.
 - An observed competitor price is **not** a proven comparable wholesale offer. `OWNER_ATTESTED` prices do not qualify for competitive advantage points.
 - Public contact details do not grant permission to send messages. Website terms, robots constraints and Indian calling/messaging requirements must be respected.
 - The initial app demonstrates a verifiable operator-assisted pipeline, **not** an already-running autonomous 16-agent business.
