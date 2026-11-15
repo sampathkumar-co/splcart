@@ -15,7 +15,7 @@ export async function POST(req:Request){
   const limit=await consumeRateLimit("owner-metric-records",80,86400_000);
   if(!limit.allowed)return throttled(limit.retryAfterSeconds);
   const value=input.parse(await req.json());
-  validateMetricCounts(value);
+  validateMetricCounts({views:value.views,likes:value.likes,enquiries:value.enquiries});
   const publication=await db.socialPublication.findUnique({where:{id:value.publicationId}});
   if(!publication)return Response.json({error:"PUBLICATION_NOT_FOUND"},{status:404});
   const recorded=await db.$transaction(async tx=>{
