@@ -349,3 +349,17 @@
  padding:11px 12px;font:800 10px Manrope,Arial,sans-serif;letter-spacing:.03em}
 .office-ledger-run:hover,.office-ledger-run:focus-visible{border-color:#c8f1d7;background:#286353}
 .office-ledger-run:disabled{opacity:.55;cursor:wait}
+
+
+/* Source health is separate from task state: a disconnected API can never
+   masquerade as a real working agent merely because a prior snapshot persists. */
+.system-label[data-source-health="offline"]{color:#f0b8a6}
+.system-label[data-source-health="online"]{color:#a9e8d4}
+.office-source-offline{position:absolute;top:150px;right:17px;z-index:9;
+ max-width:min(320px,calc(100vw - 32px));display:flex;flex-direction:column;
+ gap:7px;padding:13px 15px;background:rgba(41,18,24,.96);
+ border:1px solid #bf7b76;border-radius:5px;color:#f7d4c8;
+ box-shadow:0 15px 36px #0009}
+.office-source-offline strong{font:800 10px Manrope,Arial,sans-serif;letter-spacing:.10em}
+.office-source-offline span{font:500 10px/1.5 Manrope,Arial,sans-serif;color:#f0d8d2}
+@media(max-width:700px){.office-source-offline{top:105px;right:9px;max-width:245px;padding:10px}}

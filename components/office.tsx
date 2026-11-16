@@ -222,12 +222,13 @@ function Building({selected,selectedAgentId,agents,tasks,signals,onChooseAgent,o
    <directionalLight position={[4.5,10,3.5]} intensity={night?2.45:3.1} color={night?"#ffd5a0":"#ffebd2"} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
  </group>;
 }
-export function Office({selected,onSelect,agents=[],tasks=[],signals=null,selectedAgentId=null,onAgentSelect,onOpenWorkspace,onRunRole,controlsBusy=false}:{
+export function Office({selected,onSelect,agents=[],tasks=[],signals=null,selectedAgentId=null,onAgentSelect,onOpenWorkspace,onRunRole,controlsBusy=false,sourceOnline=true}:{
  selected:RoomKey;onSelect:(room:RoomKey)=>void;agents?:AgentRecord[];tasks?:ScreenTask[];signals?:WorkstationSignals|null;
  selectedAgentId?:string|null;onAgentSelect?:(agentId:string)=>void;
  onOpenWorkspace?:(workspace:HeadquartersWorkspace)=>void;
  onRunRole?:(roleId:string)=>void;
  controlsBusy?:boolean;
+ sourceOnline?:boolean;
 }){
  const [view,setView]=useState<OfficeView>("overview");
  const [night,setNight]=useState(false);
@@ -305,7 +306,7 @@ export function Office({selected,onSelect,agents=[],tasks=[],signals=null,select
      </div>}
      {focusScreen&&<OfficeTaskLedger roleId={focusScreen.roleId}
       status={focusScreen.status} tasks={tasks} onOpenWorkspace={onOpenWorkspace}
-      onRunRole={onRunRole} busy={controlsBusy}/>}
+      onRunRole={sourceOnline?onRunRole:undefined} busy={controlsBusy}/>}
      <div className="office-desk-tour" role="group" aria-label="Visit real agent workstations">
        <button type="button" onClick={()=>tourTo(-1)} aria-label="Previous workstation">← Previous</button>
        <button type="button" onClick={()=>tourTo(1)} aria-label="Next workstation">Next →</button>
@@ -313,6 +314,11 @@ export function Office({selected,onSelect,agents=[],tasks=[],signals=null,select
      <button type="button" onClick={()=>{setFocusId(null);setView(view)}}
       aria-label="Return to room camera">Return to room</button>
    </div>}
-   <div className="office-overlay"><span className="light-dot"/> LIVE-SOURCE STATUS ONLY <span className="overlay-tip">Actual desk states · Drag to orbit · Scroll to zoom</span></div>
+   {!sourceOnline&&<div className="office-source-offline" role="alert">
+      <strong>SOURCE NOT VERIFIED</strong>
+      <span>HQ data refresh failed. Previously recorded statuses and counts may be outdated.
+      Local task execution is paused until source reconnects.</span>
+    </div>}
+   <div className="office-overlay"><span className="light-dot"/> {sourceOnline?"SOURCE-VERIFIED SNAPSHOT":"LAST RECORDED SNAPSHOT"}  <span className="overlay-tip">Actual desk states · Drag to orbit · Scroll to zoom</span></div>
  </div>;
 }

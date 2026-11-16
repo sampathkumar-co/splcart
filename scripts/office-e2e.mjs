@@ -196,6 +196,16 @@ try {
   assert.equal(await page.locator(".office-canvas canvas").count(),0,
     "lightweight 2D direct entry must not mount any WebGL scene");
   console.log("PASS private standalone /2d HQ route, accessible workstations with zero WebGL canvases");
+  assert.ok((await page.locator(".system-label").innerText()).includes("HQ SNAPSHOT LIVE"));
+  await page.route("**/api/dashboard",route=>route.abort());
+  await page.getByRole("button",{name:"Refresh data"}).click();
+  await page.getByText("SOURCE NOT VERIFIED",{exact:true}).waitFor({timeout:20000});
+  assert.equal(await page.locator(".system-label").getAttribute("data-source-health"),"offline",
+    "a dashboard refresh failure must not continue claiming current live task statuses");
+  await page.unroute("**/api/dashboard");
+  await page.getByRole("button",{name:"Refresh data"}).click();
+  await page.getByText("HQ SNAPSHOT LIVE",{exact:true}).waitFor({timeout:20000});
+  console.log("PASS real HQ feed failure degrades to not-verified status and recovers on successful source refresh");
   // Owner controls real daily internal evidence, not unauthorized social/voice automation.
   const dailyOn=page.getByRole("button",{name:"Enable daily briefing"});
   await dailyOn.click();
