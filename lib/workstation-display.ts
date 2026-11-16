@@ -8,6 +8,7 @@ import {ROLE_SPECS,type AgentRecord,type AgentStatus} from "./agent-roster";
 export type ScreenTask={
  id:string;roleId:string;status:string;createdAt:string;errorCode:string|null;
  result?:{summary?:string;items?:{label:string;details:string;sourceUrl?:string}[]}|null;
+ sourceUrls?:readonly string[];
 };
 export type ScreenRoom="ceo"|"sales"|"marketing"|"meeting";
 export type WorkstationSignals={

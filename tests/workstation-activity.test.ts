@@ -35,6 +35,14 @@ describe("real 3D desk evidence explorer",()=>{
   expect(latestWorkstationActivity("wholesale-calling",t,"NOT_CONFIGURED")).toEqual([]);
   expect(latestWorkstationActivity("web-discovery",t,"ON_DEMAND",1)).toHaveLength(1);
  });
+ it("falls back to separately persisted audited source URL evidence if report items omit it",()=>{
+  const task:ScreenTask={id:"evidence",roleId:"web-discovery",status:"COMPLETED",
+   createdAt:"2026-11-15T16:50:00Z",errorCode:null,result:{summary:"Source reviewed"},
+   sourceUrls:["javascript:alert(1)","https://example.org/wholesale"]};
+  const row=latestWorkstationActivity("web-discovery",[task],"ON_DEMAND")[0];
+  expect(row.sourceUrl).toBe("https://example.org/wholesale");
+  expect(row.sourceLabel).toBe("Stored HQ source reference");
+ });
  it("never transforms an old RUNNING task row into a claim of current active work",()=>{
   const rows:ScreenTask[]=[{id:"stale",roleId:"reel-generation",status:"RUNNING",
    createdAt:"2026-01-01T01:00:00Z",errorCode:null,result:null}];

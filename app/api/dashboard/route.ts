@@ -2,6 +2,7 @@ import { db } from "@/lib/prisma";
 import { fullProspect, serializeProspect } from "@/lib/serialize";
 import { apiError } from "@/lib/validation";
 import { getAgentRecords } from "@/lib/agent-roster";
+import {permittedEvidenceUrl} from "@/lib/workstation-activity";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {
@@ -49,6 +50,8 @@ export async function GET() {
         id:t.id,roleId:t.roleId,status:t.status,errorCode:t.errorCode,
         createdAt:t.createdAt.toISOString(),
         result:t.resultJson,
+        sourceUrls:Array.isArray(t.sourceUrls)?
+          t.sourceUrls.slice(0,5).map(permittedEvidenceUrl).filter((u):u is string=>!!u):[],
         modelCostPaise:t.modelCostPaise,
       })),
       agentSchedule: {

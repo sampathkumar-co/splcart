@@ -77,6 +77,7 @@ export function latestWorkstationActivity(
      b.id.localeCompare(a.id);
   }).slice(0,Math.max(0,Math.min(5,Math.floor(limit)))).map(t=>{
    const first=(t.result?.items??[]).find(i=>permittedEvidenceUrl(i.sourceUrl));
+   const fallback=(t.sourceUrls??[]).map(permittedEvidenceUrl).find((u):u is string=>!!u);
    const state=t.status==="RUNNING"&&roleStatus!=="RUNNING"?
      "RUNNING RECORD · NOT CONFIRMED LIVE":t.status.replaceAll("_"," ");
    return {
@@ -85,8 +86,9 @@ export function latestWorkstationActivity(
     state,
     summary:compact(t.result?.summary||t.errorCode||
       (t.status==="RUNNING"?"Task started; no outcome recorded":"No task outcome recorded")),
-    sourceUrl:permittedEvidenceUrl(first?.sourceUrl),
-    sourceLabel:first?compact(first.label||"Recorded source",48):null,
+    sourceUrl:permittedEvidenceUrl(first?.sourceUrl)||fallback||null,
+    sourceLabel:first?compact(first.label||"Recorded source",48):
+      fallback?"Stored HQ source reference":null,
    };
   });
 }

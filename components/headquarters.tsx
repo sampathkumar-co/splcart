@@ -14,7 +14,8 @@ type Prospect = {id:string;name:string;city:string;category:string;businessSourc
 type Product = {id:string;title:string;category:string;material:string;unitDescription:string;productUrl:string;priceRupees:number;verificationSource:string};
 type Run = {id:string;sourceUrl:string;finalUrl:string|null;pageTitle:string|null;excerpt:string|null;status:string;errorCode:string|null;startedAt:string;evidence?:{headings?:string[];description?:string;businessLinks?:{title:string;url:string}[];tabs?:{sourceUrl:string;status:string;evidence?:{title:string;finalUrl:string;excerpt:string};errorCode?:string}[];completed?:number;failed?:number}};
 type AgentTask = {id:string;roleId:string;status:string;errorCode:string|null;createdAt:string;
-  modelCostPaise:number;result:{summary?:string;items?:{label:string;details:string;sourceUrl?:string}[];computeCost?:string}|null};
+  modelCostPaise:number;sourceUrls?:string[];
+  result:{summary?:string;items?:{label:string;details:string;sourceUrl?:string}[];computeCost?:string}|null};
 type Dashboard = {stats:{researched:number;qualified:number;awaitingReview:number;approved:number;interested:number;ownerReportedOrders:number;verifiedRevenueRupees:number};prospects:Prospect[];products:Product[];runs:Run[];agents:AgentRecord[];agentTasks:AgentTask[];workstationSignals:WorkstationSignals;agentSchedule:{enabled:boolean;lastRunDate:string|null;localTime:string;timeZone:string};control:{researchPaused:boolean;reason:string;updatedAt:string|null;audit:{id:string;event:string;reason:string;createdAt:string}[]};integrations:Record<string,string>};
 const fmt = (v:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(v);
 const steps = ["DISCOVERED","RESEARCHED","QUALIFIED","APPROVED","CONTACTED","INTERESTED","QUOTATION","NEGOTIATION"];
