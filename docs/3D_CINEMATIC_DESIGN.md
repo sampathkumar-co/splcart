@@ -59,6 +59,50 @@ pose (the layout tests now check that sightline).
 The independent Chromium test captures a **genuine focused WebGL screenshot**
 and compares the rendered pixels to the overview frame.
 
+## 3D Workstation Evidence Explorer (2026-11-16)
+
+Clicking a real desk now opens a premium, compact **recorded work log** next to
+the 3D camera view. It is strictly derived from the *same* authenticated
+Headquarters task snapshot as the physical monitors. The owner sees up to three
+most recent persisted checks for that selected role, their exact reported
+statuses, India-local timestamps, short real outcome summaries and, when a
+source URL is present and passes HTTPS/public-host validation, a clickable
+**Inspect source** citation. Empty history says **No task recorded**.
+A stale `RUNNING` DB row is visibly marked *not confirmed live* if the
+role is no longer running. The currently loaded dashboard contains only
+its most recent 25 tasks; the interface discloses this rather than claiming
+an exhaustive history.
+
+The action **Open [relevant] workspace** navigates straight from the 3D
+desk to the real research, wholesale pipeline, owner catalogue, local creative
+studio or manual customer inbox, depending on the authorized role. A blocked
+voice/Instagram desk may open the existing owner-managed leads workspace
+but **does not** claim a connected voice/Instagram integration.
+
+For the 14 locally operational `ON_DEMAND` evidence roles, the desk also has
+**Run local evidence check**. It calls the *existing* authenticated
+`/api/agents/run` owner action, waits for its audited task outcome,
+and reuses the current dashboard refresh to show the newly persisted
+task history. The two unconfigured roles never expose this run button.
+No third-party outreach, subscriptions, social posting, voice calls,
+SPLCART application integration or paid-model inference is initiated.
+
+Implementation: `lib/workstation-activity.ts` (pure safe routing,
+time-ordered task derivation and HTTPS public-source checks),
+`components/office-task-ledger.tsx` (accessible task explorer),
+`components/office.tsx` (selected desk evidence controls),
+`components/headquarters.tsx` (existing authorized callbacks) and
+`app/globals.css` (warm black/brass/emerald responsive styling).
+`tests/workstation-activity.test.ts` guards exactly the 16 roles,
+true source attribution, stale task states, empty data and malicious
+links; `scripts/office-e2e.mjs` exercises a genuine owner-triggered
+local role check from the 3D view, verifies persisted history and
+navigation to the actual research interface through Chromium.
+
+All task records in automated acceptance are synthetic **CI-only fixtures**,
+not evidence of customer conversions or independent autonomous browsing.
+This feature does not establish production hosting or owner GPU FPS.
+
 ## The Evidence-Lit Atelier: screen truth and jewel-tone atmosphere (2026-11-15)
 
 **The office monitors are no longer status stickers.** The owner authenticated

@@ -159,3 +159,14 @@ and preserves the newest two. It never touches SPLCART, unknown files or
 an offsite provider. Review [the operating and safety contract](docs/SECURITY_AND_DEPLOYMENT.md)
 before use. No real backup deletion or offsite retention is scheduled,
 authorized or claimed by the test suite.
+
+### Evidence explorer inside each real 3D workstation
+
+The selected desk now shows its recent **persisted** HQ task outcomes,
+recorded India-local timestamps, safe source citations, and a direct
+link to the matching existing owner workspace. There are no fabricated
+calls, browser tabs, leads or progress bars. Authorized `ON_DEMAND`
+roles can initiate their existing **local evidence check directly from
+the 3D desk**; its real recorded result appears in the task history.
+Unconfigured phone and Instagram roles cannot run. See
+[3D design and verification](docs/3D_CINEMATIC_DESIGN.md).
