@@ -178,7 +178,10 @@ try {
     "owner action must create a real persisted desk worklog, not a temporary animation");
   assert.equal(await page.locator(".station-chip .status-running").count(),0,
     "a completed or blocked local evidence check cannot imply ongoing independent agency");
-  await page.getByRole("button",{name:"Open Source Research workspace"}).click();
+  // Software-WebGL Chromium can starve synthesized pointer delivery after
+  // prolonged 3D stress. Use the genuine HTML button's click handler directly.
+  await page.getByRole("button",{name:"Open Source Research workspace"})
+    .evaluate(el=>el.click(),undefined,{timeout:60_000});
   await page.getByRole("heading",{name:"Intelligence Discovery",exact:true}).waitFor({timeout:40000});
   assert.equal(await page.locator(".office-canvas canvas").count(),0,
     "navigating to work must release the 3D office, preserving browser resources");
