@@ -363,3 +363,8 @@
 .office-source-offline strong{font:800 10px Manrope,Arial,sans-serif;letter-spacing:.10em}
 .office-source-offline span{font:500 10px/1.5 Manrope,Arial,sans-serif;color:#f0d8d2}
 @media(max-width:700px){.office-source-offline{top:105px;right:9px;max-width:245px;padding:10px}}
+
+/* Source-provenance chips distinguish durable browser runs, local FFmpeg jobs,
+   and agent checks instead of making all worklogs appear identical. */
+.office-ledger-kind{display:block;margin-bottom:6px;font:800 8px Manrope,Arial,sans-serif;
+ letter-spacing:.12em;color:#d6ba87;text-transform:uppercase}
