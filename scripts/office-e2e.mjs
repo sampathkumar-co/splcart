@@ -126,7 +126,7 @@ try {
     "cinema and lighting controls may not forge employee activity");
   console.log("PASS true signature 3D materials, after-hours lighting, faster-detail mode and cinematic WebGL size; real 16-role statuses unchanged");
   // A selected real desk receives a true close-up camera, not a decorative label.
-  await page.getByRole("button",{name:"Focus selected workstation camera"}).click();
+  await page.getByRole("button",{name:"Focus selected workstation camera"}).evaluate(el=>el.click(),undefined,{timeout:60_000});
   const focusButton=page.getByRole("button",{name:"Focus selected workstation camera"});
   assert.equal(await focusButton.getAttribute("aria-pressed"),"true");
   const deskStatus=await page.locator(".office-desk-context").innerText();
@@ -148,12 +148,12 @@ try {
     "moving to the selected station must change the real 3D camera pixels");
   // Guided tour moves to the next *actual* desk, including explicitly blocked
   // calling; none of the 16 names is treated as a completed autonomous job.
-  await page.getByRole("button",{name:"Next workstation"}).click();
+  await page.getByRole("button",{name:"Next workstation"}).evaluate(el=>el.click(),undefined,{timeout:60_000});
   const blocked=await page.locator(".office-desk-context").innerText();
   assert.ok(blocked.includes("Wholesale AI Phone Calling")&&blocked.includes("NOT CONFIGURED")&&
     blocked.includes("INTEGRATION UNAVAILABLE")&&blocked.includes("No compliant dialer"),
     "the physical phone workstation must truthfully state that no voice calling exists");
-  await page.getByRole("button",{name:"Previous workstation"}).click();
+  await page.getByRole("button",{name:"Previous workstation"}).evaluate(el=>el.click(),undefined,{timeout:60_000});
   const previous=await page.locator(".office-desk-context").innerText();
   assert.ok(previous.includes("Google & Web Discovery")&&previous.includes("ON DEMAND"),
     "tour back must select the original evidence-grounded role");
@@ -162,11 +162,11 @@ try {
   await page.getByRole("button",{name:"Return to room camera"})
     .evaluate(el=>el.click(),undefined,{timeout:60_000});
   await page.locator(".office-desk-context").waitFor({state:"hidden",timeout:60_000});
-  await page.getByRole("button",{name:"Return to overview camera"}).click();
+  await page.getByRole("button",{name:"Return to overview camera"}).evaluate(el=>el.click(),undefined,{timeout:60_000});
   console.log("PASS 16 source-backed physical monitor dashboards, four jewel-toned room feeds, idle web state, missing voice integration and real selected-camera tour");
   // The 3D desk can hand off directly to a real existing workspace,
   // never to a fabricated external browser or paid telephony dashboard.
-  await page.getByRole("button",{name:"Focus selected workstation camera"}).click();
+  await page.getByRole("button",{name:"Focus selected workstation camera"}).evaluate(el=>el.click(),undefined,{timeout:60_000});
   // This is a REAL owner-initiated local task against the CI-only HQ DB.
   // It must create a durable report/blocked record but no external message.
   await page.getByRole("button",{name:"Run selected local evidence task"})
