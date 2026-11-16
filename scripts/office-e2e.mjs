@@ -199,7 +199,8 @@ try {
   assert.equal(await page.locator(".office-canvas canvas").count(),0,
     "lightweight 2D direct entry must not mount any WebGL scene");
   console.log("PASS private standalone /2d HQ route, accessible workstations with zero WebGL canvases");
-  assert.ok((await page.locator(".system-label").innerText()).includes("HQ SNAPSHOT LIVE"));
+  await page.getByText("HQ SNAPSHOT LIVE",{exact:true}).waitFor({timeout:30000});
+  assert.equal(await page.locator(".system-label").getAttribute("data-source-health"),"online");
   await page.route("**/api/dashboard",route=>route.abort());
   await page.getByRole("button",{name:"Refresh data"}).click();
   await page.getByText("SOURCE NOT VERIFIED",{exact:true}).waitFor({timeout:20000});
