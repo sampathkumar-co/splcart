@@ -167,11 +167,22 @@ try {
   // The 3D desk can hand off directly to a real existing workspace,
   // never to a fabricated external browser or paid telephony dashboard.
   await page.getByRole("button",{name:"Focus selected workstation camera"}).click();
+  // This is a REAL owner-initiated local task against the CI-only HQ DB.
+  // It must create a durable report/blocked record but no external message.
+  await page.getByRole("button",{name:"Run selected local evidence task"})
+    .evaluate(el=>el.click(),undefined,{timeout:60_000});
+  await page.locator(".office-ledger-list li").first().waitFor({timeout:60_000});
+  const persistedTask=await page.getByRole("region",{name:"Real workstation task history"}).innerText();
+  assert.ok(persistedTask.includes("RECORDED WORK LOG")&&
+    !persistedTask.includes("NO SAVED ENTRIES"),
+    "owner action must create a real persisted desk worklog, not a temporary animation");
+  assert.equal(await page.locator(".station-chip .status-running").count(),0,
+    "a completed or blocked local evidence check cannot imply ongoing independent agency");
   await page.getByRole("button",{name:"Open Source Research workspace"}).click();
   await page.getByRole("heading",{name:"Intelligence Discovery",exact:true}).waitFor({timeout:40000});
   assert.equal(await page.locator(".office-canvas canvas").count(),0,
     "navigating to work must release the 3D office, preserving browser resources");
-  console.log("PASS selected real 3D evidence desk opens actual research workflow and releases WebGL");
+  console.log("PASS selected 3D desk ran a genuine local evidence check, rendered its persisted task timeline, then opened actual source research and released WebGL");
 
   // Explicit owner-only lightweight 2D entry: ordinary business workflows
   // must not compete with a previous heavy software-WebGL frame capture.

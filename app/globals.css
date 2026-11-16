@@ -341,3 +341,11 @@
 .office-ledger-open:hover,.office-ledger-open:focus-visible{border-color:#f0d39a;background:#655136}
 @media(max-width:700px){.office-desk-context{max-height:64vh;width:min(290px,calc(100vw - 28px))}
  .office-evidence-ledger{gap:6px;padding-top:8px}.office-ledger-list li{padding:7px}}
+
+/* On-demand operations are an actual, auditable owner-triggered API action,
+   not a fake click animation or unconfigured external agent. */
+.office-ledger-run{width:100%;border:1px solid #71b79e;border-radius:4px;
+ background:linear-gradient(115deg,#1c5148,#26332f);color:#e7fff1;
+ padding:11px 12px;font:800 10px Manrope,Arial,sans-serif;letter-spacing:.03em}
+.office-ledger-run:hover,.office-ledger-run:focus-visible{border-color:#c8f1d7;background:#286353}
+.office-ledger-run:disabled{opacity:.55;cursor:wait}

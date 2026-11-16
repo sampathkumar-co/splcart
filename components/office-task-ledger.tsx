@@ -17,9 +17,11 @@ function timestamp(value:string){
   time.toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",
     timeZone:"Asia/Kolkata"})+" IST":"Time unavailable";
 }
-export function OfficeTaskLedger({roleId,status,tasks,onOpenWorkspace}:{
+export function OfficeTaskLedger({roleId,status,tasks,onOpenWorkspace,onRunRole,busy=false}:{
  roleId:string;status:AgentStatus;tasks:readonly ScreenTask[];
  onOpenWorkspace?:(workspace:HeadquartersWorkspace)=>void;
+ onRunRole?:(roleId:string)=>void;
+ busy?:boolean;
 }){
  const items=useMemo(()=>latestWorkstationActivity(roleId,tasks,status,3),
   [roleId,tasks,status]);
@@ -47,6 +49,11 @@ export function OfficeTaskLedger({roleId,status,tasks,onOpenWorkspace}:{
       </a>}
     </li>)}
    </ol>}
+  {status==="ON_DEMAND"&&onRunRole&&<button type="button" className="office-ledger-run"
+    aria-label="Run selected local evidence task" disabled={busy}
+    onClick={()=>onRunRole(roleId)}>
+    {busy?"Evaluating saved HQ evidence…":"Run local evidence check"}
+   </button>}
   {workspace&&onOpenWorkspace&&<button type="button" className="office-ledger-open"
     aria-label={"Open "+WORKSPACE_NAMES[workspace]+" workspace"}
     onClick={()=>onOpenWorkspace(workspace)}>
