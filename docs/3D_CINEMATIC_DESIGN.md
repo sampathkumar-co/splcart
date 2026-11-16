@@ -103,6 +103,25 @@ All task records in automated acceptance are synthetic **CI-only fixtures**,
 not evidence of customer conversions or independent autonomous browsing.
 This feature does not establish production hosting or owner GPU FPS.
 
+
+### Verified data source connectivity
+
+The 15-second authenticated `/api/dashboard` refresh is the *only*
+real-work telemetry source. A successful refresh sets **HQ SNAPSHOT LIVE**;
+any failed refresh immediately replaces this with **SOURCE NOT VERIFIED**
+and an explicit 3D warning that previously captured counts/states may be
+outdated. Local role-check buttons, all-role readiness controls and daily
+briefing toggles are paused while source health is unverified.
+Restored authenticated source data re-enables controls without dropping
+previously saved records. An absent connection never silently leaves a
+frozen `RUNNING` badge presented as reliable real-time activity.
+
+The browser QA deliberately aborts the dashboard endpoint in authenticated
+2D mode, checks the offline notice and disabled controls, restores access,
+then asserts a successful authenticated refresh re-enables work. This
+test does not make any claim about continuous production uptime or real
+WebSocket streaming. The UI is source-polled, not a telemetry socket.
+
 ## The Evidence-Lit Atelier: screen truth and jewel-tone atmosphere (2026-11-15)
 
 **The office monitors are no longer status stickers.** The owner authenticated

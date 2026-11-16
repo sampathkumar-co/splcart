@@ -170,3 +170,10 @@ roles can initiate their existing **local evidence check directly from
 the 3D desk**; its real recorded result appears in the task history.
 Unconfigured phone and Instagram roles cannot run. See
 [3D design and verification](docs/3D_CINEMATIC_DESIGN.md).
+
+
+**Source health:** stale network data never silently looks live. A failed
+Headquarters source refresh shows **SOURCE NOT VERIFIED**, disables local
+agent controls, and indicates that prior on-screen statuses may be old.
+Successful signed HQ refresh restores controls; no external account
+permissions are bypassed.
