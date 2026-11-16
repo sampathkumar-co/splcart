@@ -132,11 +132,21 @@ try {
   const deskStatus=await page.locator(".office-desk-context").innerText();
   assert.ok(deskStatus.includes("Google & Web Discovery")&&deskStatus.includes("ON DEMAND"),
     "focused workstation must show the authenticated actual role/status");
-  const emptyLedger=await page.getByRole("region",{name:"Real workstation task history"}).innerText();
-  assert.ok(emptyLedger.includes("NO SAVED ENTRIES")&&emptyLedger.includes("No task recorded"),
-    "empty CI HQ must show no made-up task history on the selected physical desk");
-  assert.equal(await page.locator(".office-evidence-ledger a").count(),0,
-    "empty task ledger cannot show invented evidence links");
+  const sourceCount=await page.evaluate(async()=>{
+    const response=await fetch("/api/dashboard",{cache:"no-store"});
+    const snapshot=await response.json();
+    return snapshot.runs?.length||0;
+  });
+  const initialLedger=await page.getByRole("region",{name:"Real workstation task history"}).innerText();
+  if(sourceCount>0){
+    assert.ok(initialLedger.includes("BROWSER INSPECTION"),
+      "recorded browser evidence must appear on the actual Web Discovery desk, even without role tasks");
+    assert.ok(await page.locator(".office-ledger-list li").count()>0,
+      "saved inspections must be shown as real timeline entries");
+  }else{
+    assert.ok(initialLedger.includes("NO SAVED ENTRIES")&&initialLedger.includes("No work record"),
+      "genuinely absent browser/task records must stay visibly empty");
+  }
   const trueDisplay=await page.locator(".office-desk-activity").innerText();
   assert.ok(trueDisplay.includes("PERMITTED WEB RESEARCH")&&
     trueDisplay.includes("NO CONFIRMED ACTIVE BROWSER")&&
@@ -174,6 +184,7 @@ try {
   await page.locator(".office-ledger-list li").first().waitFor({timeout:60_000});
   const persistedTask=await page.getByRole("region",{name:"Real workstation task history"}).innerText();
   assert.ok(persistedTask.includes("RECORDED WORK LOG")&&
+    persistedTask.includes("LOCAL HQ CHECK")&&
     !persistedTask.includes("NO SAVED ENTRIES"),
     "owner action must create a real persisted desk worklog, not a temporary animation");
   assert.equal(await page.locator(".station-chip .status-running").count(),0,
