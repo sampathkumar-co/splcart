@@ -1,0 +1,45 @@
+import { z } from "zod";
+
+export const publicUrl = z.url().max(1000).refine(v => {
+  try { const u = new URL(v); return u.protocol === "https:" && !u.username && !u.password && !u.port &&
+    !["localhost", "127.0.0.1", "0.0.0.0", "::1"].includes(u.hostname) && !u.hostname.endsWith(".local"); }
+  catch { return false; }
+}, "A public HTTPS URL is required");
+const text = (max: number) => z.string().trim().min(2).max(max);
+const id = z.uuid();
+export const actionInput = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("set_research_pause"), paused: z.boolean(), reason: z.string().trim().min(3).max(300) }).strict(),
+  z.object({ action: z.literal("add_prospect"), name: text(140), city: text(80), category: text(80), businessSourceUrl: publicUrl, evidenceSummary: text(1500), researchRunId: id.optional() }),
+  z.object({ action: z.literal("add_product"), splcartProductId: text(100), title: text(150), category: text(80), material: text(80), unitDescription: text(100), priceRupees: z.coerce.number().positive().max(1000000), productUrl: publicUrl }),
+  z.object({ action: z.literal("add_match"), prospectId: id, productId: id,
+    competitorMaterial: text(80).optional(), competitorUnitDescription: text(100).optional(),
+    competitorPriceRupees: z.coerce.number().positive().max(1000000).optional(),
+    competitorEvidenceUrl: publicUrl.optional(),
+    equivalentMaterials: z.boolean().default(false), equivalentUnits: z.boolean().default(false),
+  }).superRefine((m,ctx) => {
+    if (m.competitorPriceRupees !== undefined && !m.competitorEvidenceUrl)
+      ctx.addIssue({code:"custom",path:["competitorEvidenceUrl"],message:"Price comparisons require an independent source URL"});
+  }),
+  z.object({ action: z.literal("verify_business"), prospectId: id, researchRunId: id, evidenceText: z.string().trim().min(16).max(400) }).strict(),
+  z.object({ action: z.literal("record_wholesale_intent"), prospectId: id, evidenceUrl: publicUrl, note: text(600) }).strict(),
+  z.object({ action: z.literal("record_permission"), prospectId: id, consentEvidenceUrl: publicUrl, consentNote: text(600) }),
+  z.object({ action: z.literal("review"), prospectId: id, decision: z.enum(["APPROVED", "REJECTED"]), note: text(600) }),
+  z.object({ action: z.literal("advance"), prospectId: id, to: z.enum(["RESEARCHED","QUALIFIED","APPROVED","CONTACTED","INTERESTED","QUOTATION","NEGOTIATION","LOST","FOLLOW_UP"]), note: text(600), evidenceUrl: publicUrl.optional() }),
+  z.object({ action: z.literal("create_quote"), prospectId: id, productId: id,
+    quantity: z.coerce.number().int().min(1).max(5000),
+    unitPriceRupees: z.coerce.number().positive().max(1000000),
+    deliveryRupees: z.coerce.number().min(0).max(200000),
+    note: z.string().trim().max(600).default("") }).strict(),
+  z.object({ action: z.literal("approve_quote"), quoteId: id,
+    priceConfirmed: z.literal(true), availabilityConfirmed: z.literal(true) }).strict(),
+  z.object({ action: z.literal("void_quote"), quoteId: id }).strict(),
+  z.object({ action: z.literal("record_order"), prospectId: id, orderReference: text(120), amountRupees: z.coerce.number().positive().max(100000000), evidenceUrl: publicUrl }),
+]);
+export const researchInput = z.object({ url: publicUrl, extraUrls: z.array(publicUrl).max(2).optional() }).strict();
+export function apiError(error: unknown) {
+  if (error instanceof z.ZodError) return Response.json({ error: "Invalid input", details: error.issues.map(i => i.message) }, { status: 400 });
+  if (error instanceof Error && /^(INVALID_|NOT_|REQUIRES_|ALREADY_|HTTPS_|PRIVATE_|PAGE_|RESEARCH_|NOT_ALLOWED|CHROMIUM_)/.test(error.message))
+    return Response.json({ error: error.message }, { status: 400 });
+  console.error("HQ request failure:", error instanceof Error ? error.message : "unknown");
+  return Response.json({ error: "Action failed. Check database, browser installation, and server logs." }, { status: 500 });
+}

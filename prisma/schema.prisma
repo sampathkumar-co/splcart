@@ -1,0 +1,354 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Stage {
+  DISCOVERED
+  RESEARCHED
+  QUALIFIED
+  APPROVED
+  CONTACTED
+  INTERESTED
+  QUOTATION
+  NEGOTIATION
+  WON_REPORTED
+  WON_VERIFIED
+  LOST
+  FOLLOW_UP
+}
+
+enum Decision {
+  PENDING
+  APPROVED
+  REJECTED
+}
+enum QuoteStatus {
+  DRAFT
+  APPROVED
+  VOID
+}
+enum RunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  BLOCKED
+}
+
+model Prospect {
+  id                  String   @id @default(uuid())
+  name                String
+  city                String
+  category            String
+  businessSourceUrl   String
+  businessWebsiteUrl  String?
+  businessHost        String?  @unique // canonical host for future rows; nullable for existing records pending backfill
+  evidenceSummary     String
+  verifiedBusinessAt  DateTime?
+  verificationEvidenceText String?
+  verificationEvidenceUrl String?
+  wholesaleIntentNote String?
+  wholesaleIntentEvidenceUrl String?
+  contactConsentUrl   String?
+  consentGrantedAt    DateTime?
+  independentSource   Boolean  @default(false)
+  stage               Stage    @default(RESEARCHED)
+  decision            Decision @default(PENDING)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  matches             ProductMatch[]
+  activities          Activity[]
+  conversion          Conversion?
+  quotes              Quote[]
+  @@unique([businessSourceUrl, name])
+  @@index([stage, updatedAt])
+}
+
+model Product {
+  id                  String   @id @default(uuid())
+  splcartProductId    String   @unique // legacy column name; now independent HQ owner reference SKU, no store connection
+  title               String
+  category            String
+  material            String
+  productUrl          String
+  pricePaise          Int
+  unitDescription     String
+  deliveredPricePaise Int?
+  ownerVerifiedAt     DateTime
+  verificationSource  String   @default("OWNER_ATTESTED")
+  createdAt           DateTime @default(now())
+  matches             ProductMatch[]
+  quotes              Quote[]
+  creativeAssets      CreativeAsset[]
+  reelJobs            ReelJob[]
+}
+
+model ProductMatch {
+  id                           String   @id @default(uuid())
+  prospectId                   String
+  productId                    String
+  equivalentMaterials          Boolean  @default(false)
+  equivalentUnits              Boolean  @default(false)
+  competitorPricePaise         Int?
+  competitorDeliveredPricePaise Int?
+  competitorMaterial           String?
+  competitorUnitDescription    String?
+  competitorEvidenceUrl        String?
+  competitorPriceCheckedAt     DateTime?
+  createdAt                    DateTime @default(now())
+  prospect                     Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  product                      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@unique([prospectId, productId])
+}
+
+model Activity {
+  id         String   @id @default(uuid())
+  prospectId String
+  event      String
+  note       String
+  actor      String   @default("OWNER")
+  evidenceUrl String?
+  createdAt  DateTime @default(now())
+  prospect   Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  @@index([prospectId, createdAt])
+}
+
+model Conversion {
+  id               String   @id @default(uuid())
+  prospectId       String   @unique
+  orderReference   String
+  grossAmountPaise Int
+  evidenceUrl      String
+  verifiedAt       DateTime?
+  verificationNote String?
+  reportedAt       DateTime @default(now())
+  prospect         Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+}
+
+model ResearchRun {
+  id          String    @id @default(uuid())
+  provider    String    @default("PLAYWRIGHT")
+  sourceUrl   String
+  finalUrl    String?
+  pageTitle   String?
+  excerpt     String?
+  evidenceJson Json?
+  status      RunStatus @default(RUNNING)
+  errorCode   String?
+  startedAt   DateTime  @default(now())
+  finishedAt  DateTime?
+  @@index([startedAt])
+}
+
+/**
+ * Standalone HQ quote snapshots. No SPLCART write or order integration.
+ * An approved quote is owner's attestation, not proof of stock or payment.
+ */
+model Quote {
+  id                        String      @id @default(uuid())
+  prospectId                String
+  productId                 String
+  quantity                  Int
+  unitPricePaise            Int
+  deliveryPaise             Int         @default(0)
+  productTitleSnapshot      String
+  productUrlSnapshot        String
+  productSourceSnapshot     String
+  note                      String      @default("")
+  status                    QuoteStatus @default(DRAFT)
+  approvedAt                DateTime?
+  validUntil                DateTime?
+  createdAt                 DateTime    @default(now())
+  prospect                  Prospect    @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  product                   Product     @relation(fields: [productId], references: [id], onDelete: Restrict)
+  @@index([prospectId, createdAt])
+}
+
+/** Postgres-backed counters shared across independent HQ server workers. */
+model RateLimitBucket {
+  key       String   @id
+  count     Int      @default(0)
+  windowEnd DateTime
+}
+
+/** Owner pause blocks NEW browser research, not a cancellation of active tabs. */
+model SystemControl {
+  id             String   @id
+  researchPaused Boolean  @default(false)
+  reason         String   @default("")
+  updatedAt      DateTime @updatedAt
+}
+
+/** Append-only high-level operational control audit, separate from prospect history. */
+model SystemAudit {
+  id        String   @id @default(uuid())
+  event     String
+  reason    String
+  actor     String   @default("OWNER")
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
+
+/** Product photos uploaded by the HQ owner. Never scraped from SPLCART. */
+model CreativeAsset {
+  id           String   @id @default(uuid())
+  productId    String
+  mime         String
+  filename     String   @unique
+  byteSize     Int
+  width        Int
+  height       Int
+  createdAt    DateTime @default(now())
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  reels        ReelJob[]
+  @@index([productId, createdAt])
+}
+
+enum ReelStatus {
+  QUEUED
+  RENDERING
+  RENDERED
+  APPROVED
+  FAILED
+  VOID
+}
+
+model ReelJob {
+  id              String     @id @default(uuid())
+  productId       String
+  assetId         String
+  titleSnapshot   String
+  materialSnapshot String
+  linkSnapshot    String
+  durationSeconds Int        @default(20)
+  scheduleDate    String?    // Asia/Kolkata YYYY-MM-DD; null for manually queued Reels
+  status          ReelStatus @default(QUEUED)
+  outputFilename  String?    @unique
+  errorCode       String?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  approvedAt      DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  product         Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+  asset           CreativeAsset @relation(fields: [assetId], references: [id], onDelete: Restrict)
+  @@index([status, createdAt])
+  @@index([productId, createdAt])
+  publications SocialPublication[]
+  @@unique([assetId, scheduleDate])
+}
+
+/** Explicit owner opt-in for 08:30 India-local, DB-only evidence reports. */
+/**
+ * Owner-reported customer-initiated enquiry, manually transcribed into HQ.
+ * NO connected inbox, external login, telephone/email, automated send or implied consent.
+ */
+enum InquiryChannel {
+  WHATSAPP
+  INSTAGRAM
+  WEBSITE
+  OTHER
+}
+
+enum InquiryStatus {
+  OPEN
+  REPLIED_REPORTED
+  CLOSED
+}
+
+model CustomerInquiry {
+  id              String        @id @default(uuid())
+  channel         InquiryChannel
+  customerAlias   String
+  category        String
+  message         String
+  status          InquiryStatus @default(OPEN)
+  sourceLabel     String        @default("OWNER_RECORDED")
+  receivedAt      DateTime      @default(now())
+  replyText       String?
+  repliedAt       DateTime?
+  closeNote       String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  @@index([status, createdAt])
+}
+
+model AgentSchedule {
+  id          String @id
+  enabled     Boolean @default(false)
+  lastRunDate String?
+  updatedAt   DateTime @updatedAt
+}
+
+/** Opt-in unattended LOCAL rendering only. Publishing is always owner-controlled. */
+model CreativeSchedule {
+  id            String   @id
+  enabled       Boolean  @default(false)
+  dailyTarget   Int      @default(2)
+  updatedAt     DateTime @updatedAt
+}
+
+/**
+ * Durable and auditable local agent actions. Not every desk has a real tool;
+ * unsupported roles complete as BLOCKED with an explicit reason.
+ */
+enum AgentTaskStatus {
+  RUNNING
+  COMPLETED
+  BLOCKED
+  FAILED
+}
+model AgentTask {
+  id            String          @id @default(uuid())
+  roleId        String
+  action        String
+  status        AgentTaskStatus @default(RUNNING)
+  resultJson    Json?
+  errorCode     String?
+  sourceUrls    Json?
+  modelCostPaise Int            @default(0)
+  createdAt     DateTime        @default(now())
+  finishedAt    DateTime?
+  @@index([roleId, createdAt])
+  @@index([status, createdAt])
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+  YOUTUBE
+}
+
+/**
+ * Owner-recorded external publication only. No platform API or login access,
+ * and no automatic proof of publication/engagement.
+ */
+model SocialPublication {
+  id          String         @id @default(uuid())
+  reelJobId   String
+  platform    SocialPlatform
+  postUrl     String         @unique
+  recordedAt  DateTime       @default(now())
+  sourceLabel String         @default("OWNER_REPORTED")
+  reel        ReelJob        @relation(fields: [reelJobId], references: [id], onDelete: Restrict)
+  metrics     SocialMetric[]
+  @@unique([reelJobId,platform])
+  @@index([platform,recordedAt])
+}
+
+model SocialMetric {
+  id            String            @id @default(uuid())
+  publicationId String
+  views         Int?
+  likes         Int?
+  enquiries     Int?
+  evidenceUrl   String
+  sourceLabel   String            @default("OWNER_REPORTED")
+  observedAt    DateTime          @default(now())
+  recordedAt    DateTime          @default(now())
+  publication   SocialPublication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  @@index([publicationId,observedAt])
+}

@@ -1,0 +1,123 @@
+# Independent Prasanth Jewellers AI HQ only. NEVER connect or merge with SPLCART.
+services:
+  hq-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hq
+      POSTGRES_DB: hq
+      POSTGRES_PASSWORD: ${HQ_DB_PASSWORD:?Set a dedicated HQ_DB_PASSWORD}
+    volumes:
+      - hq_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hq -d hq"]
+      interval: 10s
+      timeout: 4s
+      retries: 8
+    networks: [hq_db_only]
+    security_opt: ["no-new-privileges:true"]
+
+  hq-web:
+    build:
+      context: .
+      target: hq-web
+    restart: unless-stopped
+    depends_on:
+      hq-db:
+        condition: service_healthy
+      hq-browser:
+        condition: service_started
+      hq-creative:
+        condition: service_started
+      hq-agents:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://hq:${HQ_DB_PASSWORD:?}@hq-db:5432/hq?schema=public"
+      OWNER_USERNAME: ${OWNER_USERNAME:?}
+      OWNER_PASSWORD: ${OWNER_PASSWORD:?}
+      HQ_SESSION_SECRET: ${HQ_SESSION_SECRET:?}
+      HQ_PUBLIC_ORIGIN: ${HQ_PUBLIC_ORIGIN:?}
+      HQ_BROWSER_WORKER_URL: http://hq-browser:3900
+      HQ_BROWSER_WORKER_TOKEN: ${HQ_BROWSER_WORKER_TOKEN:?}
+      HQ_BROWSER_EGRESS_VERIFIED: ${HQ_BROWSER_EGRESS_VERIFIED:-0}
+      HQ_MEDIA_DIR: /app/data/hq-media
+    volumes:
+      - hq_media_data:/app/data
+    ports:
+      - "127.0.0.1:3400:3000"
+    networks: [hq_db_only, hq_browser_only]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    pids_limit: 128
+    tmpfs: [/tmp]
+
+  hq-creative:
+    build:
+      context: .
+      target: hq-creative
+    restart: unless-stopped
+    depends_on:
+      hq-db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://hq:${HQ_DB_PASSWORD:?}@hq-db:5432/hq?schema=public"
+      HQ_MEDIA_DIR: /app/data/hq-media
+      HQ_FFMPEG_BINARY: ffmpeg
+    volumes:
+      - hq_media_data:/app/data
+    # No external network, no public ports, no AI API keys or browser.
+    networks: [hq_db_only]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    pids_limit: 120
+    mem_limit: 2g
+    tmpfs: [/tmp]
+
+  hq-agents:
+    build:
+      context: .
+      target: hq-agents
+    restart: unless-stopped
+    depends_on:
+      hq-db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://hq:${HQ_DB_PASSWORD:?}@hq-db:5432/hq?schema=public"
+    networks: [hq_db_only]
+    # NO external network, social/voice keys or public port.
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    pids_limit: 96
+    mem_limit: 512m
+    tmpfs: [/tmp]
+
+  hq-browser:
+    build:
+      context: .
+      target: hq-browser
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HQ_BROWSER_WORKER_PROCESS: "1"
+      HQ_BROWSER_EGRESS_VERIFIED: ${HQ_BROWSER_EGRESS_VERIFIED:-0}
+      HQ_BROWSER_WORKER_TOKEN: ${HQ_BROWSER_WORKER_TOKEN:?}
+      HQ_ALLOWED_RESEARCH_HOSTS: ${HQ_ALLOWED_RESEARCH_HOSTS:-}
+    # Deliberately no DATABASE_URL, OWNER_PASSWORD, store keys or public ports.
+    networks: [hq_browser_only]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    pids_limit: 160
+    mem_limit: 1g
+    shm_size: 256mb
+    tmpfs: [/tmp]
+
+networks:
+  hq_db_only:
+    internal: true
+  hq_browser_only: {}
+volumes:
+  hq_postgres_data: {}
+  hq_media_data: {}

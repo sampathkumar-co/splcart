@@ -1,0 +1,139 @@
+name: Headquarters quality gate
+on:
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'prisma/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'proxy.ts'
+      - '.github/workflows/hq-ci.yml'
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: hq
+          POSTGRES_PASSWORD: hq
+          POSTGRES_DB: hq
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hq -d hq"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://hq:hq@localhost:5432/hq?schema=public
+      OWNER_USERNAME: ci-owner
+      OWNER_PASSWORD: ci-not-a-real-secret
+      HQ_SESSION_SECRET: ci-only-secret-that-is-long-enough-for-hmac-and-not-for-any-deployment
+      HQ_TEST_MODE: "1"
+      HQ_PUBLIC_ORIGIN: http://127.0.0.1:3000
+      HQ_MEDIA_DIR: /tmp/hq-ci-media
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: TypeScript typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Verify standalone Docker Compose is structurally valid
+        env:
+          HQ_DB_PASSWORD: ci-only-hq-database
+          OWNER_USERNAME: ci-owner
+          OWNER_PASSWORD: ci-not-a-real-secret
+          HQ_SESSION_SECRET: ci-only-secret-that-is-long-enough-for-hmac-and-not-for-any-deployment
+          HQ_BROWSER_WORKER_TOKEN: ci-only-browser-worker-token-for-an-ephemeral-ci-container
+          HQ_PUBLIC_ORIGIN: https://hq.example.org
+        run: docker compose -f compose.hq.yml config --quiet
+      - name: Generate reviewed independent HQ migration baseline
+        run: |
+          mkdir -p artifacts
+          npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > artifacts/hq-initial-schema.sql
+          test -s artifacts/hq-initial-schema.sql
+      - name: Archive HQ migration baseline for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: hq-schema-baseline
+          path: artifacts/hq-initial-schema.sql
+      - name: Apply committed HQ migrations to isolated test database
+        run: npx prisma migrate deploy
+      - name: Verify migration history
+        run: npx prisma migrate status
+      - name: Production build
+        run: npm run build
+      - name: Exercise real APIs and PostgreSQL transactions
+        run: |
+          npm run start >/tmp/hq-next.log 2>&1 &
+          for attempt in $(seq 1 40); do
+            if curl -sSf http://127.0.0.1:3000/api/health >/dev/null; then break; fi
+            sleep 2
+          done
+          node scripts/smoke.mjs || (cat /tmp/hq-next.log && exit 1)
+
+      - name: Verify independent HQ backup and restore against disposable PostgreSQL
+        run: bash scripts/ci-backup-restore.sh
+      - name: Install local FFmpeg and open-licensed system font for original Reels
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - name: Render and verify genuine 20-second HQ-only video, approval and MP4
+        run: node scripts/creative-smoke.mjs
+      - name: Install free offline age encryption CLI for independent HQ backup test
+        run: sudo apt-get install -y age
+      - name: Verify real encrypted isolated HQ DB + photo + MP4 restore
+        run: bash scripts/ci-combined-recovery.sh
+      - name: Archive CI-only synthetic-source Reel MP4
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hq-ci-only-synthetic-creative-test
+          path: artifacts/hq-ci-creative-20s.mp4
+          if-no-files-found: ignore
+      - name: Install Chromium and Linux dependencies for visual acceptance
+        run: npx playwright install --with-deps chromium
+      - name: Verify real browser UI and save desktop/mobile screenshots
+        run: node scripts/office-e2e.mjs
+      - name: Prove opt-in daily original Reel scheduling is idempotent and owner-reversible
+        run: node scripts/creative-schedule-smoke.mjs
+      - name: Genuine public HTTPS two-tab Playwright research smoke
+        run: node scripts/real-browser-smoke.mjs
+      - name: Verify owner-only social post evidence and manual metrics without platform API keys
+        run: node scripts/social-reporting-smoke.mjs
+      - name: Verify source-grounded local roles and owner-opted-in daily briefing with one authenticated session
+        run: node scripts/agent-task-smoke.mjs
+      - name: Test separate Chromium worker over authenticated internal HTTP
+        run: |
+          env -u DATABASE_URL -u OWNER_PASSWORD \
+            HQ_BROWSER_WORKER_PROCESS=1 \
+            HQ_BROWSER_EGRESS_VERIFIED=1 \
+            HQ_ALLOWED_RESEARCH_HOSTS=example.com \
+            HQ_BROWSER_WORKER_TOKEN=ci-only-browser-worker-token-for-an-ephemeral-ci-container \
+            npm run browser:worker >/tmp/hq-browser-worker.log 2>&1 &
+          WORKER_PID=$!
+          trap 'kill $WORKER_PID || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -sSf http://127.0.0.1:3900/healthz >/dev/null; then break; fi
+            sleep 2
+          done
+          node scripts/worker-smoke.mjs || (cat /tmp/hq-browser-worker.log && exit 1)
+      - name: Archive visual QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hq-office-visual-qa
+          path: artifacts/hq-*.png
+          if-no-files-found: ignore
