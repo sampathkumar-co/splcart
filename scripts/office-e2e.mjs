@@ -206,10 +206,16 @@ try {
   await page.getByText("SOURCE NOT VERIFIED",{exact:true}).waitFor({timeout:20000});
   assert.equal(await page.locator(".system-label").getAttribute("data-source-health"),"offline",
     "a dashboard refresh failure must not continue claiming current live task statuses");
+  assert.equal(await page.getByRole("button",{name:"Assess all 16 roles"}).isDisabled(),true,
+    "source failure must pause manual agent readiness assessments");
+  assert.equal(await page.getByRole("button",{name:"Enable daily briefing"}).isDisabled(),true,
+    "source failure must not permit schedule changes against an unverified snapshot");
   await page.unroute("**/api/dashboard");
   await page.getByRole("button",{name:"Refresh data"}).click();
   await page.getByText("HQ SNAPSHOT LIVE",{exact:true}).waitFor({timeout:20000});
-  console.log("PASS real HQ feed failure degrades to not-verified status and recovers on successful source refresh");
+  assert.equal(await page.getByRole("button",{name:"Enable daily briefing"}).isDisabled(),false,
+    "normal owner controls must return only after a successful HQ source refresh");
+  console.log("PASS real HQ feed failure degrades to not-verified status, pauses agent actions, and recovers on successful source refresh");
   // Owner controls real daily internal evidence, not unauthorized social/voice automation.
   const dailyOn=page.getByRole("button",{name:"Enable daily briefing"});
   await dailyOn.click();
