@@ -8,7 +8,15 @@ import type {ScreenTask} from "./workstation-display";
 export type HeadquartersWorkspace="overview"|"leads"|"research"|"products"|"creative"|"inbox";
 export type ActivityEntry={
  id:string;createdAt:string;state:string;summary:string;sourceUrl:string|null;
- sourceLabel:string|null;
+ sourceLabel:string|null;kind:"LOCAL_HQ_CHECK"|"BROWSER_INSPECTION"|"LOCAL_REEL_JOB";
+};
+export type WorkstationResearchRun={
+ id:string;status:string;startedAt:string;sourceUrl:string;pageTitle:string|null;
+ errorCode:string|null;
+};
+export type WorkstationReelJob={
+ id:string;status:string;createdAt:string;startedAt:string|null;
+ titleSnapshot:string;errorCode:string|null;
 };
 
 /** Every actual role opens an existing owner-owned work area; none triggers work. */
@@ -68,20 +76,18 @@ export function latestWorkstationActivity(
  tasks:readonly ScreenTask[],
  roleStatus:AgentStatus,
  limit=3,
+ researchRuns:readonly WorkstationResearchRun[]=[],
+ reelJobs:readonly WorkstationReelJob[]=[],
 ):ActivityEntry[] {
  if(!workstationWorkspace(roleId))return [];
- return tasks.filter(t=>t.roleId===roleId)
-  .slice().sort((a,b)=>{
-   const ta=Date.parse(a.createdAt),tb=Date.parse(b.createdAt);
-   return (Number.isFinite(tb)?tb:0)-(Number.isFinite(ta)?ta:0)||
-     b.id.localeCompare(a.id);
-  }).slice(0,Math.max(0,Math.min(5,Math.floor(limit)))).map(t=>{
+ const taskEntries:ActivityEntry[]=tasks.filter(t=>t.roleId===roleId).map(t=>{
    const first=(t.result?.items??[]).find(i=>permittedEvidenceUrl(i.sourceUrl));
    const fallback=(t.sourceUrls??[]).map(permittedEvidenceUrl).find((u):u is string=>!!u);
    const state=t.status==="RUNNING"&&roleStatus!=="RUNNING"?
      "RUNNING RECORD · NOT CONFIRMED LIVE":t.status.replaceAll("_"," ");
    return {
-    id:t.id,
+    id:"task:"+t.id,
+    kind:"LOCAL_HQ_CHECK" as const,
     createdAt:t.createdAt,
     state,
     summary:compact(t.result?.summary||t.errorCode||
@@ -91,4 +97,35 @@ export function latestWorkstationActivity(
       fallback?"Stored HQ source reference":null,
    };
   });
+ const browserEntries:ActivityEntry[]=roleId==="web-discovery"?
+  researchRuns.map(run=>({
+    id:"browser:"+run.id,kind:"BROWSER_INSPECTION" as const,
+    createdAt:run.startedAt,
+    state:run.status==="RUNNING"?
+      "RUNNING RECORD · VERIFY CURRENT":run.status.replaceAll("_"," "),
+    summary:compact(run.pageTitle||run.errorCode||
+      "Saved browser inspection of an independently supplied source"),
+    sourceUrl:permittedEvidenceUrl(run.sourceUrl),
+    sourceLabel:permittedEvidenceUrl(run.sourceUrl)?"Inspected official website":null,
+  })):[];
+ const reelEntries:ActivityEntry[]=roleId==="reel-generation"?
+  reelJobs.map(reel=>{
+    const fresh=reel.startedAt&&Number.isFinite(Date.parse(reel.startedAt))&&
+      Date.now()>=Date.parse(reel.startedAt)&&
+      Date.now()-Date.parse(reel.startedAt)<15*60_000;
+    const state=reel.status==="RENDERING"&&!(fresh&&roleStatus==="RUNNING")?
+      "RENDER RECORD · REVIEW":reel.status.replaceAll("_"," ");
+    return {
+      id:"reel:"+reel.id,kind:"LOCAL_REEL_JOB" as const,
+      createdAt:reel.createdAt,state,
+      summary:compact(reel.titleSnapshot||reel.errorCode||
+        "Local code-rendered HQ Reel job; see Creative Studio"),
+      sourceUrl:null,sourceLabel:null,
+    };
+  }):[];
+ return [...taskEntries,...browserEntries,...reelEntries].sort((a,b)=>{
+   const ta=Date.parse(a.createdAt),tb=Date.parse(b.createdAt);
+   return (Number.isFinite(tb)?tb:0)-(Number.isFinite(ta)?ta:0)||
+     b.id.localeCompare(a.id);
+  }).slice(0,Math.max(0,Math.min(5,Math.floor(limit))));
 }

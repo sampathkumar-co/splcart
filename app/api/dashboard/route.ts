@@ -16,7 +16,8 @@ export async function GET() {
       db.agentTask.findMany({ orderBy: { createdAt:"desc" }, take:60 }),
       db.agentSchedule.findUnique({where:{id:"hq-local-readiness"}}),
       // Status-only aggregates; no images, chat content, media blobs or platform credentials.
-      db.reelJob.findMany({select:{status:true,startedAt:true},orderBy:{createdAt:"desc"},take:100}),
+      db.reelJob.findMany({select:{id:true,status:true,startedAt:true,createdAt:true,
+        titleSnapshot:true,errorCode:true},orderBy:{createdAt:"desc"},take:100}),
       db.customerInquiry.count({where:{status:"OPEN"}}),
       db.socialPublication.count(),
     ]);
@@ -58,6 +59,11 @@ export async function GET() {
         enabled:agentSchedule?.enabled??false,lastRunDate:agentSchedule?.lastRunDate??null,
         localTime:"08:30",timeZone:"Asia/Kolkata",
       },
+      reelJobs:reelStatuses.slice(0,8).map(r=>({
+        id:r.id,status:r.status,createdAt:r.createdAt.toISOString(),
+        startedAt:r.startedAt?.toISOString()||null,
+        titleSnapshot:r.titleSnapshot,errorCode:r.errorCode,
+      })),
       workstationSignals:{
         reels:{
           queued:reelStatuses.filter(r=>r.status==="QUEUED").length,

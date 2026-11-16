@@ -35,6 +35,33 @@ describe("real 3D desk evidence explorer",()=>{
   expect(latestWorkstationActivity("wholesale-calling",t,"NOT_CONFIGURED")).toEqual([]);
   expect(latestWorkstationActivity("web-discovery",t,"ON_DEMAND",1)).toHaveLength(1);
  });
+ it("shows saved source-backed browser inspections at Web Discovery even with no agent task rows",()=>{
+  const browser=[{id:"source-1",status:"COMPLETED",startedAt:"2026-11-15T16:59:00Z",
+   sourceUrl:"https://example.org/retailer",pageTitle:"Approved retailer website",errorCode:null},
+   {id:"source-2",status:"BLOCKED",startedAt:"2026-11-15T15:00:00Z",
+   sourceUrl:"http://localhost/private",pageTitle:null,errorCode:"POLICY_BLOCKED"}];
+  const rows=latestWorkstationActivity("web-discovery",[],"ON_DEMAND",3,browser);
+  expect(rows).toHaveLength(2);
+  expect(rows[0].kind).toBe("BROWSER_INSPECTION");
+  expect(rows[0].summary).toBe("Approved retailer website");
+  expect(rows[0].sourceUrl).toBe("https://example.org/retailer");
+  expect(rows[1].sourceUrl).toBeNull();
+  expect(latestWorkstationActivity("customer-retention",[],"ON_DEMAND",3,browser)).toEqual([]);
+ });
+ it("shows actual persisted code-rendered Reel jobs, never a fabricated video",()=>{
+  const reels=[{id:"job-1",status:"APPROVED",createdAt:"2026-11-15T16:59:00Z",
+   startedAt:null,titleSnapshot:"Owner-uploaded CZ earrings reel",errorCode:null},
+   {id:"job-2",status:"RENDERING",createdAt:"2026-01-01T02:00:00Z",
+   startedAt:"2026-01-01T02:00:00Z",titleSnapshot:"Old unfinished render",errorCode:null}];
+  const rows=latestWorkstationActivity("reel-generation",[],"ON_DEMAND",3,[],reels);
+  expect(rows).toHaveLength(2);
+  expect(rows[0].kind).toBe("LOCAL_REEL_JOB");
+  expect(rows[0].state).toBe("APPROVED");
+  expect(rows[0].summary).toContain("CZ earrings");
+  expect(rows[0].sourceUrl).toBeNull();
+  expect(rows[1].state).toBe("RENDER RECORD · REVIEW");
+  expect(latestWorkstationActivity("social-publishing",[],"ON_DEMAND",3,[],reels)).toEqual([]);
+ });
  it("falls back to separately persisted audited source URL evidence if report items omit it",()=>{
   const task:ScreenTask={id:"evidence",roleId:"web-discovery",status:"COMPLETED",
    createdAt:"2026-11-15T16:50:00Z",errorCode:null,result:{summary:"Source reviewed"},
