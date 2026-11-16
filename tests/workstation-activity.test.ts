@@ -27,7 +27,7 @@ describe("real 3D desk evidence explorer",()=>{
  it("filters and orders only saved tasks for the chosen desk with original evidence sources",()=>{
   const activity=latestWorkstationActivity("web-discovery",t,"ON_DEMAND");
   expect(activity).toHaveLength(2);
-  expect(activity.map(x=>x.id)).toEqual(["3","1"]);
+  expect(activity.map(x=>x.id)).toEqual(["task:3","task:1"]);
   expect(activity[0].summary).toBe("Inspected a permitted retail website");
   expect(activity[0].sourceUrl).toBe("https://example.com/jewellery");
   expect(activity[0].sourceLabel).toBe("Official source");
