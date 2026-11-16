@@ -99,7 +99,7 @@ export function Headquarters({initialVisual=true}:{initialVisual?:boolean}){
        {visual?(!data?<div className="canvas-loading">Loading authenticated workstation evidence before opening 3D...</div>:<Suspense fallback={<div className="canvas-loading">Preparing 3D office...</div>}><Office selected={selected} onSelect={setSelected} agents={data.agents} tasks={data.agentTasks} signals={data.workstationSignals} selectedAgentId={selectedAgentId} onAgentSelect={setSelectedAgentId} onOpenWorkspace={setTab}
       onRunRole={runAgent} controlsBusy={busy} sourceOnline={sourceOnline}/></Suspense>):<div className="room-grid">{([ ["ceo","CEO OFFICE","Owner approvals and evidence"],["sales","SALES FLOOR","Permitted source research and leads"],["marketing","MARKETING STUDIO","Code-rendered Reels and review"],["meeting","MEETING ROOM","Strategy and reviews"]] as const).map(([room,title,desc])=><button key={room} onClick={()=>setSelected(room)} className={selected===room?"room-select selected":"room-select"}><Building2 size={25}/><strong>{title}</strong><span>{desc}</span></button>)}</div>}
        <div className="station-console" aria-label="All sixteen configured organizational roles">
-        <div className="station-console-head"><span>THE 16 AGENT WORKSTATIONS</span><div className="station-console-utilities"><small>Real source-backed outcomes only. Blocked roles are not operational.</small><button type="button" className="agent-run-button" disabled={busy||!data} onClick={runReadiness}>{busy?"Checking…":"Assess all 16 roles"}</button></div></div>
+        <div className="station-console-head"><span>THE 16 AGENT WORKSTATIONS</span><div className="station-console-utilities"><small>Real source-backed outcomes only. Blocked roles are not operational.</small><button type="button" className="agent-run-button" disabled={busy||!data||!sourceOnline} onClick={runReadiness}>{busy?"Checking…":"Assess all 16 roles"}</button></div></div>
         <div className="agent-daily-opt-in" role="group" aria-label="Daily local agent evidence report">
           <div><strong>Daily local evidence briefing</strong>
             <p>08:30 India time. All 16 role checks use saved HQ evidence; unsupported
@@ -110,7 +110,7 @@ export function Headquarters({initialVisual=true}:{initialVisual?:boolean}){
           </div>
           <button className="agent-run-button" type="button"
             aria-pressed={data?.agentSchedule.enabled??false}
-            disabled={busy||!data} onClick={toggleDailyAgentBriefing}>
+            disabled={busy||!data||!sourceOnline} onClick={toggleDailyAgentBriefing}>
             {data?.agentSchedule.enabled?"Disable daily briefing":"Enable daily briefing"}
           </button>
         </div>
