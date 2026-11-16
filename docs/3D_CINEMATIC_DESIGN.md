@@ -61,6 +61,16 @@ and compares the rendered pixels to the overview frame.
 
 ## 3D Workstation Evidence Explorer (2026-11-16)
 
+The Web Discovery desk also joins the latest 30 **actual `ResearchRun`** records,
+with source URLs/titles/error codes and an explicit inspection provenance tag,
+even if there is no separate local role task. The Reel Generation desk joins
+the latest 8 persisted `ReelJob` statuses, owner-submitted product titles,
+queue/render/approval state and stale render warnings. These entries are
+shown from source data, not AI-generated videos, fake browser sessions or
+automated Instagram/social accounts. All other desks use actual local
+`AgentTask` records only. A source provenance label distinguishes
+`LOCAL HQ CHECK`, `BROWSER INSPECTION`, and `LOCAL REEL JOB`.
+
 Clicking a real desk now opens a premium, compact **recorded work log** next to
 the 3D camera view. It is strictly derived from the *same* authenticated
 Headquarters task snapshot as the physical monitors. The owner sees up to three

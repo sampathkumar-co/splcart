@@ -162,6 +162,11 @@ authorized or claimed by the test suite.
 
 ### Evidence explorer inside each real 3D workstation
 
+The browser-research and Reel Generation desks additionally show their
+**actual saved website inspections and FFmpeg render jobs**, with source
+references or real render states. These are not required to have a
+separate local agent report before appearing in the 3D evidence explorer.
+
 The selected desk now shows its recent **persisted** HQ task outcomes,
 recorded India-local timestamps, safe source citations, and a direct
 link to the matching existing owner workspace. There are no fabricated
