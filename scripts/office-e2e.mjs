@@ -132,6 +132,11 @@ try {
   const deskStatus=await page.locator(".office-desk-context").innerText();
   assert.ok(deskStatus.includes("Google & Web Discovery")&&deskStatus.includes("ON DEMAND"),
     "focused workstation must show the authenticated actual role/status");
+  const emptyLedger=await page.getByRole("region",{name:"Real workstation task history"}).innerText();
+  assert.ok(emptyLedger.includes("NO SAVED ENTRIES")&&emptyLedger.includes("No task recorded"),
+    "empty CI HQ must show no made-up task history on the selected physical desk");
+  assert.equal(await page.locator(".office-evidence-ledger a").count(),0,
+    "empty task ledger cannot show invented evidence links");
   const trueDisplay=await page.locator(".office-desk-activity").innerText();
   assert.ok(trueDisplay.includes("PERMITTED WEB RESEARCH")&&
     trueDisplay.includes("NO CONFIRMED ACTIVE BROWSER")&&
@@ -159,6 +164,14 @@ try {
   await page.locator(".office-desk-context").waitFor({state:"hidden",timeout:60_000});
   await page.getByRole("button",{name:"Return to overview camera"}).click();
   console.log("PASS 16 source-backed physical monitor dashboards, four jewel-toned room feeds, idle web state, missing voice integration and real selected-camera tour");
+  // The 3D desk can hand off directly to a real existing workspace,
+  // never to a fabricated external browser or paid telephony dashboard.
+  await page.getByRole("button",{name:"Focus selected workstation camera"}).click();
+  await page.getByRole("button",{name:"Open Source Research workspace"}).click();
+  await page.getByRole("heading",{name:"Intelligence Discovery",exact:true}).waitFor({timeout:40000});
+  assert.equal(await page.locator(".office-canvas canvas").count(),0,
+    "navigating to work must release the 3D office, preserving browser resources");
+  console.log("PASS selected real 3D evidence desk opens actual research workflow and releases WebGL");
 
   // Explicit owner-only lightweight 2D entry: ordinary business workflows
   // must not compete with a previous heavy software-WebGL frame capture.

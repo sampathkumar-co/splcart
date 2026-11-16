@@ -18,6 +18,8 @@ import { OfficeCamera, type OfficeView } from "./office-camera";
 import {OFFICE_ROOMS,DESK_OFFSETS,getStationCameraPose,HQ_BUILDING_YAW,type RoomKey} from "@/lib/office-layout";
 import {PavilionArchitecture,StoneFloor,LuxuryRoomDetails} from "./office-luxury";
 import {WorkstationScreen,RoomStatusWall} from "./workstation-screen";
+import {OfficeTaskLedger} from "./office-task-ledger";
+import type {HeadquartersWorkspace} from "@/lib/workstation-activity";
 import {buildWorkstationScreen,ATELIER_PALETTE,type ScreenTask,type WorkstationSignals} from "@/lib/workstation-display";
 
 const gold = "#c7a772";
@@ -220,9 +222,10 @@ function Building({selected,selectedAgentId,agents,tasks,signals,onChooseAgent,o
    <directionalLight position={[4.5,10,3.5]} intensity={night?2.45:3.1} color={night?"#ffd5a0":"#ffebd2"} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
  </group>;
 }
-export function Office({selected,onSelect,agents=[],tasks=[],signals=null,selectedAgentId=null,onAgentSelect}:{
+export function Office({selected,onSelect,agents=[],tasks=[],signals=null,selectedAgentId=null,onAgentSelect,onOpenWorkspace}:{
  selected:RoomKey;onSelect:(room:RoomKey)=>void;agents?:AgentRecord[];tasks?:ScreenTask[];signals?:WorkstationSignals|null;
  selectedAgentId?:string|null;onAgentSelect?:(agentId:string)=>void;
+ onOpenWorkspace?:(workspace:HeadquartersWorkspace)=>void;
 }){
  const [view,setView]=useState<OfficeView>("overview");
  const [night,setNight]=useState(false);
@@ -298,6 +301,8 @@ export function Office({selected,onSelect,agents=[],tasks=[],signals=null,select
        <small>{focusScreen.detail}</small>
        <small>Source: {focusScreen.provenance}</small>
      </div>}
+     {focusScreen&&<OfficeTaskLedger roleId={focusScreen.roleId}
+      status={focusScreen.status} tasks={tasks} onOpenWorkspace={onOpenWorkspace}/>}
      <div className="office-desk-tour" role="group" aria-label="Visit real agent workstations">
        <button type="button" onClick={()=>tourTo(-1)} aria-label="Previous workstation">← Previous</button>
        <button type="button" onClick={()=>tourTo(1)} aria-label="Next workstation">Next →</button>

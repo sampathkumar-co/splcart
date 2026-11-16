@@ -309,3 +309,35 @@
  outline:2px solid #f3e9d7;outline-offset:2px}
 @media(max-width:700px){.office-desk-activity{padding:9px;gap:4px}.office-desk-activity small{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.luxury-office::after{animation:none;opacity:.55}}
+
+
+/* Floating owner-only evidence lens. This is a real task explorer, not a HUD
+   simulating activity. No animation without a genuine saved state change. */
+.office-desk-context{width:min(355px,calc(100vw - 32px));max-width:355px;
+ max-height:min(76vh,630px);overflow-y:auto;overscroll-behavior:contain;
+ scrollbar-color:#a58b64 #182324}
+.office-evidence-ledger{border-top:1px solid rgba(212,176,106,.27);
+ display:flex;flex-direction:column;gap:8px;padding-top:12px}
+.office-ledger-heading{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.office-ledger-heading strong{font:750 10px Manrope,Arial,sans-serif;letter-spacing:.12em;color:#edc887}
+.office-ledger-heading span{font:700 9px Manrope,Arial,sans-serif;color:#d6ddda}
+.office-ledger-scope{font:500 9px Manrope,Arial,sans-serif;color:#a8b7b4}
+.office-ledger-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+.office-ledger-list li{border:1px solid rgba(122,148,141,.23);border-left:2px solid #d4b06a;
+ padding:9px 10px;border-radius:4px;background:rgba(9,19,23,.68)}
+.office-ledger-list li p{font:500 10px/1.48 Manrope,Arial,sans-serif;color:#ecdfcc;
+ overflow-wrap:anywhere;margin:6px 0}
+.office-ledger-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.office-ledger-meta span{font:800 9px Manrope,Arial,sans-serif;letter-spacing:.03em;color:#e4a6a5}
+.office-ledger-meta span.is-completed{color:#78d6b8}
+.office-ledger-meta span.is-running{color:#8bc7e8}
+.office-ledger-meta time{font:500 9px Manrope,Arial,sans-serif;color:#abb9b7}
+.office-ledger-list li a{display:inline-block;font:700 10px Manrope,Arial,sans-serif;
+ color:#d8b97c;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.office-ledger-empty{margin:2px 0 6px;color:#d9e0da;font:500 10px/1.55 Manrope,Arial,sans-serif}
+.office-ledger-open{width:100%;display:flex;justify-content:space-between;align-items:center;
+ gap:8px;text-align:left;border:1px solid #8e7957;background:linear-gradient(110deg,#584631,#2c3734);
+ padding:10px 11px;border-radius:4px;color:#fff0d1;font:750 10px Manrope,Arial,sans-serif}
+.office-ledger-open:hover,.office-ledger-open:focus-visible{border-color:#f0d39a;background:#655136}
+@media(max-width:700px){.office-desk-context{max-height:64vh;width:min(290px,calc(100vw - 28px))}
+ .office-evidence-ledger{gap:6px;padding-top:8px}.office-ledger-list li{padding:7px}}
